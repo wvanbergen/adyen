@@ -1,4 +1,4 @@
-=== Adyen
+= Adyen
 
 Package to simplify including the Adyen payments services into a Ruby on Rails application.
 
@@ -32,8 +32,10 @@ First, make sure that the Adyen matchers are available in your view specs:
     ...
   end
 
-To check the response in a View spec, use the have_adyen_payment_form, 
-have_adyen_recurrent_payment_form and have_adyen_single_payment_form matchers:
+To check the response in a view spec, use the have_adyen_payment_form, 
+have_adyen_recurrent_payment_form and have_adyen_single_payment_form matchers. By
+passing a hash, you can check the values of the hidden fields. By passing :anything
+as value, the matcher will simply check if the hidden fields exists and ignore its value
 
   it "should contain an Adyen payment form" do
     # either single or recurring
@@ -57,11 +59,12 @@ To use the assertions in unit tests, first include the matchers module in your t
     ...
 
 Use the assertion methods assert_adyen_payment_form, assert_adyen_single_payment_form and
-assert_adyen_recurring_payment_form:
+assert_adyen_recurring_payment_form. They work similarly to the RSpec matcher methods
+described above.
 
   def test_payment_form
     get new_payment_path
-    assert_adyen_payment_form(@response.body, :currency_code => 'EUR', :payment_amount => 1000)
+    assert_adyen_payment_form(@response, :currency_code => 'EUR', :payment_amount => 1000)
   end
 
 == About
