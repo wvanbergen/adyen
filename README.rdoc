@@ -1,10 +1,68 @@
 === Adyen
 
-Package to simplify including the Adyen payments system into a Ruby on Rails application.
+Package to simplify including the Adyen payments services into a Ruby on Rails application.
+
+Currently, the package contains functions to easily generate the required hidden fields and
+matchers to easily check your views using rspec.
 
 For more information about Adyen, see http://www.adyen.com/
 
-== Usage
+== Building payment forms
+
+  <% form_tag(:url => Adyen::Form.url) do %>
+   	<%= Adyen::Form.hidden_fields(:merchant_account => 'myaccount)
+    ...
+    <%= submit_tag('pay') %> 	
+  <% end %>
+
+Adyen::Form.url will return the URL to the live environment of Adyen in production mode,
+otherwise it will return the testing environment. To override this behavior, use:
+
+  <% form_tag(:url => Adyen::Form.url('live')) do %>
+    ...
+  <% end %>
+
+== Testing payment forms using rspec matchers
+
+First, make sure that the Adyen matchers are available in your view specs:
+
+  Spec::Runner.configure do |config|
+    ...
+    config.include Adyen::Matchers, :type => :views
+    ...
+  end
+
+To check the response in a View spec, use the have_adyen_payment_form, 
+have_adyen_recurrent_payment_form and have_adyen_single_payment_form matchers:
+
+  it "should contain an Adyen payment form" do
+    # either single or recurring
+    response.should have_adyen_payment_form(:currency_code => 'EUR', :payment_amount => 1000)
+  end
+
+  it "should contain an Adyen recurrent payment form" do
+    response.should have_adyen_recurrent_payment_form
+  end
+
+  it "should contain an Adyen recurrent payment form" do
+    response.should have_adyen_single_payment_form(:merchant_reference => :anything)
+  end
+
+== Testing payment forms using assertions
+
+To use the assertions in unit tests, first include the matchers module in your test class:
+
+  class PaymentControllerTest < Test::Unit
+    include Adyen::Matchers
+    ...
+
+Use the assertion methods assert_adyen_payment_form, assert_adyen_single_payment_form and
+assert_adyen_recurring_payment_form:
+
+  def test_payment_form
+    get new_payment_path
+    assert_adyen_payment_form(@response.body, :currency_code => 'EUR', :payment_amount => 1000)
+  end
 
 == About
 
