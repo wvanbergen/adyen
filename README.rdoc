@@ -1,0 +1,12 @@
+=== Adyen
+
+Package to simplify including the Adyen payments system into a Ruby on Rails application.
+
+For more information about Adyen, see http://www.adyen.com/
+
+== Usage
+
+== About
+
+This package is written by Michel Barbosa and Willem van Bergen for Floorplanner.com,
+and made public under the MIT license (see LICENSE).
