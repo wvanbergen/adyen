@@ -31,7 +31,7 @@ module Rake
         
         
         release_dependencies = [:check_clean_master_branch, :version, :build, :create_tag]
-        release_dependencies.push 'doc:publish' if has_rdoc?
+        release_dependencies.push 'doc:publish' if generate_rdoc?
         release_dependencies.unshift 'test' if has_tests?
         release_dependencies.unshift 'spec' if has_specs?
                 
@@ -46,7 +46,7 @@ module Rake
       end
       
       # Register RDoc tasks
-      if has_rdoc?
+      if generate_rdoc?
         require 'rake/rdoctask'
         
         namespace(:doc) do 
@@ -96,8 +96,8 @@ module Rake
     
     protected 
 
-    def has_rdoc?
-      @specification.has_rdoc
+    def generate_rdoc?
+      git_branch_exists?('gh-pages')
     end
 
     def has_specs?
@@ -162,6 +162,11 @@ module Rake
     
     def gemspec_file 
       @gemspec_file ||= Dir['*.gemspec'].first
+    end
+    
+    def git_branch_exists?(branch_name)
+      branches = run_command('git branch').map { |line| /^\*?\s+(\w+)/ =~ line; $1 }
+      branches.include?(branch_name.to_s)
     end
     
     def verify_current_branch(branch)
