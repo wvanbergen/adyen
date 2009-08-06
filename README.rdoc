@@ -1,26 +1,37 @@
 = Adyen
 
 Package to simplify including the Adyen payments services into a Ruby on Rails application.
-
 Currently, the package contains functions to easily generate the required hidden fields and
 matchers to easily check your views using rspec.
 
 For more information about Adyen, see http://www.adyen.com/
 
+== Skins ==
+
+Adyen using the notion of "skins" to determine what payment methods should be available
+and what the payment environment should look like.
+
 == Building payment forms
 
   <% form_tag(:url => Adyen::Form.url) do %>
-   	<%= Adyen::Form.hidden_fields(:merchant_account => 'myaccount)
+    <%= Adyen::Form.hidden_fields(:merchant_account => 'myaccount')
     ...
     <%= submit_tag('pay') %> 	
   <% end %>
 
-Adyen::Form.url will return the URL to the live environment of Adyen in production mode,
-otherwise it will return the testing environment. To override this behavior, use:
+<tt>Adyen::Form.url</tt> will return the URL to the live environment of Adyen in production 
+mode, otherwise it will return the testing environment. To override this behavior, use:
 
   <% form_tag(:url => Adyen::Form.url('live')) do %>
     ...
   <% end %>
+
+<tt>Adyen::Form.hidden_fields</tt> will generate the hidden fields for the key/value pairs
+you provide to the function. The keys will be camelized automatically. Some notes:
+
+* <tt>:recurring => true</tt> will be translated to :recurringContract => 'DEFAULT'.
+* <tt>:order_data</tt> will be encoded using gzip/base64.
+* <tt>:merchant_sig</tt> will be computed automatically
 
 == Testing payment forms using rspec matchers
 
@@ -32,12 +43,16 @@ First, make sure that the Adyen matchers are available in your view specs:
     ...
   end
 
-To check the response in a view spec, use the have_adyen_payment_form, 
-have_adyen_recurrent_payment_form and have_adyen_single_payment_form matchers. By
-passing a hash, you can check the values of the hidden fields. By passing :anything
+To check the response in a view spec, use the <tt>have_adyen_payment_form</tt>, 
+<tt>have_adyen_recurrent_payment_form</tt> and <tt>have_adyen_single_payment_form matchers</tt>.
+By passing a hash, you can check the values of the hidden fields. By passing :anything
 as value, the matcher will simply check if the hidden field exists and ignore its value.
 
 Some example specs:
+
+	before(:each) do
+	  render 'payments/new.html.erb'
+	end
 
   it "should contain an Adyen payment form" do
     # either single or recurring
@@ -60,8 +75,8 @@ To use the assertions in unit tests, first include the matchers module in your t
     include Adyen::Matchers
     ...
 
-Use the assertion methods assert_adyen_payment_form, assert_adyen_single_payment_form and
-assert_adyen_recurring_payment_form. They work similarly to the RSpec matcher methods
+Use the assertion methods <tt>assert_adyen_payment_form</tt>, <tt>assert_adyen_single_payment_form</tt> 
+and <tt>assert_adyen_recurring_payment_form</tt>. They work similarly to the RSpec matcher methods
 described above. An example:
 
   def test_payment_form
