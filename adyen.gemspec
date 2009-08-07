@@ -10,6 +10,10 @@ Gem::Specification.new do |s|
   s.email    = ['willem@vanbergen.org', 'cicaboo@gmail.com']
   s.homepage = 'http://www.adyen.com'
   
+  s.add_dependency('libxml-ruby', '>= 1.1.3')
+  s.add_dependency('soap4r', '>= 1.5.8')
+  s.add_development_dependency('rspec')
+  
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   s.extra_rdoc_files = ['README.rdoc']
   

@@ -6,10 +6,13 @@ matchers to easily check your views using rspec.
 
 For more information about Adyen, see http://www.adyen.com/
 
-== Skins ==
+== Skins
 
 Adyen using the notion of "skins" to determine what payment methods should be available
-and what the payment environment should look like.
+and what the payment environment should look like. At least one skin is required, which
+can be created in the merchant area of Adyen. For every key, a shared secret is generated
+that is required to sign payment forms. You will need to provide this secret as the 
+:shared_secret attribute to the hidden_fields method (see below).
 
 == Building payment forms
 
@@ -31,7 +34,8 @@ you provide to the function. The keys will be camelized automatically. Some note
 
 * <tt>:recurring => true</tt> will be translated to :recurringContract => 'DEFAULT'.
 * <tt>:order_data</tt> will be encoded using gzip/base64.
-* <tt>:merchant_sig</tt> will be computed automatically
+* <tt>:shared_secret</tt> must be provided to calculate the merchant signature.
+* <tt>:merchant_sig</tt> will be computed automatically using this secret.
 
 == Testing payment forms using rspec matchers
 

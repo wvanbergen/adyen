@@ -1,11 +1,15 @@
+require 'xml'
+
 module Adyen
   module Matchers 
     
-    module XPathCheck
+    module XPathPaymentFormCheck
       
       def self.build_xpath_query(checks)
-        xpath_query =  "//form[@action='#{AdyenPaymentIntegrator::Form.url}']" # Adyen form 
+        # Start by finding the check for the Adyen form tag
+        xpath_query =  "//form[@action='#{Adyen::Form.url}']" 
 
+        # Add recurring/single check if specified
         recurring =  checks.delete(:recurring)
         unless recurring.nil?
           if recurring
@@ -15,19 +19,20 @@ module Adyen
           end
         end
 
+        # Add a check for all the other fields specified
         checks.each do |key, value|
           condition  = "descendant::input[@type='hidden'][@name='#{key.to_s.camelize(:lower)}']"
           condition << "[@value='#{value}']" unless value == :anything
           xpath_query << "[#{condition}]"
         end 
-        
+
         return xpath_query       
       end
 
       def self.document(subject)
         if String === subject
           XML::HTMLParser.string(subject).parse
-        elsif document.respond_to?(:body)
+        elsif subject.respond_to?(:body)
           XML::HTMLParser.string(subject.body).parse
         elsif XML::Node === subject
           subject
@@ -50,7 +55,7 @@ module Adyen
       end
     
       def matches?(document)
-        Adyen::Matchers::XPathCheck.check(document, @checks)
+        Adyen::Matchers::XPathPaymentFormCheck.check(document, @checks)
       end
   
       def description
@@ -67,7 +72,7 @@ module Adyen
     end
 
     def have_adyen_payment_form(checks = {})
-      default_checks = {:merchant_sig => :anything, :order_data => :anything }
+      default_checks = {:merchant_sig => :anything, :payment_amount => :anything, :currency_code => :anything, :skin_code => :anything }
       HaveAdyenPaymentForm.new(default_checks.merge(checks))
     end
     
@@ -80,19 +85,18 @@ module Adyen
       recurring_checks = { :recurring => false }
       have_adyen_payment_form(recurring_checks.merge(checks))
     end
-    
-    
+        
     def assert_adyen_payment_form(subject, checks = {})
-      default_checks = {:merchant_sig => :anything, :order_data => :anything }
-      XPathCheck.check(subject, default_checks.merge(checks))
+      default_checks = {:merchant_sig => :anything, :payment_amount => :anything, :currency_code => :anything, :skin_code => :anything }
+      assert Adyen::Matchers::XPathPaymentFormCheck.check(subject, default_checks.merge(checks)), 'No Adyen payment form found'
     end
     
-    def assert_adyen_recurring_payment_form(subject, recurring_checks = {})
+    def assert_adyen_recurring_payment_form(subject, checks = {})
       recurring_checks = { :recurring => true, :shopper_email => :anything, :shopper_reference => :anything }
       assert_adyen_payment_form(subject, recurring_checks.merge(checks))
     end           
 
-    def assert_adyen_single_payment_form(subject, recurring_checks = {})
+    def assert_adyen_single_payment_form(subject, checks = {})
       recurring_checks = { :recurring => false }
       assert_adyen_payment_form(subject, recurring_checks.merge(checks))
     end    

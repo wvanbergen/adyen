@@ -77,7 +77,7 @@ module Rake
 
         desc "Run all specs for #{@name}"
         Spec::Rake::SpecTask.new(:spec) do |t|
-          t.spec_files = FileList['spec/**/*_spec.rb']
+          t.spec_files = FileList[File.dirname(__FILE__) + '/../spec/**/*_spec.rb']
         end
       end
       
@@ -87,7 +87,7 @@ module Rake
 
         desc "Run all unit tests for #{@name}"
         Rake::TestTask.new(:test) do |t|
-          t.pattern = 'test/**/*_test.rb'
+          t.pattern = File.dirname(__FILE__) + '/../test/**/*_test.rb'
           t.verbose = true
           t.libs << 'test'
         end
@@ -101,11 +101,11 @@ module Rake
     end
 
     def has_specs?
-      Dir['spec/**/*_spec.rb'].any?
+      Dir[File.dirname(__FILE__) + '/../spec/**/*_spec.rb'].any?
     end
     
     def has_tests?
-      Dir['test/**/*_test.rb'].any?
+      Dir[File.dirname(__FILE__) + '/../test/**/*_test.rb'].any?
     end
 
     def reload_gemspec!
@@ -161,7 +161,7 @@ module Rake
     end
     
     def gemspec_file 
-      @gemspec_file ||= Dir['*.gemspec'].first
+      @gemspec_file ||= Dir[File.dirname(__FILE__) + '/../*.gemspec'].first
     end
     
     def git_branch_exists?(branch_name)
