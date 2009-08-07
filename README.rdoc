@@ -4,7 +4,9 @@ Package to simplify including the Adyen payments services into a Ruby on Rails a
 Currently, the package contains functions to easily generate the required hidden fields and
 matchers to easily check your views using rspec.
 
-For more information about Adyen, see http://www.adyen.com/
+* For more information about Adyen, see http://www.adyen.com
+* For more information about integrating Adyen, see their manuals at
+  http://support.adyen.com/links/documentation 
 
 == Skins
 
@@ -12,15 +14,18 @@ Adyen using the notion of "skins" to determine what payment methods should be av
 and what the payment environment should look like. At least one skin is required, which
 can be created in the merchant area of Adyen. For every key, a shared secret is generated
 that is required to sign payment forms. You will need to provide this secret as the 
-:shared_secret attribute to the hidden_fields method (see below).
+:shared_secret field to the hidden_fields method (see below).
 
 == Building payment forms
 
   <% form_tag(:url => Adyen::Form.url) do %>
-    <%= Adyen::Form.hidden_fields(:merchant_account => 'myaccount')
+    <%= Adyen::Form.hidden_fields(:merchant_account => 'myaccount', ... , 
+           :skin_code => 'myperfectskin', :shared_secret => 'youllneverguess')
     ...
     <%= submit_tag('pay') %> 	
   <% end %>
+
+Please refer to the Adyen integration manual for all the
 
 <tt>Adyen::Form.url</tt> will return the URL to the live environment of Adyen in production 
 mode, otherwise it will return the testing environment. To override this behavior, use:
@@ -32,7 +37,7 @@ mode, otherwise it will return the testing environment. To override this behavio
 <tt>Adyen::Form.hidden_fields</tt> will generate the hidden fields for the key/value pairs
 you provide to the function. The keys will be camelized automatically. Some notes:
 
-* <tt>:recurring => true</tt> will be translated to :recurringContract => 'DEFAULT'.
+* <tt>:recurring => true</tt> will be translated to <tt>:recurringContract => 'DEFAULT'</tt>.
 * <tt>:order_data</tt> will be encoded using gzip/base64.
 * <tt>:shared_secret</tt> must be provided to calculate the merchant signature.
 * <tt>:merchant_sig</tt> will be computed automatically using this secret.
@@ -91,4 +96,5 @@ described above. An example:
 == About
 
 This package is written by Michel Barbosa and Willem van Bergen for Floorplanner.com,
-and made public under the MIT license (see LICENSE).
+and made public under the MIT license (see LICENSE). It comes without warranty of any kind,
+so use at your own risk.
