@@ -61,4 +61,5 @@ module Adyen
 end
 
 require 'adyen/form'
+require 'adyen/notification'
 require 'adyen/soap'
