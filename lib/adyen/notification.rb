@@ -34,6 +34,12 @@ module Adyen
       event_code == 'AUTHORISATION' && success?
     end
     
+    def collect_invoice!(attrs)
+      attrs[:value] = Adyen::Formatter::Price.in_cents(attrs[:value])
+      raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
+      Adyen::SOAP::RecurringService.submit(attrs.merge(:recurring_reference => self.psp_reference))
+    end
+    
     alias :successful_authorization? :successful_authorisation?
     
     class HttpPost < Notification
