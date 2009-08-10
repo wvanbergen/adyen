@@ -40,6 +40,11 @@ module Adyen
       Adyen::SOAP::RecurringService.submit(attrs.merge(:recurring_reference => self.psp_reference))
     end
     
+    def deactivate_recurring_contract!(attrs)
+      raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'      
+      Adyen::SOAP::RecurringService.deactivate(attrs.merge(:recurring_reference => self.psp_reference))
+    end
+    
     alias :successful_authorization? :successful_authorisation?
     
     class HttpPost < Notification
