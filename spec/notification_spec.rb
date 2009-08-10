@@ -5,22 +5,44 @@ require 'action_controller/test_process'
 
 describe Adyen::Notification do
 
+  before(:all) do
+    ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
+
+    ActiveRecord::Migration.verbose = false
+    Adyen::Notification::Migration.up    
+  end
+  
+  after(:all) do
+    Adyen::Notification::Migration.down
+  end
+
   describe Adyen::Notification::HttpPost do
 
-    context 'creation' do
+    describe 'payment authorization' do
+          
       before(:each) do
         @request = mock('request')
-        @request.stub!(:params).and_return(
-            :live => 'false', :eventCode => 'AUTHORISATION', :pspReference => '1234', 
-            :merchantReference => '5678', :merchantAccountCode => 'MyAccountCode', 
-            :eventDate => '2009-01-02', :success => 'true', :paymentMethod => 'ideal', 
-            :operations => 'REFUND', :currency => 'EUR', :value => '4450')
-        
-        @notification = Adyen::Notification::HttpPost.new(@request)
+        @request.stub!(:params).and_return({
+              "merchantAccountCode"=>"FloorPlannerNL", "eventCode"=>"AUTHORISATION", 
+              "paymentMethod"=>"mc", "eventDate"=>"2009-08-10T09:00:08.04Z", 
+              "operations"=>"CANCEL,CAPTURE,REFUND", "merchantReference"=>"4", 
+              "action"=>"process_adyen", "live"=>"false", "controller"=>"payment_notifications", 
+              "value"=>"2500", "success"=>"true", "reason"=>"10676:1111:12/2012", 
+              "originalReference"=>"", "pspReference"=>"8712498948081194", "currency"=>"USD"})
+
+        @notification = Adyen::Notification::HttpPost.log(@request)
+      end
+      
+      it "should have saved the notification record" do
+        @notification.should_not be_new_record
+      end
+    
+      it "should be an authorization" do
+        @notification.should be_authorisation
       end
     
       it "should convert the amount to a bigdecimal" do
-        @notification.value.should eql(BigDecimal.new('44.50'))
+        @notification.value.should eql(BigDecimal.new('25.00'))
       end
       
       it "should convert live to a boolean" do
@@ -35,9 +57,13 @@ describe Adyen::Notification do
         @notification.should be_successful_authorization
       end
       
-      it "should be an :authorisation event" do
-        @notification.event.should eql(:authorisation)
+      it "should convert the eventDate" do
+        @notification.event_date.should be_kind_of(Time)
       end
+      
+      it "should convert the empty original reference to NULL" do
+        @notification.original_reference.should be_nil
+      end      
       
     end
   end
