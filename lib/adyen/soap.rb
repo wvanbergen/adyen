@@ -1,4 +1,3 @@
-$:.unshift('/Users/willem/Code/handsoap/lib/')
 require "handsoap"
 
 module Adyen
