@@ -5,8 +5,10 @@ module Adyen
   module SOAP
 
     class << self 
-      attr_accessor :username, :password
+      attr_accessor :username, :password, :default_arguments
     end
+
+    self.default_arguments = {}
     
     class Base < Handsoap::Service
 
@@ -46,23 +48,33 @@ module Adyen
       end     
       
       def submit(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        
         response = invoke('ns1:submitRecurring') do |message|
           message.add('ns1:recurringRequest') do |req|
             req.add('ns1:amount') do |amount|
-              amount.add('ns3:currency', args[:currency])
-              amount.add('ns3:value', args[:value])  
+              amount.add('ns3:currency', invoke_args[:currency])
+              amount.add('ns3:value', invoke_args[:value])  
             end
-            req.add('ns1:merchantAccount', args[:merchant_account])   
-            req.add('ns1:recurringReference', args[:recurring_reference])
-            req.add('ns1:reference', args[:reference])
-            req.add('ns1:shopperEmail', args[:shopper_email])
-            req.add('ns1:shopperReference', args[:shopper_reference])             
+            req.add('ns1:merchantAccount', invoke_args[:merchant_account])   
+            req.add('ns1:recurringReference', invoke_args[:recurring_reference])
+            req.add('ns1:reference', invoke_args[:reference])
+            req.add('ns1:shopperEmail', invoke_args[:shopper_email])
+            req.add('ns1:shopperReference', invoke_args[:shopper_reference])             
           end
         end
       end
       
       def deactivate(args = {})
-        
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)        
+        response = invoke('ns1:deactivateRecurring') do |message|
+          message.add('ns1:recurringRequest') do |req|          
+            req.add('ns1:merchantAccount', invoke_args[:merchant_account])   
+            req.add('ns1:recurringReference', invoke_args[:recurring_reference])
+            req.add('ns1:reference', invoke_args[:reference])
+            req.add('ns1:shopperReference', invoke_args[:shopper_reference])          
+          end
+        end
       end
     end
   end  
