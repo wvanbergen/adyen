@@ -2,7 +2,9 @@ require 'activerecord'
 
 module Adyen
   class Notification < ActiveRecord::Base
-    set_table_name :adyen_payment_notifications
+    
+    DEFAULT_TABLE_NAME = :adyen_payment_notifications
+    set_table_name(DEFAULT_TABLE_NAME)
     
     # Make sure we don't end up with an original_reference with an empty string
     before_validation { |notification| notification.original_reference = nil if notification.original_reference.blank? }
@@ -17,6 +19,12 @@ module Adyen
       end
       self.create!(converted_params)
     end
+    
+    def authorisation?
+      event_code == 'AUTHORISATION'
+    end
+    
+    alias :authorization? :authorisation?
     
     def successful_authorisation?
       event_code == 'AUTHORISATION' && success?
@@ -41,6 +49,35 @@ module Adyen
       def value=(value)
         self.write_attribute(:value, Adyen::Price.from_cents(value))
       end
-    end    
+    end
+    
+    class Migration < ActiveRecord::Migration
+    
+      def self.up(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
+        create_table(table_name) do |t|      
+          t.boolean  :live,                  :null => false
+          t.string   :event_code,            :null => false
+          t.string   :psp_reference,         :null => false
+          t.string   :original_reference,    :null => true
+          t.string   :merchant_reference,    :null => false
+          t.string   :merchant_account_code, :null => false
+          t.datetime :event_date,            :null => false
+          t.boolean  :success,               :null => false
+          t.string   :payment_method,        :null => false
+          t.string   :operations,            :null => false
+          t.text     :reason
+          t.string   :currency,              :null => false, :limit => 3
+          t.decimal  :value,                 :null => false, :precision => 9, :scale => 2
+          t.boolean  :processed,             :default => false, :null => false
+          t.timestamps
+        end        
+      end
+      
+      def self.down(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
+        drop_table(table_name)
+      end
+      
+    end
+    
   end
 end
