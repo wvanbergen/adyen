@@ -1,63 +1,46 @@
 require 'activerecord'
 
 module Adyen
-  class Notification # < ActiveRecord::Base
+  class Notification < ActiveRecord::Base
+    set_table_name :adyen_payment_notifications
+    
+    # Make sure we don't end up with an original_reference with an empty string
+    before_validation { |notification| notification.original_reference = nil if notification.original_reference.blank? }
 
-    attr_accessor :live, :event_code, :psp_reference, :original_reference, :merchant_reference,
-      :merchant_account_code, :event_date, :success, :payment_method, :operations, :reason,
-      :currency, :value
-
-    alias :event :event_code
-    alias :event= :event_code=
-
-    def initialize(params)
-      params.each do |key, value|
-        method = "#{key.to_s.underscore}=".to_sym
-        send(method, value) if self.respond_to?(method)
+    def self.log(params)
+      converted_params = {}
+      # Convert each attribute from CamelCase notation to under_score notation
+      # For example, merchantReference will be converted to merchant_reference
+      params.each do |key, value| 
+        field_name                   = key.to_s.underscore
+        converted_params[field_name] = value if self.column_names.include?(field_name)
       end
-    end
-    
-    def live?
-      self.live
-    end
-    
-    def success?
-      self.success
+      self.create!(converted_params)
     end
     
     def successful_authorisation?
-      event_code == :authorisation && success?
+      event_code == 'AUTHORISATION' && success?
     end
     
     alias :successful_authorization? :successful_authorisation?
     
-    
     class HttpPost < Notification
 
-      def initialize(request)
+      def self.log(request)
         super(request.params)
       end
 
-      def value=(value)
-        @value = Adyen::Price.from_cents(value)
-      end
-
       def live=(value)
-        @live = [true, 1, '1', 'true'].include?(value)
+        self.write_attribute(:live, [true, 1, '1', 'true'].include?(value)) 
       end
 
       def success=(value)
-        @success = [true, 1, '1', 'true'].include?(value)
+        self.write_attribute(:success, [true, 1, '1', 'true'].include?(value)) 
       end 
-
-      def event_code=(value)
-        @event_code = value.to_s.downcase.to_sym
-      end
-
-      def operations=(value)
-        @operations = value.split(',').map { |o| o.downcase.to_sym }
+      
+      def value=(value)
+        self.write_attribute(:value, Adyen::Price.from_cents(value))
       end
     end    
-    
   end
 end
