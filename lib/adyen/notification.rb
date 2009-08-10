@@ -51,7 +51,7 @@ module Adyen
       end 
       
       def value=(value)
-        self.write_attribute(:value, Adyen::Formatter::Price.from_cents(value))
+        self.write_attribute(:value, Adyen::Formatter::Price.from_cents(value)) unless value.blank?
       end
     end
     
@@ -67,11 +67,11 @@ module Adyen
           t.string   :merchant_account_code, :null => false
           t.datetime :event_date,            :null => false
           t.boolean  :success,               :null => false, :default => false
-          t.string   :payment_method,        :null => false
-          t.string   :operations,            :null => false
+          t.string   :payment_method,        :null => true
+          t.string   :operations,            :null => true
           t.text     :reason
           t.string   :currency,              :null => false, :limit => 3
-          t.decimal  :value,                 :null => false, :precision => 9, :scale => 2
+          t.decimal  :value,                 :null => true, :precision => 9, :scale => 2
           t.boolean  :processed,             :null => false, :default => false
           t.timestamps
         end
