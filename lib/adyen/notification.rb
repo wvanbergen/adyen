@@ -47,7 +47,7 @@ module Adyen
       end 
       
       def value=(value)
-        self.write_attribute(:value, Adyen::Price.from_cents(value))
+        self.write_attribute(:value, Adyen::Formatter::Price.from_cents(value))
       end
     end
     
