@@ -6,6 +6,10 @@ module Adyen
     DEFAULT_TABLE_NAME = :adyen_payment_notifications
     set_table_name(DEFAULT_TABLE_NAME)
     
+    validates_presence_of :event_code
+    validates_presence_of :psp_reference    
+    validates_uniqueness_of :success, :scope => [:psp_reference, :event_code]
+    
     # Make sure we don't end up with an original_reference with an empty string
     before_validation { |notification| notification.original_reference = nil if notification.original_reference.blank? }
 
@@ -55,14 +59,14 @@ module Adyen
     
       def self.up(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
         create_table(table_name) do |t|      
-          t.boolean  :live,                  :null => false
+          t.boolean  :live,                  :null => false, :default => false
           t.string   :event_code,            :null => false
           t.string   :psp_reference,         :null => false
           t.string   :original_reference,    :null => true
           t.string   :merchant_reference,    :null => false
           t.string   :merchant_account_code, :null => false
           t.datetime :event_date,            :null => false
-          t.boolean  :success,               :null => false
+          t.boolean  :success,               :null => false, :default => false
           t.string   :payment_method,        :null => false
           t.string   :operations,            :null => false
           t.text     :reason
@@ -70,10 +74,12 @@ module Adyen
           t.decimal  :value,                 :null => false, :precision => 9, :scale => 2
           t.boolean  :processed,             :null => false, :default => false
           t.timestamps
-        end        
+        end
+        add_index table_name, [:psp_reference, :event_code, :success], :unique => true
       end
       
       def self.down(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
+        remove_index(table_name, [:psp_reference, :event_code, :success])
         drop_table(table_name)
       end
       
