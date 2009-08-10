@@ -30,8 +30,8 @@ module Adyen
     def self.do_attribute_transformations!(attributes = {})
       attributes[:recurring_contract] = 'DEFAULT' if attributes.delete(:recurring)
       attributes[:order_data]         = Adyen::Encoding.gzip_base64(attributes.delete(:order_data_raw)) if attributes[:order_data_raw]
-      attributes[:ship_before_date]   = Adyen.date(attributes[:ship_before_date])
-      attributes[:session_validity]   = Adyen.time(attributes[:session_validity])
+      attributes[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(attributes[:ship_before_date])
+      attributes[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(attributes[:session_validity])
     end
     
     def self.hidden_fields(attributes = {})
