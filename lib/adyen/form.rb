@@ -28,6 +28,8 @@ module Adyen
     end
     
     def self.do_attribute_transformations!(attributes = {})
+      raise "YENs are not yet supported!" if attributes[:currency_code] == 'JPY' # TODO: fixme
+      
       attributes[:recurring_contract] = 'DEFAULT' if attributes.delete(:recurring) == true
       attributes[:order_data]         = Adyen::Encoding.gzip_base64(attributes.delete(:order_data_raw)) if attributes[:order_data_raw]
       attributes[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(attributes[:ship_before_date])
