@@ -68,7 +68,7 @@ module Adyen
           t.text     :reason
           t.string   :currency,              :null => false, :limit => 3
           t.decimal  :value,                 :null => false, :precision => 9, :scale => 2
-          t.boolean  :processed,             :default => false, :null => false
+          t.boolean  :processed,             :null => false, :default => false
           t.timestamps
         end        
       end
