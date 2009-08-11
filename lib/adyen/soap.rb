@@ -9,69 +9,87 @@ module Adyen
 
     self.default_arguments = {}
     
+    # The base class sets up XML namespaces and HTTP authentication
+    # for all the Adyen SOAP services
     class Base < Handsoap::Service
 
+      def self.inherited(klass)
+        # The version must be set to construct the request envelopes,
+        # the URI wil be set later using the correct Adyen.environment.
+        klass.endpoint :version => 1, :uri => 'bogus'
+      end
+
+      # Setup basic auth headers in the HTTP client
       def on_after_create_http_client(http_client) 
-        puts "Setting username and password"
+        debug { |logger| logger.puts "Authorization: #{Adyen::SOAP.username}:#{Adyen::SOAP.password}..." }
+        # Handsoap BUG: Setting headers does not work, using a Curb specific method for now.
+        # auth = Base64.encode64("#{Adyen::SOAP.username}:#{Adyen::SOAP.password}").chomp
+        # http_client.headers['Authorization'] = "Basic #{auth}"
         http_client.userpwd = "#{Adyen::SOAP.username}:#{Adyen::SOAP.password}"
       end
+    
+      # Setup XML namespaces for SOAP request body
+      def on_create_document(doc)    
+        doc.alias 'payment',   'http://payment.services.adyen.com'
+        doc.alias 'recurring', 'http://recurring.services.adyen.com'
+        doc.alias 'common',    'http://common.services.adyen.com'
+      end
       
+      # Setup XML namespaces for SOAP response
+      def on_response_document(doc)
+        doc.add_namespace 'payment',   'http://payment.services.adyen.com'
+        doc.add_namespace 'recurring', 'http://recurring.services.adyen.com'
+        doc.add_namespace 'common',    'http://common.services.adyen.com'        
+      end
+      
+      # Set endpoint URI before dispatch, so that changes in environment
+      # are reflected correctly.
+      def on_before_dispatch
+        self.class.endpoint(:uri => self.class::ENDPOINT_URI % Adyen.environment.to_s, :version => 1)
+      end
     end
     
+    # SOAP client to interact with the payment modification service of Adyen.
+    # At this moment, none of the calls are implemented.
+    class PaymentService < Base
+    
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
+          
+    end
+    
+    # SOAP client to interact with the recurring payment service of Adyen.
+    # This client implements the submitRecurring call to submit payments
+    # for a recurring contract. Moreover, it implements the deactiveRecurring
+    # call to cancel a recurring contract.
     class RecurringService < Base
       
-      RECURRING_WSDL_URI     = 'https://pal-%s.adyen.com/pal/Recurring.wsdl'
-      RECURRING_ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
-          
-      def self.endpoint_uri(environment = nil)
-        RECURRING_ENDPOINT_URI % (environment || Adyen.autodetect_environment)
-      end
-      
-      def self.wsdl_uri(environment = nil)
-        RECURRING_WSDL_URI % (environment || Adyen.autodetect_environment)
-      end
-      
-      endpoint :uri => endpoint_uri, :version => 1
-      
-      
-      def on_create_document(doc)
-        doc.alias 'ns1', 'http://recurring.services.adyen.com'
-        doc.alias 'ns2', 'http://payment.services.adyen.com'
-        doc.alias 'ns3', 'http://common.services.adyen.com'
-      end
-      
-      def on_response_document(doc)
-        doc.add_namespace 'ns1', 'http://recurring.services.adyen.com'
-        doc.add_namespace 'ns2', 'http://payment.services.adyen.com'                
-        doc.add_namespace 'ns3', 'http://common.services.adyen.com'        
-      end     
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
       
       def submit(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
-        
-        response = invoke('ns1:submitRecurring') do |message|
-          message.add('ns1:recurringRequest') do |req|
-            req.add('ns1:amount') do |amount|
-              amount.add('ns3:currency', invoke_args[:currency])
-              amount.add('ns3:value', invoke_args[:value])  
+        response = invoke('recurring:submitRecurring') do |message|
+          message.add('recurring:recurringRequest') do |req|
+            req.add('recurring:amount') do |amount|
+              amount.add('common:currency', invoke_args[:currency])
+              amount.add('common:value', invoke_args[:value])  
             end
-            req.add('ns1:merchantAccount', invoke_args[:merchant_account])   
-            req.add('ns1:recurringReference', invoke_args[:recurring_reference])
-            req.add('ns1:reference', invoke_args[:reference])
-            req.add('ns1:shopperEmail', invoke_args[:shopper_email])
-            req.add('ns1:shopperReference', invoke_args[:shopper_reference])             
+            req.add('recurring:merchantAccount', invoke_args[:merchant_account])   
+            req.add('recurring:recurringReference', invoke_args[:recurring_reference])
+            req.add('recurring:reference', invoke_args[:reference])
+            req.add('recurring:shopperEmail', invoke_args[:shopper_email])
+            req.add('recurring:shopperReference', invoke_args[:shopper_reference])             
           end
         end
       end
       
       def deactivate(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)        
-        response = invoke('ns1:deactivateRecurring') do |message|
-          message.add('ns1:recurringRequest') do |req|          
-            req.add('ns1:merchantAccount', invoke_args[:merchant_account])   
-            req.add('ns1:recurringReference', invoke_args[:recurring_reference])
-            req.add('ns1:reference', invoke_args[:reference])
-            req.add('ns1:shopperReference', invoke_args[:shopper_reference])          
+        response = invoke('recurring:deactivateRecurring') do |message|
+          message.add('recurring:recurringRequest') do |req|          
+            req.add('recurring:merchantAccount', invoke_args[:merchant_account])   
+            req.add('recurring:recurringReference', invoke_args[:recurring_reference])
+            req.add('recurring:reference', invoke_args[:reference])
+            req.add('recurring:shopperReference', invoke_args[:shopper_reference])          
           end
         end
       end

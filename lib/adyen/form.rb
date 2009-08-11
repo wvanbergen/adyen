@@ -8,8 +8,8 @@ module Adyen
     ACTION_URL = "https://%s.adyen.com/hpp/select.shtml"
 
     def self.url(environment = nil)
-      environment ||= Adyen.autodetect_environment
-      Adyen::Form::ACTION_URL % environment  
+      environment ||= Adyen.environment(environment)
+      Adyen::Form::ACTION_URL % environment.to_s
     end
     
     def self.calculate_signature_string(attributes)

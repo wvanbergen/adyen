@@ -2,9 +2,20 @@ require "#{File.dirname(__FILE__)}/spec_helper.rb"
 
 describe Adyen::Form do
   
-  describe 'Adyen urls' do
-    it "should generate correct testing url" do
+  describe 'Action URLs' do
+    
+    before(:each) do
+      # Use autodetection for the environment
+      Adyen.environment = nil
+    end
+    
+    it "should generate correct the testing url" do
       Adyen::Form.url.should eql('https://test.adyen.com/hpp/select.shtml')
+    end
+
+    it "should generate a live url if the environemtn is set top live" do
+      Adyen.environment = :live
+      Adyen::Form.url.should eql('https://live.adyen.com/hpp/select.shtml')
     end
   
     it "should generate correct live url in a production environment" do
@@ -13,7 +24,7 @@ describe Adyen::Form do
     end
 
     it "should generate correct live url if explicitely asked for" do
-      Adyen::Form.url('live').should eql('https://live.adyen.com/hpp/select.shtml')
+      Adyen::Form.url(:live).should eql('https://live.adyen.com/hpp/select.shtml')
     end
   end  
   
@@ -21,7 +32,6 @@ describe Adyen::Form do
     
     include ActionView::Helpers::TagHelper
   
-    
     before(:each) do
       @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today, 
         :merchant_reference => 'Internet Order 12345', :skin_code => '4aD37dJA', 
