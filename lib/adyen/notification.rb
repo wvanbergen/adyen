@@ -3,7 +3,7 @@ require 'activerecord'
 module Adyen
   class Notification < ActiveRecord::Base
     
-    DEFAULT_TABLE_NAME = :adyen_payment_notifications
+    DEFAULT_TABLE_NAME = :adyen_notifications
     set_table_name(DEFAULT_TABLE_NAME)
     
     validates_presence_of :event_code

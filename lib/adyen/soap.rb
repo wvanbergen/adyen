@@ -130,7 +130,7 @@ module Adyen
       #       this payment.
       # * <tt>:recurring_reference</tt> The psp_reference of the RECURRING_CONTRACT 
       #       notification that was sent after the initial payment.
-      # * <tt>:reference</tt> The (merchant) reference for this payment.
+      # * <tt>:reference</tt> The (merchant) reference for this deactivation.
       # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be 
       #       the same as the reference that was used to create the recurring contract.      
       def deactivate(args = {})
