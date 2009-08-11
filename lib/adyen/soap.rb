@@ -1,12 +1,40 @@
 require "handsoap"
 
 module Adyen
+  
+  # The SOAP module contains classes that interact with the Adyen
+  # SOAP services. The clients are based on the Handsoap library.
+  # Shared functionality for all services is implemented in the
+  # Adyen::SOAP::Base class.
+  #
+  # Note that you'll need an Adyen notification PSP reference for
+  # most SOAP calls. Because of this, store all notifications that
+  # Adyen sends to you. (e.g. using the Adyen::Notification ActiveRecord 
+  # class). Moreover, most SOAP calls do not respond that they were
+  # successful immediately, but a notifications to indicate that will
+  # be sent later on.
+  #  
+  # You'll need to provide a username and password to interact
+  # with the Adyen SOAP services:
+  #
+  #     Adyen::SOAP.username = 'ws@Company.MyAccount'
+  #     Adyen::SOAP.password = 'very$ecret'
+  #
+  # You can setup default values for every SOAP call that needs them:
+  #
+  #     Adyen::SOAP.default_arguments[:merchent_account] = 'MyMerchant'
+  #
+  # For now, only the recurring payment service client is implemented 
+  # (Adyen::SOAP::RecurringService). 
   module SOAP
 
     class << self 
+      # Set up accessors for HTTP Basic Authentication and
+      # for adding default arguments to SOAP calls.
       attr_accessor :username, :password, :default_arguments
     end
 
+    # Use no default arguments by default
     self.default_arguments = {}
     
     # The base class sets up XML namespaces and HTTP authentication
@@ -61,10 +89,24 @@ module Adyen
     # This client implements the submitRecurring call to submit payments
     # for a recurring contract. Moreover, it implements the deactiveRecurring
     # call to cancel a recurring contract.
+    #
+    # See the Adyen Recurring manual for more information about this SOAP service
     class RecurringService < Base
       
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
       
+      # Submits a recurring payment. Requires the following arguments as hash:
+      #
+      # * <tt>:currency</tt> The currency code (EUR, GBP, USD, etc)
+      # * <tt>:value</tt> The value of the payments in cents
+      # * <tt>:merchent_account</tt> The merchant account under which to place
+      #       this payment.
+      # * <tt>:recurring_reference</tt> The psp_reference of the RECURRING_CONTRACT 
+      #       notification that was sent after the initial payment.
+      # * <tt>:reference</tt> The (merchant) reference for this payment.
+      # * <tt>:shopper_email</tt> The email address of the shopper.
+      # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be 
+      #       the same as the reference that was used to create the recurring contract.
       def submit(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:submitRecurring') do |message|
@@ -82,6 +124,15 @@ module Adyen
         end
       end
       
+      # Deactivates a recurring payment contract. Requires the following arguments:
+      #
+      # * <tt>:merchent_account</tt> The merchant account under which to place
+      #       this payment.
+      # * <tt>:recurring_reference</tt> The psp_reference of the RECURRING_CONTRACT 
+      #       notification that was sent after the initial payment.
+      # * <tt>:reference</tt> The (merchant) reference for this payment.
+      # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be 
+      #       the same as the reference that was used to create the recurring contract.      
       def deactivate(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)        
         response = invoke('recurring:deactivateRecurring') do |message|
