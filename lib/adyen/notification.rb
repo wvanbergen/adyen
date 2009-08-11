@@ -34,15 +34,16 @@ module Adyen
       event_code == 'AUTHORISATION' && success?
     end
     
-    def collect_invoice!(attrs)
-      attrs[:value] = Adyen::Formatter::Price.in_cents(attrs[:value])
+    def collect_payment_for_recurring_contract!(options)
+      # Make sure we convert the value to cents
+      options[:value] = Adyen::Formatter::Price.in_cents(options[:value])
       raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
-      Adyen::SOAP::RecurringService.submit(attrs.merge(:recurring_reference => self.psp_reference))
+      Adyen::SOAP::RecurringService.submit(options.merge(:recurring_reference => self.psp_reference))
     end
     
-    def deactivate_recurring_contract!(attrs)
+    def deactivate_recurring_contract!(options)
       raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'      
-      Adyen::SOAP::RecurringService.deactivate(attrs.merge(:recurring_reference => self.psp_reference))
+      Adyen::SOAP::RecurringService.deactivate(options.merge(:recurring_reference => self.psp_reference))
     end
     
     alias :successful_authorization? :successful_authorisation?
