@@ -36,6 +36,7 @@ module Adyen
       attributes[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(attributes[:session_validity])
     end
     
+
     def self.hidden_fields(attributes = {})
       do_attribute_transformations!(attributes)
 
@@ -53,6 +54,18 @@ module Adyen
         self.tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
       }.join("\n")
     end
+    
+    def self.redirect_signature_string(params)
+      params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + params[:skinCode].to_s
+    end
+    
+    def self.redirect_signature(shared_secret, params)
+      Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
+    end
+    
+    def self.redirect_signature_check(shared_secret, params)
+      params[:merchantSig] == redirect_signature(shared_secret, params)
+    end    
     
   end
 end

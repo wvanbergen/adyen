@@ -28,6 +28,41 @@ describe Adyen::Form do
     end
   end  
   
+  describe 'redirect signature check' do
+    before(:each) do
+      # Example taken from integration manual
+      
+      # Shared secret between you and Adyen, only valid for this skinCode!
+      @shared_secret = 'Kah942*$7sdp0)' 
+      
+      # Example get params sent back with redirect
+      @params = { :authResult => 'AUTHORISED', :pspReference => '1211992213193029',
+        :merchantReference => 'Internet Order 12345', :skinCode => '4aD37dJA',
+        :merchantSig => 'ytt3QxWoEhAskUzUne0P5VA9lPw='}
+    end
+    
+    it "should calculate the signature string correctly" do
+      Adyen::Form.redirect_signature_string(@params).should eql('AUTHORISED1211992213193029Internet Order 123454aD37dJA')
+    end
+    
+    it "should calculate the signature correctly" do
+      Adyen::Form.redirect_signature(@shared_secret, @params).should eql(@params[:merchantSig])
+    end
+    
+    it "should check the signature correctly" do
+      Adyen::Form.redirect_signature_check(@shared_secret, @params).should be_true
+    end    
+    
+    it "should detect a tampered field" do
+      Adyen::Form.redirect_signature_check(@shared_secret, @params.merge(:pspReference => 'tampered')).should be_false
+    end    
+
+    it "should detect a tampered signature" do
+      Adyen::Form.redirect_signature_check(@shared_secret, @params.merge(:merchantSig => 'tampered')).should be_false
+    end    
+
+  end
+  
   describe 'hidden fields generation' do
     
     include ActionView::Helpers::TagHelper
