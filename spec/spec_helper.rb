@@ -5,7 +5,6 @@ require 'spec'
 require 'spec/autorun'
 
 require 'adyen'
-require 'adyen/matchers'
 
 Spec::Runner.configure do |config|
   config.include Adyen::Matchers

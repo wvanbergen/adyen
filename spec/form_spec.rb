@@ -5,7 +5,7 @@ describe Adyen::Form do
   describe 'Action URLs' do
     
     before(:each) do
-      # Use autodetection for the environment
+      # Use autodetection for the environment unless otherwise specified
       Adyen.environment = nil
     end
     
