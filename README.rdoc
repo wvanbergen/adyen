@@ -4,94 +4,11 @@ Package to simplify including the Adyen payments services into a Ruby on Rails a
 Currently, the package contains functions to easily generate the required hidden fields and
 matchers to easily check your views using rspec.
 
+See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started.
+
 * For more information about Adyen, see http://www.adyen.com
 * For more information about integrating Adyen, see their manuals at
   http://support.adyen.com/links/documentation 
-
-== Skins
-
-Adyen using the notion of "skins" to determine what payment methods should be available
-and what the payment environment should look like. At least one skin is required, which
-can be created in the merchant area of Adyen. For every key, a shared secret is generated
-that is required to sign payment forms. You will need to provide this secret as the 
-:shared_secret field to the hidden_fields method (see below).
-
-== Building payment forms
-
-  <% form_tag(:url => Adyen::Form.url) do %>
-    <%= Adyen::Form.hidden_fields(:merchant_account => 'myaccount', ... , 
-           :skin_code => 'myperfectskin', :shared_secret => 'youllneverguess')
-    ...
-    <%= submit_tag('pay') %> 	
-  <% end %>
-
-Please refer to the Adyen integration manual for all the
-
-<tt>Adyen::Form.url</tt> will return the URL to the live environment of Adyen in production 
-mode, otherwise it will return the testing environment. To override this behavior, use:
-
-  <% form_tag(:url => Adyen::Form.url('live')) do %>
-    ...
-  <% end %>
-
-<tt>Adyen::Form.hidden_fields</tt> will generate the hidden fields for the key/value pairs
-you provide to the function. The keys will be camelized automatically. Some notes:
-
-* <tt>:recurring => true</tt> will be translated to <tt>:recurringContract => 'DEFAULT'</tt>.
-* <tt>:order_data</tt> will be encoded using gzip/base64.
-* <tt>:shared_secret</tt> must be provided to calculate the merchant signature.
-* <tt>:merchant_sig</tt> will be computed automatically using this secret.
-
-== Testing payment forms using rspec matchers
-
-First, make sure that the Adyen matchers are available in your view specs:
-
-  Spec::Runner.configure do |config|
-    ...
-    config.include Adyen::Matchers, :type => :views
-    ...
-  end
-
-To check the response in a view spec, use the <tt>have_adyen_payment_form</tt>, 
-<tt>have_adyen_recurrent_payment_form</tt> and <tt>have_adyen_single_payment_form matchers</tt>.
-By passing a hash, you can check the values of the hidden fields. By passing :anything
-as value, the matcher will simply check if the hidden field exists and ignore its value.
-
-Some example specs:
-
-	before(:each) do
-	  render 'payments/new.html.erb'
-	end
-
-  it "should contain an Adyen payment form" do
-    # either single or recurring
-    response.should have_adyen_payment_form(:currency_code => 'EUR', :payment_amount => 1000)
-  end
-
-  it "should contain an Adyen recurrent payment form" do
-    response.should have_adyen_recurrent_payment_form
-  end
-
-  it "should contain an Adyen recurrent payment form" do
-    response.should have_adyen_single_payment_form(:merchant_reference => :anything)
-  end
-
-== Testing payment forms using assertions
-
-To use the assertions in unit tests, first include the matchers module in your test class:
-
-  class PaymentControllerTest < Test::Unit
-    include Adyen::Matchers
-    ...
-
-Use the assertion methods <tt>assert_adyen_payment_form</tt>, <tt>assert_adyen_single_payment_form</tt> 
-and <tt>assert_adyen_recurring_payment_form</tt>. They work similarly to the RSpec matcher methods
-described above. An example:
-
-  def test_payment_form
-    get new_payment_path
-    assert_adyen_payment_form(@response, :currency_code => 'EUR', :payment_amount => 1000)
-  end
 
 == About
 
