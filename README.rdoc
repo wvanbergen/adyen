@@ -1,8 +1,23 @@
 = Adyen
 
 Package to simplify including the Adyen payments services into a Ruby on Rails application.
-Currently, the package contains functions to easily generate the required hidden fields and
-matchers to easily check your views using rspec.
+
+Adyen integration relies on three modes of communication between Adyen, your server and your client/customer:
+
+* Client-to-Adyen communication using forms and redirects.
+* Adyen-to-server communications using notifications.
+* Server-to-Adyen communication using SOAP services.
+
+This library aims to ease the implementation of all these modes into your application. Moreover, it provides matchers, assertions and mocks to make it easier to implement an automated test suite to assert the integration is working correctly.
+
+== Installation
+
+This plugin can either be installed as gem or Rails plugin:
+
+    gem install wvanbergen-adyen --source http://gems.github.com    # as gem
+    script/plugin install git://github.com/wvanbergen/adyen.git     # as plugin
+
+== Usage
 
 See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started.
 
