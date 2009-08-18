@@ -59,12 +59,12 @@ module Adyen
       params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + params[:skinCode].to_s
     end
     
-    def self.redirect_signature(shared_secret, params)
+    def self.redirect_signature(params, shared_secret)
       Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
     end
     
-    def self.redirect_signature_check(shared_secret, params)
-      params[:merchantSig] == redirect_signature(shared_secret, params)
+    def self.redirect_signature_check(params, shared_secret)
+      params[:merchantSig] == redirect_signature(params, shared_secret)
     end    
     
   end
