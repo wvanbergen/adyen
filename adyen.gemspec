@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name    = 'adyen'
-  s.version = '0.0.2'
+  s.version = '0.1.0'
   s.date    = '2009-08-20'
   
   s.summary = "Integrate Adyen payment services in you Ruby on Rails application"
