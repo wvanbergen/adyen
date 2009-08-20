@@ -31,22 +31,32 @@ module Rake
         
         
         release_dependencies = [:check_clean_master_branch, :version, :build, :create_tag]
-        release_dependencies.push 'doc:publish' if generate_rdoc?
+        release_dependencies.push 'doc:publish' if has_rdoc?
         release_dependencies.unshift 'test' if has_tests?
         release_dependencies.unshift 'spec' if has_specs?
                 
         desc "Releases a new version of #{@name}"
         task(:release => release_dependencies) { release_task } 
         
+        namespace(:release) do
+          release_checks = [:check_clean_master_branch, :check_version, :build]
+          release_checks.push 'doc:compile' if has_rdoc?
+          release_checks.unshift 'test' if has_tests?
+          release_checks.unshift 'spec' if has_specs?          
+          
+          desc "Test release conditions"
+          task(:check => release_checks) { release_check_task }
+        end
+        
         # helper task for releasing
-        task(:check_clean_master_branch) { verify_clean_status('master') }
+        task(:check_clean_master_branch) { verify_fast_forward('master', 'origin', 'master'); verify_clean_status('master') }
         task(:check_version) { verify_version(ENV['VERSION'] || @specification.version) }
         task(:version => [:check_version]) { set_gem_version! }
         task(:create_tag) { create_version_tag! }
       end
       
       # Register RDoc tasks
-      if generate_rdoc?
+      if has_rdoc?
         require 'rake/rdoctask'
         
         namespace(:doc) do 
@@ -77,7 +87,7 @@ module Rake
 
         desc "Run all specs for #{@name}"
         Spec::Rake::SpecTask.new(:spec) do |t|
-          t.spec_files = FileList[File.dirname(__FILE__) + '/../spec/**/*_spec.rb']
+          t.spec_files = FileList['spec/**/*_spec.rb']
         end
       end
       
@@ -87,7 +97,7 @@ module Rake
 
         desc "Run all unit tests for #{@name}"
         Rake::TestTask.new(:test) do |t|
-          t.pattern = File.dirname(__FILE__) + '/../test/**/*_test.rb'
+          t.pattern = 'test/**/*_test.rb'
           t.verbose = true
           t.libs << 'test'
         end
@@ -96,16 +106,16 @@ module Rake
     
     protected 
 
-    def generate_rdoc?
-      git_branch_exists?('gh-pages')
+    def has_rdoc?
+      @specification.has_rdoc
     end
 
     def has_specs?
-      Dir[File.dirname(__FILE__) + '/../spec/**/*_spec.rb'].any?
+      Dir['spec/**/*_spec.rb'].any?
     end
     
     def has_tests?
-      Dir[File.dirname(__FILE__) + '/../test/**/*_test.rb'].any?
+      Dir['test/**/*_test.rb'].any?
     end
 
     def reload_gemspec!
@@ -161,23 +171,22 @@ module Rake
     end
     
     def gemspec_file 
-      @gemspec_file ||= Dir[File.dirname(__FILE__) + '/../*.gemspec'].first
-    end
-    
-    def git_branch_exists?(branch_name)
-      branches = run_command('git branch').map { |line| /^\*?\s+(\w+)/ =~ line; $1 }
-      branches.include?(branch_name.to_s)
+      @gemspec_file ||= Dir['*.gemspec'].first
     end
     
     def verify_current_branch(branch)
       run_command('git branch').detect { |line| /^\* (.+)/ =~ line }
-      raise "You are currently not working in the master branch!" unless branch == $1
+      raise "You are currently not working in the #{branch} branch!" unless branch == $1
     end
     
-    def verify_clean_status(on_branch = nil)
-      sh "git fetch"
+    def verify_fast_forward(local_branch = 'master', remote = 'origin', remote_branch = 'master')
+      sh "git fetch #{remote}"
+      lines = run_command("git rev-list #{local_branch}..remotes/#{remote}/#{remote_branch}")
+      raise "Remote branch #{remote}/#{remote_branch} has commits that are not yet incorporated in local #{local_branch} branch" unless lines.length == 0
+    end
+    
+    def verify_clean_status(on_branch = nil)      
       lines = run_command('git status')
-      raise "You don't have the most recent version available. Run git pull first." if /^\# Your branch is behind/ =~ lines[1]
       raise "You are currently not working in the #{on_branch} branch!" unless on_branch.nil? || (/^\# On branch (.+)/ =~ lines.first && $1 == on_branch)
       raise "Your master branch contains modifications!" unless /^nothing to commit \(working directory clean\)/ =~ lines.last
     end
@@ -248,6 +257,14 @@ module Rake
       puts
       puts '------------------------------------------------------------'
       puts "Released #{@name} - version #{@specification.version}"
+    end
+    
+    def release_check_task
+      puts
+      puts '------------------------------------------------------------'
+      puts "Checked all conditions for a release of version #{ENV['VERSION'] || @specification.version}!"
+      puts 'You should be safe to do a release now.'
+      puts '------------------------------------------------------------'
     end
   end
 end
