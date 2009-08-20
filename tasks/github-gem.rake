@@ -26,7 +26,7 @@ module Rake
         desc "Updates the file lists for this gem"
         task(:manifest) { manifest_task }
 
-        desc "Releases a new version of #{@name}"
+        desc "Builds a gem package for #{@name}"
         task(:build => [:manifest]) { build_task } 
         
         
@@ -107,7 +107,7 @@ module Rake
     protected 
 
     def has_rdoc?
-      @specification.has_rdoc
+      run_command('git branch').any? { |line| /gh-pages\s*$/ =~ line}
     end
 
     def has_specs?
