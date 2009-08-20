@@ -46,19 +46,19 @@ describe Adyen::Form do
     end
     
     it "should calculate the signature correctly" do
-      Adyen::Form.redirect_signature(@shared_secret, @params).should eql(@params[:merchantSig])
+      Adyen::Form.redirect_signature(@params, @shared_secret).should eql(@params[:merchantSig])
     end
     
     it "should check the signature correctly" do
-      Adyen::Form.redirect_signature_check(@shared_secret, @params).should be_true
+      Adyen::Form.redirect_signature_check(@params, @shared_secret).should be_true
     end    
     
     it "should detect a tampered field" do
-      Adyen::Form.redirect_signature_check(@shared_secret, @params.merge(:pspReference => 'tampered')).should be_false
+      Adyen::Form.redirect_signature_check(@params.merge(:pspReference => 'tampered'), @shared_secret).should be_false
     end    
 
     it "should detect a tampered signature" do
-      Adyen::Form.redirect_signature_check(@shared_secret, @params.merge(:merchantSig => 'tampered')).should be_false
+      Adyen::Form.redirect_signature_check(@params.merge(:merchantSig => 'tampered'), @shared_secret).should be_false
     end    
 
   end
