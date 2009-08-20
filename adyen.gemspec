@@ -15,6 +15,6 @@ Gem::Specification.new do |s|
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   s.extra_rdoc_files = ['README.rdoc']
   
-  s.files = %w(LICENSE README.rdoc Rakefile init.rb lib lib/adyen lib/adyen.rb lib/adyen/encoding.rb lib/adyen/form.rb lib/adyen/formatter.rb lib/adyen/matchers.rb lib/adyen/notification.rb lib/adyen/soap.rb pkg pkg/adyen-0.0.1.gem pkg/adyen-0.0.2.gem spec spec/adyen_spec.rb spec/form_spec.rb spec/notification_spec.rb spec/soap_spec.rb spec/spec_helper.rb tasks tasks/github-gem.rake)
+  s.files = %w(LICENSE README.rdoc Rakefile init.rb lib lib/adyen lib/adyen.rb lib/adyen/encoding.rb lib/adyen/form.rb lib/adyen/formatter.rb lib/adyen/matchers.rb lib/adyen/notification.rb lib/adyen/soap.rb spec spec/adyen_spec.rb spec/form_spec.rb spec/notification_spec.rb spec/soap_spec.rb spec/spec_helper.rb tasks tasks/github-gem.rake)
   s.test_files = %w(spec/adyen_spec.rb spec/form_spec.rb spec/notification_spec.rb spec/soap_spec.rb)
 end

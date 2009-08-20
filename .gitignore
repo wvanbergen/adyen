@@ -1,3 +1,4 @@
-tmp/
-pkg/
-doc/
+/tmp
+/pkg
+/doc
+adyen-*.gem
