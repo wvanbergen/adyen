@@ -10,7 +10,8 @@ Gem::Specification.new do |s|
   s.email    = ['willem@vanbergen.org', 'cicaboo@gmail.com']
   s.homepage = 'http://www.adyen.com'
   
-  s.add_development_dependency('rspec')
+  s.add_development_dependency('rspec', '>= 1.1.4')
+  s.add_development_dependency('git', '>= 1.1.0')  
   
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   s.extra_rdoc_files = ['README.rdoc']
