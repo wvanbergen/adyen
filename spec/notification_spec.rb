@@ -1,8 +1,5 @@
 require "#{File.dirname(__FILE__)}/spec_helper.rb"
 
-require 'action_controller'
-require 'action_controller/test_process'
-
 describe Adyen::Notification do
 
   before(:all) do
@@ -97,5 +94,4 @@ describe Adyen::Notification do
 
     end    
   end
-
 end
