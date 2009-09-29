@@ -23,7 +23,7 @@ See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started.
 
 * For more information about Adyen, see http://www.adyen.com
 * For more information about integrating Adyen, see their manuals at
-  http://support.adyen.com/links/documentation 
+  http://support.adyen.com/links/documentation
 
 == About
 
