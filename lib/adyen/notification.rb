@@ -87,15 +87,13 @@ module Adyen
           t.boolean  :processed,             :null => false, :default => false
           t.timestamps
         end
-        add_index table_name, [:psp_reference, :event_code, :success], :unique => true
+        add_index table_name, [:psp_reference, :event_code, :success], :unique => true, :name => 'adyen_notification_uniqueness'
       end
-      
+
       def self.down(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
-        remove_index(table_name, [:psp_reference, :event_code, :success])
+        remove_index(table_name, :name => 'adyen_notification_uniqueness')
         drop_table(table_name)
       end
-      
     end
-    
   end
 end
