@@ -2,13 +2,16 @@
 
 Package to simplify including the Adyen payments services into a Ruby on Rails application.
 
-Adyen integration relies on three modes of communication between Adyen, your server and your client/customer:
+Adyen integration relies on three modes of communication between Adyen, your server and
+your client/customer:
 
 * Client-to-Adyen communication using forms and redirects.
 * Adyen-to-server communications using notifications.
 * Server-to-Adyen communication using SOAP services.
 
-This library aims to ease the implementation of all these modes into your application. Moreover, it provides matchers, assertions and mocks to make it easier to implement an automated test suite to assert the integration is working correctly.
+This library aims to ease the implementation of all these modes into your application.
+Moreover, it provides matchers, assertions and mocks to make it easier to implement an
+automated test suite to assert the integration is working correctly.
 
 == Installation
 
@@ -27,6 +30,6 @@ See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started.
 
 == About
 
-This package is written by Michel Barbosa and Willem van Bergen for Floorplanner.com,
-and made public under the MIT license (see LICENSE). It comes without warranty of any kind,
-so use at your own risk.
+This package is written by Michel Barbosa and Willem van Bergen for Floorplanner.com, and
+made public under the MIT license (see LICENSE). It comes without warranty of any kind, so
+use at your own risk.
