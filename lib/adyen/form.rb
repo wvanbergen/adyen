@@ -36,10 +36,9 @@ module Adyen
       attributes[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(attributes[:session_validity])
     end
 
-
-    def self.hidden_fields(attributes = {})
+    def self.payment_fields(attributes = {})
       do_attribute_transformations!(attributes)
-
+      
       raise "Cannot generate form: :currency code attribute not found!"         unless attributes[:currency_code]
       raise "Cannot generate form: :payment_amount code attribute not found!"   unless attributes[:payment_amount]
       raise "Cannot generate form: :merchant_account attribute not found!"      unless attributes[:merchant_account]
@@ -48,9 +47,16 @@ module Adyen
 
       # Merchant signature
       attributes[:merchant_sig] = calculate_signature(attributes)
+      return attributes      
+    end
+    
+    def self.redirect_url(attributes)
+      self.url + '?' + payment_fields(attributes).map { |(k, v)| "#{k.to_s.camelize(:lower)}=#{CGI.escape(v.to_s)}" }.join('&')
+    end
 
+    def self.hidden_fields(attributes = {})
       # Generate hidden input tags
-      attributes.map { |key, value|
+      payment_fields(attributes).map { |key, value|
         self.tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
       }.join("\n")
     end

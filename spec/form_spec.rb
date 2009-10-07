@@ -63,6 +63,30 @@ describe Adyen::Form do
 
   end
 
+  describe 'redirect URL generation' do
+    before(:each) do
+      @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
+        :merchant_reference => 'Internet Order 12345', :skin_code => '4aD37dJA',
+        :merchant_account => 'TestMerchant', :session_validity => 1.hour.from_now }
+
+      @redirect_url = Adyen::Form.redirect_url(@attributes.merge(:shared_secret => 'secret'))
+    end
+    
+    it "should return an URL pointing to the adyen server" do
+      @redirect_url.should =~ %r[^#{Adyen::Form.url}]
+    end
+    
+    it "should include all provided attributes" do
+      params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
+      params.should include(*(@attributes.keys.map { |k| k.to_s.camelize(:lower) }))
+    end
+    
+    it "should include the merchant signature" do
+      params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
+      params.should include('merchantSig')
+    end
+  end
+
   describe 'hidden fields generation' do
 
     include ActionView::Helpers::TagHelper
