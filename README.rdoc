@@ -20,9 +20,9 @@ to make the Adyen functionality available in your Rails project:
 
     config.gem 'adyen', :source => 'http://gemcutter.org
 
-You can also install it as a Rails plugin (deprecated):
+You can also install it as a Rails plugin (*deprecated*):
 
-    script/plugin install git://github.com/wvanbergen/adyen.git  # as plugin
+    script/plugin install git://github.com/wvanbergen/adyen.git
 
 == Usage
 
