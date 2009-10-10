@@ -15,10 +15,14 @@ automated test suite to assert the integration is working correctly.
 
 == Installation
 
-This plugin can either be installed as gem or Rails plugin:
+Add the following line to your <tt>environment.rb</tt> and run <tt>rake gems:install</tt>
+to make the Adyen functionality available in your Rails project:
 
-    gem install wvanbergen-adyen --source http://gems.github.com    # as gem
-    script/plugin install git://github.com/wvanbergen/adyen.git     # as plugin
+    config.gem 'adyen', :source => 'http://gemcutter.org
+
+You can also install it as a Rails plugin (deprecated):
+
+    script/plugin install git://github.com/wvanbergen/adyen.git  # as plugin
 
 == Usage
 
