@@ -5,11 +5,15 @@ module Adyen
 
     extend ActionView::Helpers::TagHelper
 
+    ######################################################
+    # SKINS
+    ######################################################
+
     def self.skins
       @skins ||= {}
     end
     
-    def self.add_skin(name, skin_code, shared_secret)
+    def self.register_skin(name, skin_code, shared_secret)
       self.skins[name] = {:name => name, :skin_code => skin_code, :shared_secret => shared_secret }
     end
 
@@ -20,6 +24,26 @@ module Adyen
     def self.skin_by_code(skin_code)
       self.skins.detect { |(name, skin)| skin[:skin_code] == skin_code }.last rescue nil      
     end
+    
+    def self.lookup_shared_secret(skin_code)
+      skin = skin_by_code(skin_code)[:shared_secret] rescue nil
+    end    
+    
+    ######################################################
+    # DEFAULT FORM / REDIRECT PARAMETERS
+    ######################################################    
+
+    def self.default_parameters
+      @default_arguments ||= {}
+    end
+    
+    def self.default_parameters=(hash)
+      @default_arguments = hash
+    end
+
+    ######################################################
+    # ADYEN FORM URL
+    ######################################################
 
     ACTION_URL = "https://%s.adyen.com/hpp/select.shtml"
 
@@ -28,64 +52,74 @@ module Adyen
       Adyen::Form::ACTION_URL % environment.to_s
     end
 
-    def self.calculate_signature_string(attributes)
-      merchant_sig_string = ""
-      merchant_sig_string << attributes[:payment_amount].to_s    << attributes[:currency_code].to_s      <<
-                             attributes[:ship_before_date].to_s  << attributes[:merchant_reference].to_s <<
-                             attributes[:skin_code].to_s         << attributes[:merchant_account].to_s   <<
-                             attributes[:session_validity].to_s  << attributes[:shopper_email].to_s      <<
-                             attributes[:shopper_reference].to_s << attributes[:recurring_contract].to_s <<
-                             attributes[:allowed_methods].to_s   << attributes[:blocked_methods].to_s    <<
-                             attributes[:shopper_statement].to_s << attributes[:billing_address_type].to_s
-    end
 
-    def self.calculate_signature(attributes)
-       Adyen::Encoding.hmac_base64(attributes.delete(:shared_secret), calculate_signature_string(attributes))
-    end
+    ######################################################
+    # POSTING/REDIRECTING TO ADYEN
+    ######################################################
 
-    def self.do_attribute_transformations!(attributes = {})
-      raise "YENs are not yet supported!" if attributes[:currency_code] == 'JPY' # TODO: fixme
+    def self.do_parameter_transformations!(parameters = {})
+      raise "YENs are not yet supported!" if parameters[:currency_code] == 'JPY' # TODO: fixme
 
-      attributes[:recurring_contract] = 'DEFAULT' if attributes.delete(:recurring) == true
-      attributes[:order_data]         = Adyen::Encoding.gzip_base64(attributes.delete(:order_data_raw)) if attributes[:order_data_raw]
-      attributes[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(attributes[:ship_before_date])
-      attributes[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(attributes[:session_validity])
+      parameters.replace(default_parameters.merge(parameters))
+      parameters[:recurring_contract] = 'DEFAULT' if parameters.delete(:recurring) == true
+      parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
+      parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
+      parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
       
-      if attributes[:skin]
-        skin = Adyen::Form.skin_by_name(attributes.delete(:skin))
-        attributes[:skin_code]     ||= skin[:skin_code]
-        attributes[:shared_secret] ||= skin[:shared_secret]
+      if parameters[:skin]
+        skin = Adyen::Form.skin_by_name(parameters.delete(:skin))
+        parameters[:skin_code]     ||= skin[:skin_code]
+        parameters[:shared_secret] ||= skin[:shared_secret]
       end
     end
 
-    def self.payment_fields(attributes = {})
-      do_attribute_transformations!(attributes)
+    def self.payment_parameters(parameters = {})
+      do_parameter_transformations!(parameters)
       
-      raise "Cannot generate form: :currency code attribute not found!"         unless attributes[:currency_code]
-      raise "Cannot generate form: :payment_amount code attribute not found!"   unless attributes[:payment_amount]
-      raise "Cannot generate form: :merchant_account attribute not found!"      unless attributes[:merchant_account]
-      raise "Cannot generate form: :skin_code attribute not found!"             unless attributes[:skin_code]
-      raise "Cannot generate form: :shared_secret signing secret not provided!" unless attributes[:shared_secret]
+      raise "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
+      raise "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]
+      raise "Cannot generate form: :merchant_account attribute not found!"      unless parameters[:merchant_account]
+      raise "Cannot generate form: :skin_code attribute not found!"             unless parameters[:skin_code]
+      raise "Cannot generate form: :shared_secret signing secret not provided!" unless parameters[:shared_secret]
 
       # Merchant signature
-      attributes[:merchant_sig] = calculate_signature(attributes)
-      return attributes      
+      parameters[:merchant_sig] = calculate_signature(parameters)
+      return parameters      
     end
     
-    def self.redirect_url(attributes)
-      self.url + '?' + payment_fields(attributes).map { |(k, v)| "#{k.to_s.camelize(:lower)}=#{CGI.escape(v.to_s)}" }.join('&')
+    def self.redirect_url(parameters = {})
+      self.url + '?' + payment_parameters(parameters).map { |(k, v)| "#{k.to_s.camelize(:lower)}=#{CGI.escape(v.to_s)}" }.join('&')
     end
 
-    def self.hidden_fields(attributes = {})
+    def self.hidden_fields(parameters = {})
       # Generate hidden input tags
-      payment_fields(attributes).map { |key, value|
+      payment_parameters(parameters).map { |key, value|
         self.tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
       }.join("\n")
     end
     
-    def self.lookup_shared_secret(skin_code)
-      skin = skin_by_code(skin_code)[:shared_secret] rescue nil
+    ######################################################
+    # MERCHANT SIGNATURE CALCULATION
+    ######################################################
+
+    def self.calculate_signature_string(parameters)
+      merchant_sig_string = ""
+      merchant_sig_string << parameters[:payment_amount].to_s    << parameters[:currency_code].to_s      <<
+                             parameters[:ship_before_date].to_s  << parameters[:merchant_reference].to_s <<
+                             parameters[:skin_code].to_s         << parameters[:merchant_account].to_s   <<
+                             parameters[:session_validity].to_s  << parameters[:shopper_email].to_s      <<
+                             parameters[:shopper_reference].to_s << parameters[:recurring_contract].to_s <<
+                             parameters[:allowed_methods].to_s   << parameters[:blocked_methods].to_s    <<
+                             parameters[:shopper_statement].to_s << parameters[:billing_address_type].to_s
     end
+
+    def self.calculate_signature(parameters)
+       Adyen::Encoding.hmac_base64(parameters.delete(:shared_secret), calculate_signature_string(parameters))
+    end
+
+    ######################################################
+    # REDIRECT SIGNATURE CHECKING
+    ######################################################
 
     def self.redirect_signature_string(params)
       params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + params[:skinCode].to_s
