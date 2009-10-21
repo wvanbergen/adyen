@@ -5,6 +5,22 @@ module Adyen
 
     extend ActionView::Helpers::TagHelper
 
+    def self.skins
+      @skins ||= {}
+    end
+    
+    def self.add_skin(name, skin_code, shared_secret)
+      self.skins[name] = {:name => name, :skin_code => skin_code, :shared_secret => shared_secret }
+    end
+
+    def self.skin_by_name(skin_name)
+      self.skins[skin_name]
+    end
+    
+    def self.skin_by_code(skin_code)
+      self.skins.detect { |(name, skin)| skin[:skin_code] == skin_code }.last rescue nil      
+    end
+
     ACTION_URL = "https://%s.adyen.com/hpp/select.shtml"
 
     def self.url(environment = nil)
@@ -34,6 +50,12 @@ module Adyen
       attributes[:order_data]         = Adyen::Encoding.gzip_base64(attributes.delete(:order_data_raw)) if attributes[:order_data_raw]
       attributes[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(attributes[:ship_before_date])
       attributes[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(attributes[:session_validity])
+      
+      if attributes[:skin]
+        skin = Adyen::Form.skin_by_name(attributes.delete(:skin))
+        attributes[:skin_code]     ||= skin[:skin_code]
+        attributes[:shared_secret] ||= skin[:shared_secret]
+      end
     end
 
     def self.payment_fields(attributes = {})
@@ -60,16 +82,21 @@ module Adyen
         self.tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
       }.join("\n")
     end
+    
+    def self.lookup_shared_secret(skin_code)
+      skin = skin_by_code(skin_code)[:shared_secret] rescue nil
+    end
 
     def self.redirect_signature_string(params)
       params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + params[:skinCode].to_s
     end
 
-    def self.redirect_signature(params, shared_secret)
+    def self.redirect_signature(params, shared_secret = nil)
+      shared_secret ||= lookup_shared_secret(params[:skinCode])
       Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
     end
 
-    def self.redirect_signature_check(params, shared_secret)
+    def self.redirect_signature_check(params, shared_secret = nil)
       params[:merchantSig] == redirect_signature(params, shared_secret)
     end
 
