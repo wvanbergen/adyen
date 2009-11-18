@@ -54,6 +54,10 @@ module Adyen
         # auth = Base64.encode64("#{Adyen::SOAP.username}:#{Adyen::SOAP.password}").chomp
         # http_client.headers['Authorization'] = "Basic #{auth}"
         http_client.userpwd = "#{Adyen::SOAP.username}:#{Adyen::SOAP.password}"
+        
+        # Setup some CURL options to handle redirects correctly.
+        http_client.follow_location = true
+        http_client.max_redirects   = 1
       end
 
       # Setup XML namespaces for SOAP request body
