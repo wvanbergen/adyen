@@ -15,17 +15,17 @@ module Adyen
     
     def self.skins=(hash)
       @skins = hash.inject({}) do |skins, (name, skin)|
-        skins[name] = skin.merge(:name => name)
+        skins[name.to_sym] = skin.merge(:name => name.to_sym)
         skins
       end
     end
     
     def self.register_skin(name, skin_code, shared_secret)
-      self.skins[name] = {:name => name, :skin_code => skin_code, :shared_secret => shared_secret }
+      self.skins[name.to_sym] = {:name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
     end
 
     def self.skin_by_name(skin_name)
-      self.skins[skin_name]
+      self.skins[skin_name.to_sym]
     end
     
     def self.skin_by_code(skin_code)
