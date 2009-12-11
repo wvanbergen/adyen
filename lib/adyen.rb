@@ -9,12 +9,7 @@ module Adyen
       if key.to_s =~ /^[a-z]/ && mod.respond_to?(:"#{key}=")
         mod.send(:"#{key}=", value)
       elsif key.to_s =~ /^[A-Z]/
-        begin
-          submodule = mod.const_get(key)
-        rescue LoadError => e
-          raise "Unknown Adyen module to configure: #{mod.name}::#{key}"
-        end
-        self.load_config(value, submodule)
+        self.load_config(value, mod.const_get(key))
       else
         raise "Unknown configuration variable: '#{key}' for #{mod}"
       end
@@ -45,7 +40,7 @@ module Adyen
   def self.const_missing(sym)
     require "adyen/#{sym.to_s.downcase}"
     return Adyen.const_get(sym)
-  rescue Exception => e
+  rescue Exception
     super(sym)
   end
 end
