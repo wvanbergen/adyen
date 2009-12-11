@@ -26,7 +26,8 @@ You can also install it as a Rails plugin (*deprecated*):
 
 == Usage
 
-See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started.
+See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started. Complete
+RDoc documentation for the project can be found on http://rdoc.info/projects/wvanbergen/adyen.
 
 * For more information about Adyen, see http://www.adyen.com
 * For more information about integrating Adyen, see their manuals at
