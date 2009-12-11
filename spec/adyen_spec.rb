@@ -1,17 +1,40 @@
 require "#{File.dirname(__FILE__)}/spec_helper.rb"
 
 describe Adyen do
+  
+  describe '.load_config' do
+    
+    it "should set the environment correctly from the gonfiguration" do
+      Adyen.load_config(:environment => 'from_config')
+      Adyen.environment.should == 'from_config'
+    end
+    
+    it "should recursively set settings for submodules" do
+      Adyen.load_config(:SOAP => { :username => 'foo', :password => 'bar' },
+        :Form => { :default_parameters => { :merchant_account => 'us' }})
+      Adyen::SOAP.username.should == 'foo'
+      Adyen::SOAP.password.should == 'bar'
+      Adyen::Form.default_parameters.should == { :merchant_account => 'us' }
+    end
+    
+    it "should raise an error when using a non-existing module" do
+      lambda { Adyen.load_config(:Unknown => { :a => 'b' }) }.should raise_error
+    end
+    
+    it "should raise an error when using a non-existing setting" do
+      lambda { Adyen.load_config(:blah => 1234) }.should raise_error
+    end
+  end
+  
   describe Adyen::Encoding do
     it "should a hmac_base64 correcly" do
       encoded_str = Adyen::Encoding.hmac_base64('bla', 'bla')
-      encoded_str.should_not be_blank
-      encoded_str.size.should == 28
+      encoded_str.should == '6nItEkVpIYF+i1RwrEyQ7RHmrfU='
     end
 
     it "should gzip_base64 correcly" do
       encoded_str = Adyen::Encoding.gzip_base64('bla')
-      encoded_str.should_not be_blank
-      encoded_str.size.should == 32
+      encoded_str.length.should == 32
     end
   end
 

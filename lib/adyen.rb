@@ -1,4 +1,27 @@
 module Adyen
+
+  # Loads configuration settings from a Hash.
+  #
+  # This method is called recursively for every module. The second
+  # argument is used to denote the current working module.
+  def self.load_config(hash, mod = Adyen)
+    hash.each do |key, value|
+      if key.to_s =~ /^[a-z]/ && mod.respond_to?(:"#{key}=")
+        mod.send(:"#{key}=", value)
+      elsif key.to_s =~ /^[A-Z]/
+        begin
+          submodule = mod.const_get(key)
+        rescue LoadError => e
+          raise "Unknown Adyen module to configure: #{mod.name}::#{key}"
+        end
+        self.load_config(value, submodule)
+      else
+        raise "Unknown configuration variable: '#{key}' for #{mod}"
+      end
+    end
+  end
+
+  # The Rails environment for which to use to Adyen "live" environment.
   LIVE_RAILS_ENVIRONMENTS = ['production']
 
   # Setter voor the current Adyen environment.
@@ -22,7 +45,7 @@ module Adyen
   def self.const_missing(sym)
     require "adyen/#{sym.to_s.downcase}"
     return Adyen.const_get(sym)
-  rescue
+  rescue Exception => e
     super(sym)
   end
 end
