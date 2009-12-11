@@ -13,6 +13,13 @@ module Adyen
       @skins ||= {}
     end
     
+    def self.skins=(hash)
+      @skins = hash.inject({}) do |skins, (name, skin)|
+        skins[name] = skin.merge(:name => name)
+        skins
+      end
+    end
+    
     def self.register_skin(name, skin_code, shared_secret)
       self.skins[name] = {:name => name, :skin_code => skin_code, :shared_secret => shared_secret }
     end

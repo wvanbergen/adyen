@@ -24,6 +24,16 @@ describe Adyen do
     it "should raise an error when using a non-existing setting" do
       lambda { Adyen.load_config(:blah => 1234) }.should raise_error
     end
+    
+    it "should set skins from a hash configuration" do
+      Adyen.load_config(:Form => {:skins => {
+              :first  => { :skin_code => '1234', :shared_secret => 'abcd' }, 
+              :second => { :skin_code => '5678', :shared_secret => 'efgh' }}})
+              
+      Adyen::Form.skins.should == {
+          :first  => {:skin_code => "1234", :name => :first,  :shared_secret => "abcd" }, 
+          :second => {:skin_code => "5678", :name => :second, :shared_secret => "efgh" }}
+    end
   end
   
   describe Adyen::Encoding do
