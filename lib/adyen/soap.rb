@@ -127,6 +127,22 @@ module Adyen
         end
       end
 
+      # Retrieves the recurring contracts for a shopper. Requires the following arguments:
+      #
+      # * <tt>:merchent_account</tt> The merchant account under which to place
+      #       this payment.
+      # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be
+      #       the same as the reference that was used to create the recurring contract.
+      def list(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('recurring:listRecurringDetails') do |message|
+          message.add('recurring:recurringRequest') do |req|
+            req.add('recurring:merchantAccount', invoke_args[:merchant_account])
+            req.add('recurring:shopperReference', invoke_args[:shopper_reference])
+          end
+        end
+      end
+
       # Deactivates a recurring payment contract. Requires the following arguments:
       #
       # * <tt>:merchent_account</tt> The merchant account under which to place
