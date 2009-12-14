@@ -47,17 +47,16 @@ module Adyen
         klass.endpoint :version => 1, :uri => 'bogus'
       end
 
-      # Setup basic auth headers in the HTTP client
+      # Setup some CURL options to handle redirects correctly.
       def on_after_create_http_client(http_client)
-        debug { |logger| logger.puts "Authorization: #{Adyen::SOAP.username}:#{Adyen::SOAP.password}..." }
-        # Handsoap BUG: Setting headers does not work, using a Curb specific method for now.
-        # auth = Base64.encode64("#{Adyen::SOAP.username}:#{Adyen::SOAP.password}").chomp
-        # http_client.headers['Authorization'] = "Basic #{auth}"
-        http_client.userpwd = "#{Adyen::SOAP.username}:#{Adyen::SOAP.password}"
-        
-        # Setup some CURL options to handle redirects correctly.
         http_client.follow_location = true
         http_client.max_redirects   = 1
+      end
+
+      # Setup basic authentication
+      def on_after_create_http_request(http_request)
+        debug { |logger| logger.puts "Authorization: #{Adyen::SOAP.username}:#{Adyen::SOAP.password}..." }
+        http_request.set_auth Adyen::SOAP.username, Adyen::SOAP.password
       end
 
       # Setup XML namespaces for SOAP request body
