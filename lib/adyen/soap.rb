@@ -100,14 +100,70 @@ module Adyen
       end
     end
 
-    # SOAP client to interact with the payment modification service of Adyen.
-    # At this moment, none of the calls are implemented.
+    # SOAP client to interact with the payment modification service of Adyen. This client
+    # implements the following calls:
+    #
+    # * +authorise+ to list recurring contracts for a shopper, using {Adyen::SOAP::PaymentService#authorise}.
+    #
+    # Before using this service, make sure to set the SOAP username and
+    # password (see {Adyen::SOAP.username} and {Adyen::SOAP.password}).
     class PaymentService < Base
 
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
-      # TODO: implement this
-
+      # Submits a recurring payment for authorisation.
+      #
+      # @example 
+      #   Adyen::SOAP::PaymentService.authorise(
+      #     :merchant_account => 'MyAccount', :selected_recurring_detail_reference => 'LATEST',
+      #     :shopper_reference => user.id, :shopper_email => user.email,
+      #     :reference => invoice.id, :currency => invoice.currency, :value => invoice.amount)
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      #       parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #       is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :selected_recurring_detail_reference ('LATEST') This is the
+      #       recurringDetailReference you want to use for this payment. You can use the
+      #       value "LATEST" to select the most recently used recurring detail, which is the default. 
+      # @option args [String] :merchant_account The merchant account you want to process this payment
+      #       with.
+      # @option args [String] :currency The currency code (EUR, GBP, USD, etc).
+      # @option args [Integer] :value The value of the payment in cents.
+      # @option args [String] :reference Your reference for this payment. This (merchant) reference
+      #       will be used in all communication to you about the status of the payment.
+      #       Although it is a good idea to make sure it is unique, this is not a requirement.
+      # @option args [String] :shopper_email The email address of the shopper. This does not have to
+      #       match the email address supplied with the initial payment, since it may have
+      #       changed in the mean time.
+      # @option args [String] :shopper_reference The reference of the shopper. This should be
+      #       the same as the reference that was used to create the recurring contract.
+      #
+      # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
+      #       The Adyen integration manual
+      # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=7&nav=0,3 
+      #       The Adyen recurring payments manual.
+      def authorise(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        invoke_args[:selected_recurring_detail_reference] ||= 'LATEST'
+        
+        response = invoke('payment:authorise') do |message|
+          message.add('payment:paymentRequest') do |req|
+            req.add('payment:selectedRecurringDetailReference', invoke_args[:selected_recurring_detail_reference])
+            req.add('payment:recurring') do |recurring|
+              recurring.add('payment:contract', 'RECURRING')
+            end
+            req.add('payment:merchantAccount', invoke_args[:merchant_account])
+            req.add('payment:amount') do |amount|
+              amount.add('common:currency', invoke_args[:currency])
+              amount.add('common:value', invoke_args[:value])
+            end
+            req.add('payment:reference', invoke_args[:reference])
+            req.add('payment:shopperEmail', invoke_args[:shopper_email])
+            req.add('payment:shopperReference', invoke_args[:shopper_reference])
+            req.add('payment:shopperInteraction', 'ContAuth')
+          end
+        end
+      end
     end
 
     # SOAP client to interact with the recurring payment service of Adyen. This clients
@@ -153,10 +209,13 @@ module Adyen
       # @option args [Integer] :value The value of the payment in cents.
       # @option args [Integer] :recurring_reference The psp_reference of the RECURRING_CONTRACT
       #   notification that was sent after the initial payment.
-      # @option args [String] :reference The (merchant) reference for this payment. Use any string 
-      #   you like that helps you identify this payment.
-      # @option args [String] :shopper_email The email address of the shopper.
-      # @option args [String] :shopper_reference The refrence of the shopper. This should be
+      # @option args [String] :reference Your reference for this payment. This (merchant) reference
+      #   will be used in all communication to you about the status of the payment.
+      #   Although it is a good idea to make sure it is unique, this is not a requirement.
+      # @option args [String] :shopper_email The email address of the shopper. This does not have to
+      #   match the email address supplied with the initial payment, since it may have
+      #   changed in the mean time.
+      # @option args [String] :shopper_reference The reference of the shopper. This should be
       #   the same as the reference that was used to create the recurring contract.
       #
       # @return [nil] This method does not return anything. The result of the payment request will
