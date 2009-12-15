@@ -119,7 +119,7 @@ module Adyen
       #     :shopper_reference => user.id, :shopper_email => user.email,
       #     :reference => invoice.id, :currency => invoice.currency, :value => invoice.amount)
       #
-      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
       #       parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
       #       is required by the Adyen SOAP service, so please provide a value for all options.
       # @option args [String] :selected_recurring_detail_reference ('LATEST') This is the
@@ -201,7 +201,7 @@ module Adyen
       #     :recurring_reference => user.contract_notification.psp_reference, 
       #     :reference => invoice.id, :currency => invoice.currency, :value => invoice.amount)
       #
-      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
       #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
       #   is required by the Adyen SOAP service, so please provide a value for all options.
       # @option args [String] :merchant_account The merchant account to file this payment under.
@@ -240,7 +240,7 @@ module Adyen
 
       # Retrieves the recurring contracts for a shopper.
       #
-      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
       #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
       #   is required by the Adyen SOAP service, so please provide a value for all options.
       # @option args [String] :merchant_account The merchant account to file this payment under.
@@ -265,7 +265,7 @@ module Adyen
       #     :recurring_reference => user.contract_notification.psp_reference, 
       #     :reference => "Terminated account #{user.account.id}")
       #
-      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
       #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
       #   is required by the Adyen SOAP service, so please provide a value for all options.
       # @option args [String] :merchant_account The merchant account to file this payment under.
