@@ -6,7 +6,7 @@ module Adyen
   # to the Adyen payment system, using either a HTML form (see {Adyen::Form.hidden_fields}) 
   # or a HTTP redirect (see {Adyen::Form.redirect_url}).
   #
-  # Moreover, this module contains a method ({Adyen::Form.redirect_signature_check}) to
+  # Moreover, this module contains the method {Adyen::Form.redirect_signature_check} to
   # check the request that is made to your website after the visitor has made his payment
   # on the Adyen system for genuinity.
   #
