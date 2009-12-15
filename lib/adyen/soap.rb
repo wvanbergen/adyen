@@ -1,81 +1,101 @@
-require "handsoap"
+begin 
+  require "handsoap"
+rescue LoadError
+  $stderr.puts "The handsoap gem (>= 1.4.1) is required to use the SOAP clients:"
+  $stderr.puts "$ (sudo) gem install handsoap --source http://gemcutter.org"
+end
 
 module Adyen
 
-  # The SOAP module contains classes that interact with the Adyen
-  # SOAP services. The clients are based on the Handsoap library.
-  # Shared functionality for all services is implemented in the
-  # Adyen::SOAP::Base class.
+  # The SOAP module contains classes that interact with the Adyen SOAP
+  # services. The clients are based on the +handsoap+ library and requires at
+  # least version 1.4.1 of this gem.
   #
-  # Note that you'll need an Adyen notification PSP reference for
-  # most SOAP calls. Because of this, store all notifications that
-  # Adyen sends to you. (e.g. using the Adyen::Notification ActiveRecord
-  # class). Moreover, most SOAP calls do not respond that they were
-  # successful immediately, but a notifications to indicate that will
-  # be sent later on.
+  # Note that you'll need an Adyen notification PSP reference for most SOAP
+  # calls. Because of this, store all notifications that Adyen sends to you.
+  # (e.g. using the {Adyen::Notification} ActiveRecord class). Moreover, most
+  # SOAP calls do not respond that they were successful immediately, but a
+  # notifications to indicate that will be sent later on.
   #
-  # You'll need to provide a username and password to interact
-  # with the Adyen SOAP services:
+  # You'll need to provide a username and password to interact with the Adyen
+  # SOAP services:
   #
   #     Adyen::SOAP.username = 'ws@Company.MyAccount'
   #     Adyen::SOAP.password = 'very$ecret'
   #
-  # You can setup default values for every SOAP call that needs them:
+  # You can setup default parameters that will be used by every SOAP call by
+  # using {Adyen::SOAP.default_arguments}. You can override these default
+  # values by passing another value as parameter to the actual call.
   #
-  #     Adyen::SOAP.default_arguments[:merchent_account] = 'MyMerchant'
+  #     Adyen::SOAP.default_arguments[:merchant_account] = 'MyMerchant'
   #
-  # For now, only the recurring payment service client is implemented
-  # (Adyen::SOAP::RecurringService).
+  # All SOAP clients are based on the {Adyen::SOAP::Base} class, which sets up
+  # the Handsoap library to work with the Adyen SOAP services and implements
+  # shared functionality. Based on this class, the following services are available:
+  #
+  # * {Adyen::SOAP::RecurringService} - SOAP service for handling recurring payments.
+  # * {Adyen::SOAP::PaymentService} - SOAP service for modification to payments. Currently, 
+  #   this class is just a stub. Feel free to implement it as you need it.
   module SOAP
 
     class << self
-      # Set up accessors for HTTP Basic Authentication and
-      # for adding default arguments to SOAP calls.
-      attr_accessor :username, :password, :default_arguments
+      
+      # Username for the HTTP Basic Authentication that Adyen uses. Your username
+      # should be something like +ws@Company.MyAccount+
+      # @return [String]
+      attr_accessor :username
+      
+      # Password for the HTTP Basic Authentication that Adyen uses. You can choose
+      # your password yourself in the user management tool of the merchant area.
+      # @return [String] 
+      attr_accessor :password
+      
+      # Default arguments that will be used for every SOAP call.
+      # @return [Hash] 
+      attr_accessor :default_arguments
     end
 
-    # Use no default arguments by default
-    self.default_arguments = {}
+    self.default_arguments = {} # Set default value
 
     # The base class sets up XML namespaces and HTTP authentication
     # for all the Adyen SOAP services
     class Base < Handsoap::Service
 
-      def self.inherited(klass)
-        # The version must be set to construct the request envelopes,
-        # the URI wil be set later using the correct Adyen.environment.
+      def self.inherited(klass) # :nodoc:
+        # The version must be set to construct the request envelopes, the URI
+        # wil be set later using the correct {Adyen.environment} value.
         klass.endpoint :version => 1, :uri => 'bogus'
       end
-
-      # Setup some CURL options to handle redirects correctly.
-      def on_after_create_http_client(http_client)
+      
+      def on_after_create_http_client(http_client)  # :nodoc:
+        # Setup some CURL options to handle redirects correctly.
         http_client.follow_location = true
         http_client.max_redirects   = 1
       end
 
-      # Setup basic authentication
-      def on_after_create_http_request(http_request)
+      def on_after_create_http_request(http_request) # :nodoc:
+        # Setup basic authentication
         debug { |logger| logger.puts "Authorization: #{Adyen::SOAP.username}:#{Adyen::SOAP.password}..." }
         http_request.set_auth Adyen::SOAP.username, Adyen::SOAP.password
       end
 
-      # Setup XML namespaces for SOAP request body
-      def on_create_document(doc)
+      def on_create_document(doc) # :nodoc:
+        # Setup XML namespaces for SOAP request body
         doc.alias 'payment',   'http://payment.services.adyen.com'
         doc.alias 'recurring', 'http://recurring.services.adyen.com'
         doc.alias 'common',    'http://common.services.adyen.com'
       end
 
-      # Setup XML namespaces for SOAP response
-      def on_response_document(doc)
+      def on_response_document(doc) # :nodoc:
+        # Setup XML namespaces for SOAP response
         doc.add_namespace 'payment',   'http://payment.services.adyen.com'
         doc.add_namespace 'recurring', 'http://recurring.services.adyen.com'
         doc.add_namespace 'common',    'http://common.services.adyen.com'
       end
 
-      # Set endpoint URI before dispatch, so that changes in environment
-      # are reflected correctly.
-      def on_before_dispatch
+      def on_before_dispatch # :nodoc:
+        # Set endpoint URI before dispatch, so that changes in environment
+        # are reflected correctly.
         self.class.endpoint(:uri => self.class::ENDPOINT_URI % Adyen.environment.to_s, :version => 1)
       end
     end
@@ -86,6 +106,8 @@ module Adyen
 
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
+      # TODO: implement this
+
     end
 
     # SOAP client to interact with the recurring payment service of Adyen.
@@ -93,23 +115,50 @@ module Adyen
     # for a recurring contract. Moreover, it implements the deactiveRecurring
     # call to cancel a recurring contract.
     #
-    # See the Adyen Recurring manual for more information about this SOAP service
+    # Before using this service, make sure to set the SOAP username and password 
+    # (see {Adyen::SOAP.username} and {Adyen::SOAP.password}).
+    #
+    # The recurring service requires shoppers to have a recurring contract. Such a contract
+    # can be set up when creating the initial payment using the {Adyen::Form} methods. After
+    # the payment has been authorized, a {Adyen::Notification RECURRING_CONTRACT notification} 
+    # will be sent. The PSP reference of this notification should be used as +:recurring_reference+
+    # parameters in these calls.
+    #
+    # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=7&nav=0,3 
+    #      The Adyen recurring payments manual.
     class RecurringService < Base
 
+      # The endpoint URI for this SOAP service, in which test or live should be filled in as 
+      # environment.
+      # @see Adyen.environment
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
-      # Submits a recurring payment. Requires the following arguments as hash:
+      # Submits a recurring payment for a recurring contract to Adyen.
       #
-      # * <tt>:currency</tt> The currency code (EUR, GBP, USD, etc)
-      # * <tt>:value</tt> The value of the payments in cents
-      # * <tt>:merchent_account</tt> The merchant account under which to place
-      #       this payment.
-      # * <tt>:recurring_reference</tt> The psp_reference of the RECURRING_CONTRACT
-      #       notification that was sent after the initial payment.
-      # * <tt>:reference</tt> The (merchant) reference for this payment.
-      # * <tt>:shopper_email</tt> The email address of the shopper.
-      # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be
-      #       the same as the reference that was used to create the recurring contract.
+      # @example 
+      #   Adyen::SOAP::RecurringService.submit(
+      #     :merchant_account => 'MyAccount',
+      #     :shopper_reference => user.id, :shopper_email => user.email,
+      #     :recurring_reference => user.contract_notification.psp_reference, 
+      #     :reference => invoice.id, :currency => invoice.currency, :value => invoice.amount)
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :currency The currency code (EUR, GBP, USD, etc).
+      # @option args [Integer] :value The value of the payment in cents.
+      # @option args [Integer] :recurring_reference The psp_reference of the RECURRING_CONTRACT
+      #   notification that was sent after the initial payment.
+      # @option args [String] :reference The (merchant) reference for this payment. Use any string 
+      #   you like that helps you identify this payment.
+      # @option args [String] :shopper_email The email address of the shopper.
+      # @option args [String] :shopper_reference The refrence of the shopper. This should be
+      #   the same as the reference that was used to create the recurring contract.
+      #
+      # @return [nil] This method does not return anything. The result of the payment request will
+      #    be communicated with an {Adyen::Notification}.
+      # @see Adyen::Notification#collect_payment_for_recurring_contract!
       def submit(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:submitRecurring') do |message|
@@ -127,12 +176,15 @@ module Adyen
         end
       end
 
-      # Retrieves the recurring contracts for a shopper. Requires the following arguments:
+      # Retrieves the recurring contracts for a shopper.
       #
-      # * <tt>:merchent_account</tt> The merchant account under which to place
-      #       this payment.
-      # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be
-      #       the same as the reference that was used to create the recurring contract.
+      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :shopper_reference The refrence of the shopper. This should be
+      #   the same as the reference that was used to create the recurring contract.
+      #
       def list(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:listRecurringDetails') do |message|
@@ -145,13 +197,25 @@ module Adyen
 
       # Deactivates a recurring payment contract. Requires the following arguments:
       #
-      # * <tt>:merchent_account</tt> The merchant account under which to place
-      #       this payment.
-      # * <tt>:recurring_reference</tt> The psp_reference of the RECURRING_CONTRACT
-      #       notification that was sent after the initial payment.
-      # * <tt>:reference</tt> The (merchant) reference for this deactivation.
-      # * <tt>:shopper_reference</tt> The refrence of the shopper. This should be
-      #       the same as the reference that was used to create the recurring contract.
+      # @example
+      #   Adyen::SOAP::RecurringService.deactivate(
+      #     :merchant_account => 'MyAccount', :shopper_reference => user.id,
+      #     :recurring_reference => user.contract_notification.psp_reference, 
+      #     :reference => "Terminated account #{user.account.id}")
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :shopper_reference The refrence of the shopper. This should be
+      #   the same as the reference that was used to create the recurring contract.
+      # @option args [Integer] :recurring_reference The psp_reference of the RECURRING_CONTRACT
+      #   notification that was sent after the initial payment.
+      # @option args [String] :reference The (merchant) reference for this contract deactivation. 
+      #   Use any string you like that helps you identify this contract deactivation.
+      #
+      # @return [nil] This method does not return anything.
+      # @see Adyen::Notification#deactivate_recurring_contract!
       def deactivate(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:deactivateRecurring') do |message|
