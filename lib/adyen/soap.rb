@@ -257,6 +257,34 @@ module Adyen
         end
       end
 
+      # Disables a recurring payment contract. Requires the following arguments:
+      #
+      # @example
+      #   Adyen::SOAP::RecurringService.disable(
+      #     :merchant_account => 'MyAccount', :shopper_reference => user.id,
+      #     :recurring_detail_reference => user.contract_notification.psp_reference)
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account Your merchant account.
+      # @option args [String] :shopper_reference The reference to the shopper. This shopperReference
+      #   must be the same as the shopperReference used in the initial payment.
+      # @option args [String] :recurring_detail_reference The recurringDetailReference of the
+      #   details you wish to disable. If you do not supply this field, all details for the shopper
+      #   will be disabled, including the contract! This means that you can not add new details
+      #   anymore.
+      def disable(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('recurring:disable') do |message|
+          message.add('recurring:disableRequest') do |req|
+            req.add('recurring:merchantAccount', invoke_args[:merchant_account])
+            req.add('recurring:shopperReference', invoke_args[:shopper_reference])
+            req.add('recurring:recurringDetailReference', invoke_args[:recurring_detail_reference])
+          end
+        end
+      end
+
       # Deactivates a recurring payment contract. Requires the following arguments:
       #
       # @example
