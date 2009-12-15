@@ -58,7 +58,7 @@ module Adyen
     self.default_arguments = {} # Set default value
 
     # The base class sets up XML namespaces and HTTP authentication
-    # for all the Adyen SOAP services
+    # for all the Adyen SOAP services.
     class Base < Handsoap::Service
 
       def self.inherited(klass) # :nodoc:
@@ -110,22 +110,25 @@ module Adyen
 
     end
 
-    # SOAP client to interact with the recurring payment service of Adyen.
-    # This client implements the submitRecurring call to submit payments
-    # for a recurring contract. Moreover, it implements the deactiveRecurring
-    # call to cancel a recurring contract.
+    # SOAP client to interact with the recurring payment service of Adyen. This clients
+    # implements the following calls:
     #
-    # Before using this service, make sure to set the SOAP username and password 
-    # (see {Adyen::SOAP.username} and {Adyen::SOAP.password}).
+    # * +listRecurring+ to list recurring contracts for a shopper, using {Adyen::SOAP::RecurringService#list}.
+    # * +submitRecurring+ to submit a recurring payment for a shopper, using {Adyen::SOAP::RecurringService#submit}.
+    # * +deactivateRecurring+ to cancel a recurring contract, using {Adyen::SOAP::RecurringService#deactivate}.
     #
-    # The recurring service requires shoppers to have a recurring contract. Such a contract
-    # can be set up when creating the initial payment using the {Adyen::Form} methods. After
-    # the payment has been authorized, a {Adyen::Notification RECURRING_CONTRACT notification} 
-    # will be sent. The PSP reference of this notification should be used as +:recurring_reference+
-    # parameters in these calls.
+    # Before using this service, make sure to set the SOAP username and
+    # password (see {Adyen::SOAP.username} and {Adyen::SOAP.password}).
+    #
+    # The recurring service requires shoppers to have a recurring contract.
+    # Such a contract can be set up when creating the initial payment using
+    # the {Adyen::Form} methods. After the payment has been authorized, a
+    # {Adyen::Notification RECURRING_CONTRACT notification} will be sent. The
+    # PSP reference of this notification should be used as
+    # +:recurring_reference+ parameters in these calls.
     #
     # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=7&nav=0,3 
-    #      The Adyen recurring payments manual.
+    #   The Adyen recurring payments manual.
     class RecurringService < Base
 
       # The endpoint URI for this SOAP service, in which test or live should be filled in as 
