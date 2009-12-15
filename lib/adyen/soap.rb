@@ -86,6 +86,44 @@ module Adyen
 
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
+      # Submits a recurring payment. Requires the following arguments as hash:
+      #
+      # * <tt>:selected_recurring_detail_reference</tt> This is the
+      #       recurringDetailReference you want to use for this payment. You can use the
+      #       value "LATEST" to select the most recently used recurring detail.
+      # * <tt>:merchant_account</tt> The merchant account you want to process this payment
+      #       with.
+      # * <tt>:currency</tt> The three-letter capitalised ISO currency code to pay in.
+      # * <tt>:value</tt> The payment amount.
+      # * <tt>:reference</tt> Your reference for this payment. This (merchant) reference
+      #       will be used in all communication to you about the status of the payment.
+      #       Although it is a good idea to make sure it is unique, this is not a
+      #       requirement.
+      # * <tt>:shopper_email</tt> The email address of the shopper. This does not have to
+      #       match the email address supplied with the initial payment, since it may have
+      #       changed in the mean time.
+      # * <tt>:shopper_reference</tt> The reference to the shopper. This shopperReference
+      #       must be the same as the shopperReference used in the initial payment.
+      def authorise(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('payment:authorise') do |message|
+          message.add('payment:paymentRequest') do |req|
+            req.add('payment:selectedRecurringDetailReference', invoke_args[:selected_recurring_detail_reference])
+            req.add('payment:recurring') do |recurring|
+              recurring.add('payment:contract', 'RECURRING')
+            end
+            req.add('payment:merchantAccount', invoke_args[:merchant_account])
+            req.add('payment:amount') do |amount|
+              amount.add('common:currency', invoke_args[:currency])
+              amount.add('common:value', invoke_args[:value])
+            end
+            req.add('payment:reference', invoke_args[:reference])
+            req.add('payment:shopperEmail', invoke_args[:shopper_email])
+            req.add('payment:shopperReference', invoke_args[:shopper_reference])
+            req.add('payment:shopperInteraction', 'ContAuth')
+          end
+        end
+      end
     end
 
     # SOAP client to interact with the recurring payment service of Adyen.
