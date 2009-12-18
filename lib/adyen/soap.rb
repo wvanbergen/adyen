@@ -57,45 +57,50 @@ module Adyen
 
     self.default_arguments = {} # Set default value
 
-    # The base class sets up XML namespaces and HTTP authentication
+    # The base class sets up XML namespaces and the HTTP client
     # for all the Adyen SOAP services.
     class Base < Handsoap::Service
 
+      # Basic setup for the SOAP endpoint when creating a subclass.
+      #
+      # The version must be set to construct the request envelopes, the URI
+      # wil be set later using the correct {Adyen.environment} value. For now,
+      # use a bogus value so handsoap will not complain.
       def self.inherited(klass) # :nodoc:
-        # The version must be set to construct the request envelopes, the URI
-        # wil be set later using the correct {Adyen.environment} value.
         klass.endpoint :version => 1, :uri => 'bogus'
       end
-      
+
+      # Setup some CURL options to handle redirects correctly.
       def on_after_create_http_client(http_client)  # :nodoc:
-        # Setup some CURL options to handle redirects correctly.
         http_client.follow_location = true
         http_client.max_redirects   = 1
       end
 
+      # Setup basic authentication for SOAP requests
+      # @see Adyen::SOAP.username
+      # @see Adyen::SOAP.password
       def on_after_create_http_request(http_request) # :nodoc:
-        # Setup basic authentication
         debug { |logger| logger.puts "Authorization: #{Adyen::SOAP.username}:#{Adyen::SOAP.password}..." }
         http_request.set_auth Adyen::SOAP.username, Adyen::SOAP.password
       end
 
+      # Sets up XML namespaces for composing the SOAP request body.
       def on_create_document(doc) # :nodoc:
-        # Setup XML namespaces for SOAP request body
         doc.alias 'payment',   'http://payment.services.adyen.com'
         doc.alias 'recurring', 'http://recurring.services.adyen.com'
         doc.alias 'common',    'http://common.services.adyen.com'
       end
 
+      # Sets up the XML namespaces for parsing the SOAP response.
       def on_response_document(doc) # :nodoc:
-        # Setup XML namespaces for SOAP response
         doc.add_namespace 'payment',   'http://payment.services.adyen.com'
         doc.add_namespace 'recurring', 'http://recurring.services.adyen.com'
         doc.add_namespace 'common',    'http://common.services.adyen.com'
       end
 
-      def on_before_dispatch # :nodoc:
-        # Set endpoint URI before dispatch, so that changes in environment
-        # are reflected correctly.
+      # Set endpoint URI before dispatch, so that changes in environment
+      # are reflected correctly.
+      def on_before_dispatch
         self.class.endpoint(:uri => self.class::ENDPOINT_URI % Adyen.environment.to_s, :version => 1)
       end
     end
@@ -104,6 +109,8 @@ module Adyen
     # implements the following calls:
     #
     # * +authorise+ to list recurring contracts for a shopper, using {Adyen::SOAP::PaymentService#authorise}.
+    # * +cancelOrRefund+ to cancel a payment (or refund if it has been captured), using 
+    #   {Adyen::SOAP::PaymentService#cancel_or_refund}.
     #
     # Before using this service, make sure to set the SOAP username and
     # password (see {Adyen::SOAP.username} and {Adyen::SOAP.password}).
@@ -138,6 +145,9 @@ module Adyen
       # @option args [String] :shopper_reference The reference of the shopper. This should be
       #       the same as the reference that was used to create the recurring contract.
       #
+      # @return [nil] This action returns nothing of interest. The result of the authorization 
+      #   will be communicated using a {Adyen::Notification notification}.
+      #
       # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
       #       The Adyen integration manual
       # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=7&nav=0,3 
@@ -161,6 +171,29 @@ module Adyen
             req.add('payment:shopperEmail', invoke_args[:shopper_email])
             req.add('payment:shopperReference', invoke_args[:shopper_reference])
             req.add('payment:shopperInteraction', 'ContAuth')
+          end
+        end
+      end
+      
+      # Cancel or refund a payment.
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :original_reference The psp_reference of the payment to cancel.
+      #
+      # @return [nil] This action returns nothing of interest. The result of the authorization 
+      #   will be communicated using a {Adyen::Notification notification}.
+      #
+      # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
+      #       The Adyen integration manual
+      def cancel_or_refund(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('payment:cancelOrRefund') do |message|
+          message.add('payment:modificationRequest') do |req|
+            req.add('payment:merchantAccount', invoke_args[:merchant_account])
+            req.add('payment:originalReference', invoke_args[:original_reference])
           end
         end
       end
