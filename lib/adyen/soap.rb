@@ -73,7 +73,7 @@ module Adyen
       # Setup some CURL options to handle redirects correctly.
       def on_after_create_http_client(http_client)  # :nodoc:
         http_client.follow_location = true
-        http_client.max_redirects   = 1
+        http_client.max_redirects   = 2
       end
 
       # Setup basic authentication for SOAP requests
