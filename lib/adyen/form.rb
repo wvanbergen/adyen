@@ -137,7 +137,7 @@ module Adyen
       raise "YENs are not yet supported!" if parameters[:currency_code] == 'JPY' # TODO: fixme
 
       parameters.replace(default_parameters.merge(parameters))
-      parameters[:recurring_contract] = 'DEFAULT' if parameters.delete(:recurring) == true
+      parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
       parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
       parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
       parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
