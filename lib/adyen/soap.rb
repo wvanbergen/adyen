@@ -280,6 +280,9 @@ module Adyen
       # @option args [String] :shopper_reference The refrence of the shopper. This should be
       #   the same as the reference that was used to create the recurring contract.
       #
+      # @return [Hash] This method returns a hash representation of the
+      #   listRecurringDetailsResponse.
+      #
       def list(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:listRecurringDetails') do |message|
@@ -288,6 +291,8 @@ module Adyen
             req.add('recurring:shopperReference', invoke_args[:shopper_reference])
           end
         end
+
+        parse_list_recurring_details(response)
       end
 
       # Disables a recurring payment contract. Requires the following arguments:
@@ -349,6 +354,32 @@ module Adyen
             req.add('recurring:shopperReference', invoke_args[:shopper_reference])
           end
         end
+      end
+
+    private
+
+      def parse_list_recurring_details(response)
+        response = response.xpath('//recurring:listRecurringDetailsResponse/recurring:result')
+        {
+          :creation_date => response.xpath('./recurring:creationDate/text()').to_date,
+          :details => response.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
+          :last_known_shopper_email => response.xpath('./recurring:lastKnownShopperEmail/text()').to_s,
+          :shopper_reference => response.xpath('./recurring:shopperReference/text()').to_s
+        }
+      end
+
+      # TODO add support for elv and bank
+      def parse_recurring_detail(node)
+        {
+          :recurring_detail_reference => node.xpath('./recurring:recurringDetailReference/text()').to_s,
+          :variant => node.xpath('./recurring:variant/text()').to_s,
+          :creation_date => node.xpath('./recurring:creationDate/text()').to_date,
+          :card => {
+            :expiry_date => DateTime.civil(node.xpath('./recurring:card/payment:expiryYear/text()').to_i, node.xpath('recurring:card/payment:expiryMonth').to_i) + 1.month - 1.second,
+            :holder_name => node.xpath('./recurring:card/payment:holderName/text()').to_s,
+            :number => node.xpath('./recurring:card/payment:number/text()').to_s
+          }
+        }
       end
     end
   end
