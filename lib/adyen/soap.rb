@@ -155,7 +155,7 @@ module Adyen
       def authorise(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         invoke_args[:selected_recurring_detail_reference] ||= 'LATEST'
-        
+
         response = invoke('payment:authorise') do |message|
           message.add('payment:paymentRequest') do |req|
             req.add('payment:selectedRecurringDetailReference', invoke_args[:selected_recurring_detail_reference])
@@ -173,21 +173,114 @@ module Adyen
             req.add('payment:shopperInteraction', 'ContAuth')
           end
         end
+
+        parse_authorise(response)
       end
-      
-      # Cancel or refund a payment.
+
+      # Capture a payment.
       #
-      # @param [Hash] args The paramaters to use for this call. These will be marged by any default
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :currency The currency code (EUR, GBP, USD, etc).
+      # @option args [Integer] :value The value of the payment in cents.
+      # @option args [String] :original_reference The psp_reference of the payment to capture.
+      #
+      # @return [nil] This action returns nothing of interest.
+      #
+      # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
+      #       The Adyen integration manual
+      #
+      # @todo Parse response object and return something useful
+      def capture(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('payment:capture') do |message|
+          message.add('payment:modificationRequest') do |req|
+            req.add('payment:merchantAccount', invoke_args[:merchant_account])
+            req.add('payment:modificationAmount') do |amount|
+              amount.add('common:currency', invoke_args[:currency])
+              amount.add('common:value', invoke_args[:value])
+            end
+            req.add('payment:originalReference', invoke_args[:original_reference])
+          end
+        end
+
+        parse_capture(response)
+      end
+
+      # Cancel a payment.
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
       #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
       #   is required by the Adyen SOAP service, so please provide a value for all options.
       # @option args [String] :merchant_account The merchant account to file this payment under.
       # @option args [String] :original_reference The psp_reference of the payment to cancel.
       #
-      # @return [nil] This action returns nothing of interest. The result of the authorization 
-      #   will be communicated using a {Adyen::Notification notification}.
+      # @return [nil] This action returns nothing of interest.
       #
       # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
       #       The Adyen integration manual
+      #
+      # @todo Parse response object and return something useful
+      def cancel(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('payment:cancel') do |message|
+          message.add('payment:modificationRequest') do |req|
+            req.add('payment:merchantAccount', invoke_args[:merchant_account])
+            req.add('payment:originalReference', invoke_args[:original_reference])
+          end
+        end
+
+        parse_cancel(response)
+      end
+
+      # Refund a payment.
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :currency The currency code (EUR, GBP, USD, etc).
+      # @option args [Integer] :value The value of the refund in cents.
+      # @option args [String] :original_reference The psp_reference of the payment to refund.
+      #
+      # @return [nil] This action returns nothing of interest.
+      #
+      # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
+      #       The Adyen integration manual
+      #
+      # @todo Parse response object and return something useful
+      def refund(args = {})
+        invoke_args = Adyen::SOAP.default_arguments.merge(args)
+        response = invoke('payment:refund') do |message|
+          message.add('payment:modificationRequest') do |req|
+            req.add('payment:merchantAccount', invoke_args[:merchant_account])
+            req.add('payment:modificationAmount') do |amount|
+              amount.add('common:currency', invoke_args[:currency])
+              amount.add('common:value', invoke_args[:value])
+            end
+            req.add('payment:originalReference', invoke_args[:original_reference])
+          end
+        end
+
+        parse_refund(response)
+      end
+
+      # Cancel or refund a payment.
+      #
+      # @param [Hash] args The paramaters to use for this call. These will be merged by any default
+      #   parameters set using {Adyen::SOAP.default_arguments}. Note that every option defined below
+      #   is required by the Adyen SOAP service, so please provide a value for all options.
+      # @option args [String] :merchant_account The merchant account to file this payment under.
+      # @option args [String] :original_reference The psp_reference of the payment to cancel or refund.
+      #
+      # @return [nil] This action returns nothing of interest.
+      #
+      # @see https://support.adyen.com/index.php?_m=downloads&_a=viewdownload&downloaditemid=1
+      #       The Adyen integration manual
+      #
+      # @todo Parse response object and return something useful
       def cancel_or_refund(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('payment:cancelOrRefund') do |message|
@@ -196,7 +289,54 @@ module Adyen
             req.add('payment:originalReference', invoke_args[:original_reference])
           end
         end
+
+        parse_cancel_or_refund(response)
       end
+
+    private
+
+      def parse_authorise(response)
+        response = response.xpath('//payment:authoriseResponse/payment:paymentResult')
+        {
+          :psp_reference => response.xpath('./payment:pspReference/text()').to_s,
+          :result_code => response.xpath('./payment:resultCode/text()').to_s,
+          :auth_code => response.xpath('./payment:authCode/text()').to_s,
+          :refusal_reason => response.xpath('./payment:refusalReason/text()').to_s
+        }
+      end
+
+      def parse_capture(response)
+        response = response.xpath('//payment:captureResponse/payment:captureResult')
+        {
+          :psp_reference => response.xpath('./payment:pspReference/text()').to_s,
+          :response => response.xpath('./payment:response/text()').to_s
+        }
+      end
+
+      def parse_cancel(response)
+        response = response.xpath('//payment:cancelResponse/payment:cancelResult')
+        {
+          :psp_reference => response.xpath('./payment:pspReference/text()').to_s,
+          :response => response.xpath('./payment:response/text()').to_s
+        }
+      end
+
+      def parse_refund(response)
+        response = response.xpath('//payment:refundResponse/payment:refundResult')
+        {
+          :psp_reference => response.xpath('./payment:pspReference/text()').to_s,
+          :response => response.xpath('./payment:response/text()').to_s
+        }
+      end
+
+      def parse_cancel_or_refund(response)
+        response = response.xpath('//payment:cancelOrRefundResponse/payment:cancelOrRefundResult')
+        {
+          :psp_reference => response.xpath('./payment:pspReference/text()').to_s,
+          :response => response.xpath('./payment:response/text()').to_s
+        }
+      end
+
     end
 
     # SOAP client to interact with the recurring payment service of Adyen. This clients
@@ -226,6 +366,8 @@ module Adyen
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
       # Submits a recurring payment for a recurring contract to Adyen.
+      #
+      # @deprecated This method has been replaced by {Adyen::SOAP::PaymentService.authorise}.
       #
       # @example 
       #   Adyen::SOAP::RecurringService.submit(
@@ -321,9 +463,13 @@ module Adyen
             req.add('recurring:recurringDetailReference', invoke_args[:recurring_detail_reference])
           end
         end
+
+        parse_disable(response)
       end
 
       # Deactivates a recurring payment contract. Requires the following arguments:
+      #
+      # @deprecated This method has been replaced by the {#disable} method.
       #
       # @example
       #   Adyen::SOAP::RecurringService.deactivate(
@@ -368,17 +514,24 @@ module Adyen
         }
       end
 
-      # TODO add support for elv and bank
+      # @todo add support for elv and bank
       def parse_recurring_detail(node)
         {
           :recurring_detail_reference => node.xpath('./recurring:recurringDetailReference/text()').to_s,
           :variant => node.xpath('./recurring:variant/text()').to_s,
           :creation_date => node.xpath('./recurring:creationDate/text()').to_date,
           :card => {
-            :expiry_date => DateTime.civil(node.xpath('./recurring:card/payment:expiryYear/text()').to_i, node.xpath('recurring:card/payment:expiryMonth').to_i) + 1.month - 1.second,
+            :expiry_date => Date.new(node.xpath('./recurring:card/payment:expiryYear/text()').to_i, node.xpath('recurring:card/payment:expiryMonth').to_i, -1),
             :holder_name => node.xpath('./recurring:card/payment:holderName/text()').to_s,
             :number => node.xpath('./recurring:card/payment:number/text()').to_s
           }
+        }
+      end
+
+      def parse_disable(response)
+        response = response.xpath('//recurring:disableResponse/recurring:result')
+        {
+          :response => response.xpath('./recurring:response/text()').to_s
         }
       end
     end
