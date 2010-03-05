@@ -514,16 +514,41 @@ module Adyen
         }
       end
 
-      # @todo add support for elv and bank
+      # @todo add support for elv
       def parse_recurring_detail(node)
-        {
+        result = if(not node.xpath('./recurring:card').to_s.nil?)
+          parse_card(node)
+        elsif(not node.xpath('./recurring:bank').to_s.nil?)
+          parse_bank(node)
+        end
+
+        result.merge({
           :recurring_detail_reference => node.xpath('./recurring:recurringDetailReference/text()').to_s,
           :variant => node.xpath('./recurring:variant/text()').to_s,
-          :creation_date => node.xpath('./recurring:creationDate/text()').to_date,
+          :creation_date => node.xpath('./recurring:creationDate/text()').to_date
+        })
+      end
+
+      def parse_card(node)
+        {
           :card => {
             :expiry_date => Date.new(node.xpath('./recurring:card/payment:expiryYear/text()').to_i, node.xpath('recurring:card/payment:expiryMonth').to_i, -1),
             :holder_name => node.xpath('./recurring:card/payment:holderName/text()').to_s,
             :number => node.xpath('./recurring:card/payment:number/text()').to_s
+          }
+        }
+      end
+
+      def parse_bank(node)
+        {
+          :bank => {
+            :bank_account_number => node.xpath('./recurring:bank/payment:bankAccountNumber/text()').to_s,
+            :bank_location_id => node.xpath('./recurring:bank/payment:bankLocationId/text()').to_s,
+            :bank_name => node.xpath('./recurring:bank/payment:bankName/text()').to_s,
+            :bic => node.xpath('./recurring:bank/payment:bic/text()').to_s,
+            :country_code => node.xpath('./recurring:bank/payment:countryCode/text()').to_s,
+            :iban => node.xpath('./recurring:bank/payment:iban/text()').to_s,
+            :owner_name => node.xpath('./recurring:bank/payment:ownerName/text()').to_s
           }
         }
       end
