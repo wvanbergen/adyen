@@ -10,6 +10,11 @@
 #   maintenance and issuing recurring payments.
 module Adyen
 
+  # Version constant for the Adyen plugin.
+  # DO NOT CHANGE THIS VALUE BY HAND. It will be updated automatically by
+  # the gem:release rake task.
+  VERSION = "0.3.6"
+
   # Loads configuration settings from a Hash.
   #
   # @param [Hash] hash The (nested Hash) with configuration variables.
