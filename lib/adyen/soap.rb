@@ -144,6 +144,11 @@ module Adyen
       #       changed in the mean time.
       # @option args [String] :shopper_reference The reference of the shopper. This should be
       #       the same as the reference that was used to create the recurring contract.
+      # @option args [Integer] :fraud_offset (optional) An integer that is added to normal fraud score.
+      #       The value can be either positive or negative.
+      # @option args [String] :shopper_ip (optional) The IP address of the shopper. Used in various risk
+      #       checks (number of payment attempts, location based checks), so it is a good idea to supply
+      #       this.
       #
       # @return [nil] This action returns nothing of interest. The result of the authorization 
       #   will be communicated using a {Adyen::Notification notification}.
@@ -171,6 +176,10 @@ module Adyen
             req.add('payment:shopperEmail', invoke_args[:shopper_email])
             req.add('payment:shopperReference', invoke_args[:shopper_reference])
             req.add('payment:shopperInteraction', 'ContAuth')
+
+            # optional fields
+            req.add('payment:fraudOffset', invoke_args[:fraud_offset]) if(invoke_args[:fraud_offset])
+            req.add('payment:shopperIP', invoke_args[:shopper_ip]) if(invoke_args[:shopper_ip])
           end
         end
 
