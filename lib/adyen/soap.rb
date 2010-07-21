@@ -228,7 +228,7 @@ module Adyen
         invoke_args[:selected_recurring_detail_reference] ||= 'LATEST'
 
         response = invoke('payment:directdebit') do |message|
-          message.add('payment:paymentRequest') do |req|
+          message.add('payment:request') do |req|
             req.add('payment:selectedRecurringDetailReference', invoke_args[:selected_recurring_detail_reference])
             req.add('payment:recurring') do |recurring|
               recurring.add('payment:contract', 'RECURRING')
