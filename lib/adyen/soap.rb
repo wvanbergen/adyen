@@ -497,7 +497,10 @@ module Adyen
       def list(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:listRecurringDetails') do |message|
-          message.add('recurring:recurringRequest') do |req|
+          message.add('recurring:request') do |req|
+            req.add('recurring:recurring') do |recurring|
+              recurring.add('recurring:contract', 'RECURRING')
+            end
             req.add('recurring:merchantAccount', invoke_args[:merchant_account])
             req.add('recurring:shopperReference', invoke_args[:shopper_reference])
           end
