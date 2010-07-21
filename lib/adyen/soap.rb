@@ -542,7 +542,7 @@ module Adyen
       def disable(args = {})
         invoke_args = Adyen::SOAP.default_arguments.merge(args)
         response = invoke('recurring:disable') do |message|
-          message.add('recurring:disableRequest') do |req|
+          message.add('recurring:request') do |req|
             req.add('recurring:merchantAccount', invoke_args[:merchant_account])
             req.add('recurring:shopperReference', invoke_args[:shopper_reference])
             req.add('recurring:recurringDetailReference', invoke_args[:recurring_detail_reference])
