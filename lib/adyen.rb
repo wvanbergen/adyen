@@ -13,7 +13,7 @@ module Adyen
   # Version constant for the Adyen plugin.
   # DO NOT CHANGE THIS VALUE BY HAND. It will be updated automatically by
   # the gem:release rake task.
-  VERSION = "0.3.6"
+  VERSION = "0.3.7"
 
   # Loads configuration settings from a Hash.
   #
