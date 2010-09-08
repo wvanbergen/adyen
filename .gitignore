@@ -3,3 +3,4 @@
 /doc
 adyen-*.gem
 .yardoc
+*.swp

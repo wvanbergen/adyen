@@ -47,9 +47,9 @@ module Adyen
   #
   # It will return the +override+ value if set, it will return the value set
   # using {Adyen.environment=} otherwise. If this value also isn't set, the
-  # environemtn is determined with {Adyen.autodetect_environment}.
+  # environment is determined with {Adyen.autodetect_environment}.
   #
-  # @param ['test', 'live'] override An environemt to override the default with.
+  # @param ['test', 'live'] override An environment to override the default with.
   # @return ['test', 'live'] The Adyen environment that is currently being used.
   def self.environment(override = nil)
     override || @environment || Adyen.autodetect_environment
