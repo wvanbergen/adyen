@@ -1,2 +1,9 @@
-* Notification values should be in cents, not decimals.
-* Cleanup lib/adyen.rb
+* Use require/autoload instead of const_missing
+* Make sure Japansese yens work as expected (this is the only currency Adyen does not expect to be in cents)
+* Complete SOAP API.
+* Add ActiveMerchant integration
+
+* Split up gem to have more explicit dependency requirements, e.g.:
+  * adyen-soap
+  * adyen-railtie
+  * adyen-activemerchant
