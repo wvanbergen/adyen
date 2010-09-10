@@ -14,12 +14,6 @@ module Adyen
 </soap:Envelope>
 EOS
 
-      SHOPPER_PARTIAL = <<EOS
-        <shopperEmail xmlns="http://payment.services.adyen.com">s.hopper@test.com</shopperEmail>
-        <shopperIP xmlns="http://payment.services.adyen.com">61.294.12.12</shopperIP>
-        <shopperReference xmlns="http://payment.services.adyen.com">Simon Hopper</shopperReference>
-EOS
-
       AMOUNT_PARTIAL = <<EOS
         <amount xmlns="http://payment.services.adyen.com">
           <currency xmlns="http://common.services.adyen.com">%s</currency>
