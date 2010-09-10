@@ -2,6 +2,18 @@ require "net/https"
 
 module Adyen
   module SOAP
+    class << self
+      # Username for the HTTP Basic Authentication that Adyen uses. Your username
+      # should be something like +ws@Company.MyAccount+
+      # @return [String]
+      attr_accessor :username
+
+      # Password for the HTTP Basic Authentication that Adyen uses. You can choose
+      # your password yourself in the user management tool of the merchant area.
+      # @return [String] 
+      attr_accessor :password
+    end
+
     class NewPaymentService
       LAYOUT = <<EOS
 <?xml version="1.0"?>
@@ -11,7 +23,7 @@ module Adyen
       <ns1:paymentRequest>
         <merchantAccount xmlns="http://payment.services.adyen.com">%s</merchantAccount>
         <reference xmlns="http://payment.services.adyen.com">%s</reference>
-        %s
+%s
       </ns1:paymentRequest>
     </ns1:authorise>
   </soap:Body>
@@ -75,6 +87,26 @@ EOS
 
       def authorise_payment_request_body
         LAYOUT % [@params[:merchant_account], @params[:reference], (amount_partial + card_partial + shopper_partial)]
+      end
+
+      def authorise_payment
+        endpoint = self.class.endpoint
+
+        post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => 'authorise')
+        post.basic_auth(Adyen::SOAP.username, Adyen::SOAP.password)
+        post.body = authorise_payment_request_body
+
+        request = Net::HTTP.new(endpoint.host, endpoint.port)
+        request.use_ssl = true
+
+        # from http://curl.haxx.se/ca/cacert.pem
+        #http_request.ca_file = options[:tls_ca_file] || File.join(File.expand_path('../../../support/cacert.pem', __FILE__))
+        #http_request.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+        request.start do |http|
+          response = http.request(post)
+          #p response
+        end
       end
     end
   end

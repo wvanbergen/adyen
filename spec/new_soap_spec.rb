@@ -4,6 +4,44 @@ require 'adyen/new_soap'
 require 'rubygems'
 require 'nokogiri'
 
+module Net
+  class HTTP
+    class Post
+      attr_reader :header
+      attr_reader :assigned_basic_auth
+
+      def basic_auth(username, password)
+        @assigned_basic_auth = [username, password]
+      end
+    end
+
+    class << self
+      attr_accessor :posted, :stubbed_response
+
+      def reset!
+        @posted = nil
+        @stubbed_response = nil
+      end
+    end
+
+    def host
+      @address
+    end
+
+    def start
+      yield self
+    end
+
+    def request(request)
+      self.class.posted = [self, request]
+      self.class.stubbed_response
+    end
+  end
+end
+
+Adyen::SOAP.username = 'SuperShopper'
+Adyen::SOAP.password = 'secret'
+
 describe Adyen::SOAP::NewPaymentService do
   describe "for a normal payment request" do
     before do
@@ -90,6 +128,43 @@ describe Adyen::SOAP::NewPaymentService do
         select('./payment:shopperReference').should be_empty
         select('./payment:shopperEmail').should be_empty
         select('./payment:shopperIP').should be_empty
+      end
+    end
+
+    describe "authorise_payment" do
+      before do
+        Net::HTTP.reset!
+        @payment.authorise_payment
+        @request, @post = Net::HTTP.posted
+      end
+
+      it "posts the body generated for the given parameters" do
+        @post.body.should == @payment.authorise_payment_request_body
+      end
+
+      it "posts to Adyen::SOAP::NewPaymentService.endpoint" do
+        endpoint = Adyen::SOAP::NewPaymentService.endpoint
+        @request.host.should == endpoint.host
+        @request.port.should == endpoint.port
+        @post.path.should == endpoint.path
+      end
+
+      it "makes a request over SSL" do
+        @request.use_ssl.should == true
+      end
+
+      it "uses basic-authentication with the credentials set on the Adyen::SOAP module" do
+        username, password = @post.assigned_basic_auth
+        username.should == 'SuperShopper'
+        password.should == 'secret'
+      end
+
+      it "sends the proper headers" do
+        @post.header.should == {
+          'accept'       => ['text/xml'],
+          'content-type' => ['text/xml; charset=utf-8'],
+          'soapaction'   => ['authorise']
+        }
       end
     end
   end
