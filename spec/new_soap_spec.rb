@@ -8,7 +8,7 @@ describe Adyen::SOAP::NewPaymentService do
   describe "for a normal payment request" do
     before do
       @params = {
-        :merchant_account => 'YourMerchantAccount',
+        :merchant_account => 'SuperShopper',
         :reference => 'order-id',
         :amount => {
           :currency => 'EUR',
@@ -37,6 +37,14 @@ describe Adyen::SOAP::NewPaymentService do
     describe "authorise_payment_request_body" do
       before :all do
         @method = :authorise_payment_request_body
+      end
+
+      it "includes the merchant account handle" do
+        text('./payment:merchantAccount').should == 'SuperShopper'
+      end
+
+      it "includes the payment reference of the merchant" do
+        text('./payment:reference').should == 'order-id'
       end
 
       it "includes the given amount of `currency'" do

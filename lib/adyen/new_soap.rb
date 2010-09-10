@@ -1,3 +1,5 @@
+require "net/https"
+
 module Adyen
   module SOAP
     class NewPaymentService
@@ -7,6 +9,8 @@ module Adyen
   <soap:Body>
     <ns1:authorise xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentRequest>
+        <merchantAccount xmlns="http://payment.services.adyen.com">%s</merchantAccount>
+        <reference xmlns="http://payment.services.adyen.com">%s</reference>
         %s
       </ns1:paymentRequest>
     </ns1:authorise>
@@ -31,6 +35,12 @@ EOS
         </card>
 EOS
 
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
+
+      def self.endpoint
+        @endpoint ||= URI.parse(ENDPOINT_URI % Adyen.environment)
+      end
+
       attr_reader :params
 
       def initialize(params = {})
@@ -48,23 +58,23 @@ EOS
       end
 
       def shopper_partial
-        partial = ''
+        partials = []
         if shopper = @params[:shopper]
           if reference = shopper[:reference]
-            partial << %{<shopperReference xmlns="http://payment.services.adyen.com">#{reference}</shopperReference>}
+            partials << %{        <shopperReference xmlns="http://payment.services.adyen.com">#{reference}</shopperReference>}
           end
           if email = shopper[:email]
-            partial << %{<shopperEmail xmlns="http://payment.services.adyen.com">#{email}</shopperEmail>}
+            partials << %{        <shopperEmail xmlns="http://payment.services.adyen.com">#{email}</shopperEmail>}
           end
           if ip = shopper[:ip]
-            partial << %{<shopperIP xmlns="http://payment.services.adyen.com">#{ip}</shopperIP>}
+            partials << %{        <shopperIP xmlns="http://payment.services.adyen.com">#{ip}</shopperIP>}
           end
         end
-        partial
+        partials.join("\n")
       end
 
       def authorise_payment_request_body
-        LAYOUT % (amount_partial + card_partial + shopper_partial)
+        LAYOUT % [@params[:merchant_account], @params[:reference], (amount_partial + card_partial + shopper_partial)]
       end
     end
   end
