@@ -1,31 +1,41 @@
 module Adyen
   module SOAP
     class NewPaymentService
-      REQUEST_BODY = %{<?xml version="1.0"?>
+      LAYOUT = <<EOS
+<?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
     <ns1:authorise xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentRequest>
-        <amount xmlns="http://payment.services.adyen.com">
-          <currency xmlns="http://common.services.adyen.com">EUR</currency>
-          <value xmlns="http://common.services.adyen.com">2000</value>
-        </amount>
-        <card xmlns="http://payment.services.adyen.com">
-          <cvc>737</cvc>
-          <expiryMonth>12</expiryMonth>
-          <expiryYear>2012</expiryYear>
-          <holderName>Adyen Test</holderName>
-          <number>4111111111111111</number>
-        </card>
-        <merchantAccount xmlns="http://payment.services.adyen.com">YourMerchant</merchantAccount>
-        <reference xmlns="http://payment.services.adyen.com">Your Reference Here</reference>
-        <shopperEmail xmlns="http://payment.services.adyen.com">s.hopper@test.com</shopperEmail>
-        <shopperIP xmlns="http://payment.services.adyen.com">61.294.12.12</shopperIP>
-        <shopperReference xmlns="http://payment.services.adyen.com">Simon Hopper</shopperReference>
+        %s
       </ns1:paymentRequest>
     </ns1:authorise>
   </soap:Body>
-</soap:Envelope>}
+</soap:Envelope>
+EOS
+
+      SHOPPER_PARTIAL = <<EOS
+        <shopperEmail xmlns="http://payment.services.adyen.com">s.hopper@test.com</shopperEmail>
+        <shopperIP xmlns="http://payment.services.adyen.com">61.294.12.12</shopperIP>
+        <shopperReference xmlns="http://payment.services.adyen.com">Simon Hopper</shopperReference>
+EOS
+
+      AMOUNT_PARTIAL = <<EOS
+        <amount xmlns="http://payment.services.adyen.com">
+          <currency xmlns="http://common.services.adyen.com">%s</currency>
+          <value xmlns="http://common.services.adyen.com">%s</value>
+        </amount>
+EOS
+
+      CARD_PARTIAL = <<EOS
+        <card xmlns="http://payment.services.adyen.com">
+          <holderName>%s</holderName>
+          <number>%s</number>
+          <cvc>%s</cvc>
+          <expiryYear>%s</expiryYear>
+          <expiryMonth>%02d</expiryMonth>
+        </card>
+EOS
 
       attr_reader :params
 
@@ -33,8 +43,34 @@ module Adyen
         @params = params
       end
 
+      def amount_partial
+        AMOUNT_PARTIAL % @params[:amount].values_at(:currency, :value)
+      end
+
+      def card_partial
+        card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
+        card << @params[:card][:expiry_month].to_i
+        CARD_PARTIAL % card
+      end
+
+      def shopper_partial
+        partial = ''
+        if shopper = @params[:shopper]
+          if reference = shopper[:reference]
+            partial << %{<shopperReference xmlns="http://payment.services.adyen.com">#{reference}</shopperReference>}
+          end
+          if email = shopper[:email]
+            partial << %{<shopperEmail xmlns="http://payment.services.adyen.com">#{email}</shopperEmail>}
+          end
+          if ip = shopper[:ip]
+            partial << %{<shopperIP xmlns="http://payment.services.adyen.com">#{ip}</shopperIP>}
+          end
+        end
+        partial
+      end
+
       def authorise_payment_request_body
-        REQUEST_BODY
+        LAYOUT % (amount_partial + card_partial + shopper_partial)
       end
     end
   end
