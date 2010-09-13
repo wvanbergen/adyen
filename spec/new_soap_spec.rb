@@ -140,6 +140,11 @@ describe Adyen::SOAP::NewPaymentService do
     describe "authorise_payment" do
       before do
         Net::HTTP.reset!
+
+        response = Net::HTTPOK.new('1.1', '200', 'OK')
+        response.stub!(:body).and_return(AUTHORISE_RESPONSE)
+        Net::HTTP.stubbed_response = response
+
         @payment.authorise_payment
         @request, @post = Net::HTTP.posted
       end
@@ -178,6 +183,15 @@ describe Adyen::SOAP::NewPaymentService do
           'soapaction'   => ['authorise']
         }
       end
+
+      it "returns a hash with parsed response details" do
+        @payment.authorise_payment.should == {
+          :psp_reference => '9876543210987654',
+          :result_code => 'Authorised',
+          :auth_code => '1234',
+          :refusal_reason => ''
+        }
+      end
     end
   end
 
@@ -213,3 +227,26 @@ describe Adyen::SOAP::NewPaymentService do
     select("#{query}/text()").to_s
   end
 end
+
+AUTHORISE_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+        <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS

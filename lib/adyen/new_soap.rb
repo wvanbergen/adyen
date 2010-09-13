@@ -17,6 +17,27 @@ module Adyen
       attr_accessor :password
     end
 
+    class XMLQuerier
+      NS = {
+        'payment'   => 'http://payment.services.adyen.com',
+        'recurring' => 'http://recurring.services.adyen.com',
+        'common'    => 'http://common.services.adyen.com'
+      }
+
+      def initialize(data)
+        @node = data.is_a?(Nokogiri::XML::NodeSet) ? data : Nokogiri::XML::Document.parse(data)
+      end
+
+      def xpath(query)
+        result = @node.xpath(query, NS)
+        block_given? ? yield(self.class.new(result)) : result
+      end
+
+      def text(query)
+        xpath("#{query}/text()").to_s
+      end
+    end
+
     class NewPaymentService
       LAYOUT = <<EOS
 <?xml version="1.0"?>
@@ -96,18 +117,30 @@ EOS
         body = ''
         body << amount_partial
         body << card_partial
-        body << shopper_partial   if @params[:shopper]
         body << recurring_partial if @params[:recurring]
+        body << shopper_partial   if @params[:shopper]
         LAYOUT % [@params[:merchant_account], @params[:reference], body]
       end
 
       # TODO: validate necessary params
       def authorise_payment
+        response = call_webservice_action('authorise', authorise_payment_request_body)
+        response.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+          {
+            :psp_reference  => result.text('./payment:pspReference'),
+            :result_code    => result.text('./payment:resultCode'),
+            :auth_code      => result.text('./payment:authCode'),
+            :refusal_reason => result.text('./payment:refusalReason')
+          }
+        end
+      end
+
+      def call_webservice_action(action, data)
         endpoint = self.class.endpoint
 
-        post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => 'authorise')
+        post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
         post.basic_auth(Adyen::SOAP.username, Adyen::SOAP.password)
-        post.body = authorise_payment_request_body
+        post.body = data
 
         request = Net::HTTP.new(endpoint.host, endpoint.port)
         request.use_ssl = true
@@ -117,6 +150,7 @@ EOS
         request.start do |http|
           response = http.request(post)
           #p response
+          XMLQuerier.new(response.body)
         end
       end
     end
