@@ -29,12 +29,20 @@ module Adyen
       end
 
       def xpath(query)
-        result = @node.xpath(query, NS)
-        block_given? ? yield(self.class.new(result)) : result
+        result = self.class.new(@node.xpath(query, NS))
+        block_given? ? yield(result) : result
       end
 
       def text(query)
         xpath("#{query}/text()").to_s
+      end
+
+      def empty?
+        @node.empty?
+      end
+
+      def to_s
+        @node.to_s
       end
     end
 

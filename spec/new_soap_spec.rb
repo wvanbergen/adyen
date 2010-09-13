@@ -86,20 +86,20 @@ describe Adyen::SOAP::NewPaymentService do
       end
 
       it "includes the given amount of `currency'" do
-        select('./payment:amount') do
-          text('./common:currency').should == 'EUR'
-          text('./common:value').should == '1234'
+        xpath('./payment:amount') do |amount|
+          amount.text('./common:currency').should == 'EUR'
+          amount.text('./common:value').should == '1234'
         end
       end
 
       it "includes the creditcard details" do
-        select('./payment:card') do
+        xpath('./payment:card') do |card|
           # there's no reason why Nokogiri should escape these characters, but as longs as they're correct
-          text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
-          text('./payment:number').should == '4444333322221111'
-          text('./payment:cvc').should == '737'
-          text('./payment:expiryMonth').should == '12'
-          text('./payment:expiryYear').should == '2012'
+          card.text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
+          card.text('./payment:number').should == '4444333322221111'
+          card.text('./payment:cvc').should == '737'
+          card.text('./payment:expiryMonth').should == '12'
+          card.text('./payment:expiryYear').should == '2012'
         end
       end
 
@@ -116,22 +116,22 @@ describe Adyen::SOAP::NewPaymentService do
 
       it "only includes shopper details for given parameters" do
         @payment.params[:shopper].delete(:reference)
-        select('./payment:shopperReference').should be_empty
+        xpath('./payment:shopperReference').should be_empty
         @payment.params[:shopper].delete(:email)
-        select('./payment:shopperEmail').should be_empty
+        xpath('./payment:shopperEmail').should be_empty
         @payment.params[:shopper].delete(:ip)
-        select('./payment:shopperIP').should be_empty
+        xpath('./payment:shopperIP').should be_empty
       end
 
       it "does not include any shopper details if none are given" do
         @payment.params.delete(:shopper)
-        select('./payment:shopperReference').should be_empty
-        select('./payment:shopperEmail').should be_empty
-        select('./payment:shopperIP').should be_empty
+        xpath('./payment:shopperReference').should be_empty
+        xpath('./payment:shopperEmail').should be_empty
+        xpath('./payment:shopperIP').should be_empty
       end
 
       it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
-        select('./recurring:recurring/payment:contract').should be_empty
+        xpath('./recurring:recurring/payment:contract').should be_empty
         @payment.params[:recurring] = true
         text('./recurring:recurring/payment:contract').should == 'RECURRING'
       end
@@ -203,28 +203,17 @@ describe Adyen::SOAP::NewPaymentService do
     'common'    => 'http://common.services.adyen.com'
   }
 
-  def root_for_current_method
-    doc = Nokogiri::XML::Document.parse(@payment.send(@method))
-    doc.xpath('//payment:authorise/payment:paymentRequest', NS)
+  def node_for_current_method
+    node = Adyen::SOAP::XMLQuerier.new(@payment.send(@method))
+    node.xpath('//payment:authorise/payment:paymentRequest')
   end
 
-  def root
-    @root || root_for_current_method
-  end
-
-  def select(query)
-    result = root.xpath(query, NS)
-    if block_given?
-      before, @root = @root, result
-      yield
-    end
-    result
-  ensure
-    @root = before if before
+  def xpath(query, &block)
+    node_for_current_method.xpath(query, &block)
   end
 
   def text(query)
-    select("#{query}/text()").to_s
+    node_for_current_method.text(query)
   end
 end
 
