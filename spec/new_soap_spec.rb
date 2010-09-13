@@ -197,12 +197,6 @@ describe Adyen::SOAP::NewPaymentService do
 
   private
 
-  NS = {
-    'payment'   => 'http://payment.services.adyen.com',
-    'recurring' => 'http://recurring.services.adyen.com',
-    'common'    => 'http://common.services.adyen.com'
-  }
-
   def node_for_current_method
     node = Adyen::SOAP::XMLQuerier.new(@payment.send(@method))
     node.xpath('//payment:authorise/payment:paymentRequest')
