@@ -129,6 +129,12 @@ describe Adyen::SOAP::NewPaymentService do
         select('./payment:shopperEmail').should be_empty
         select('./payment:shopperIP').should be_empty
       end
+
+      it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
+        select('./recurring:recurring/payment:contract').should be_empty
+        @payment.params[:recurring] = true
+        text('./recurring:recurring/payment:contract').should == 'RECURRING'
+      end
     end
 
     describe "authorise_payment" do

@@ -50,6 +50,12 @@ EOS
         </card>
 EOS
 
+      RECURRING_PARTIAL = <<EOS
+        <recurring xmlns="http://recurring.services.adyen.com">
+          <contract xmlns="http://payment.services.adyen.com">RECURRING</contract>
+        </recurring>
+EOS
+
       SHOPPER_PARTIALS = {
         :reference => '        <shopperReference xmlns="http://payment.services.adyen.com">%s</shopperReference>',
         :email     => '        <shopperEmail xmlns="http://payment.services.adyen.com">%s</shopperEmail>',
@@ -79,17 +85,23 @@ EOS
       end
 
       def shopper_partial
-        if shopper = @params[:shopper]
-          shopper.map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
-        else
-          ''
-        end
+        @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
+      end
+
+      def recurring_partial
+        RECURRING_PARTIAL
       end
 
       def authorise_payment_request_body
-        LAYOUT % [@params[:merchant_account], @params[:reference], (amount_partial + card_partial + shopper_partial)]
+        body = ''
+        body << amount_partial
+        body << card_partial
+        body << shopper_partial   if @params[:shopper]
+        body << recurring_partial if @params[:recurring]
+        LAYOUT % [@params[:merchant_account], @params[:reference], body]
       end
 
+      # TODO: validate necessary params
       def authorise_payment
         endpoint = self.class.endpoint
 
