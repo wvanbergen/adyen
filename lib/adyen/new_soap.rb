@@ -50,6 +50,12 @@ EOS
         </card>
 EOS
 
+      SHOPPER_PARTIALS = {
+        :reference => '        <shopperReference xmlns="http://payment.services.adyen.com">%s</shopperReference>',
+        :email     => '        <shopperEmail xmlns="http://payment.services.adyen.com">%s</shopperEmail>',
+        :ip        => '        <shopperIP xmlns="http://payment.services.adyen.com">%s</shopperIP>',
+      }
+
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
       def self.endpoint
@@ -73,19 +79,11 @@ EOS
       end
 
       def shopper_partial
-        partials = []
         if shopper = @params[:shopper]
-          if reference = shopper[:reference]
-            partials << %{        <shopperReference xmlns="http://payment.services.adyen.com">#{reference}</shopperReference>}
-          end
-          if email = shopper[:email]
-            partials << %{        <shopperEmail xmlns="http://payment.services.adyen.com">#{email}</shopperEmail>}
-          end
-          if ip = shopper[:ip]
-            partials << %{        <shopperIP xmlns="http://payment.services.adyen.com">#{ip}</shopperIP>}
-          end
+          shopper.map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
+        else
+          ''
         end
-        partials.join("\n")
       end
 
       def authorise_payment_request_body
