@@ -2,6 +2,9 @@ require "net/https"
 
 module Adyen
   module SOAP
+    # from http://curl.haxx.se/ca/cacert.pem
+    CACERT = File.expand_path('../../../support/cacert.pem', __FILE__)
+
     class << self
       # Username for the HTTP Basic Authentication that Adyen uses. Your username
       # should be something like +ws@Company.MyAccount+
@@ -98,10 +101,8 @@ EOS
 
         request = Net::HTTP.new(endpoint.host, endpoint.port)
         request.use_ssl = true
-
-        # from http://curl.haxx.se/ca/cacert.pem
-        #http_request.ca_file = options[:tls_ca_file] || File.join(File.expand_path('../../../support/cacert.pem', __FILE__))
-        #http_request.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        request.ca_file = CACERT
+        request.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
         request.start do |http|
           response = http.request(post)

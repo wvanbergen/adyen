@@ -153,6 +153,12 @@ describe Adyen::SOAP::NewPaymentService do
         @request.use_ssl.should == true
       end
 
+      it "verifies certificates" do
+        File.should exist(Adyen::SOAP::CACERT)
+        @request.ca_file.should == Adyen::SOAP::CACERT
+        @request.verify_mode.should == OpenSSL::SSL::VERIFY_PEER
+      end
+
       it "uses basic-authentication with the credentials set on the Adyen::SOAP module" do
         username, password = @post.assigned_basic_auth
         username.should == 'SuperShopper'
