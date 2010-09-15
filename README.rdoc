@@ -15,14 +15,20 @@ automated test suite to assert the integration is working correctly.
 
 == Installation
 
-Add the following line to your <tt>environment.rb</tt> and run <tt>rake gems:install</tt>
+<b>Bundler / Rails 3</b>: Add the following line to your <tt>Gemfile</tt>:
+
+  gem 'adyen'
+
+<b>Rails 2.x</b>: Add the following line to your <tt>environment.rb</tt> and run <tt>rake gems:install</tt>
 to make the Adyen functionality available in your Rails project:
 
-    config.gem 'adyen', :source => 'http://gemcutter.org
+  config.gem 'adyen'
 
 You can also install it as a Rails plugin (*deprecated*):
 
-    script/plugin install git://github.com/wvanbergen/adyen.git
+  script/plugin install git://github.com/wvanbergen/adyen.git
+  
+Depending on your use case, you may also need the following gems: activerecord, handsoap and nokogiri.
 
 == Usage
 
