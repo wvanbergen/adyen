@@ -25,7 +25,7 @@ module Adyen
       }
 
       def initialize(data)
-        @node = data.is_a?(Nokogiri::XML::NodeSet) ? data : Nokogiri::XML::Document.parse(data)
+        @node = data.is_a?(String) ? Nokogiri::XML::Document.parse(data) : data
       end
 
       def xpath(query)
@@ -37,6 +37,10 @@ module Adyen
         xpath("#{query}/text()").to_s
       end
 
+      def children
+        @node.children
+      end
+
       def empty?
         @node.empty?
       end
@@ -44,9 +48,44 @@ module Adyen
       def to_s
         @node.to_s
       end
+
+      def map(&block)
+        @node.map { |n| self.class.new(n) }.map(&block)
+      end
     end
 
-    class NewPaymentService
+    class NewBase
+      def self.endpoint
+        @endpoint ||= URI.parse(const_get('ENDPOINT_URI') % Adyen.environment)
+      end
+
+      attr_reader :params
+
+      def initialize(params = {})
+        @params = params
+      end
+
+      def call_webservice_action(action, data)
+        endpoint = self.class.endpoint
+
+        post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
+        post.basic_auth(Adyen::SOAP.username, Adyen::SOAP.password)
+        post.body = data
+
+        request = Net::HTTP.new(endpoint.host, endpoint.port)
+        request.use_ssl = true
+        request.ca_file = CACERT
+        request.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+        request.start do |http|
+          response = http.request(post)
+          #p response
+          XMLQuerier.new(response.body)
+        end
+      end
+    end
+
+    class NewPaymentService < NewBase
       LAYOUT = <<EOS
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -93,16 +132,6 @@ EOS
 
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
-      def self.endpoint
-        @endpoint ||= URI.parse(ENDPOINT_URI % Adyen.environment)
-      end
-
-      attr_reader :params
-
-      def initialize(params = {})
-        @params = params
-      end
-
       def amount_partial
         AMOUNT_PARTIAL % @params[:amount].values_at(:currency, :value)
       end
@@ -142,23 +171,84 @@ EOS
           }
         end
       end
+    end
 
-      def call_webservice_action(action, data)
-        endpoint = self.class.endpoint
+    class NewRecurringService < NewBase
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
-        post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
-        post.basic_auth(Adyen::SOAP.username, Adyen::SOAP.password)
-        post.body = data
+      LAYOUT = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:listRecurringDetails xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:request>
+        <ns1:recurring>
+          <ns1:contract>RECURRING</ns1:contract>
+        </ns1:recurring>
+        <ns1:merchantAccount>%s</ns1:merchantAccount>
+        <ns1:shopperReference>%s</ns1:shopperReference>
+      </ns1:request>
+    </ns1:listRecurringDetails>
+  </soap:Body>
+</soap:Envelope>
+EOS
 
-        request = Net::HTTP.new(endpoint.host, endpoint.port)
-        request.use_ssl = true
-        request.ca_file = CACERT
-        request.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      def list_request_body
+        LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
+      end
 
-        request.start do |http|
-          response = http.request(post)
-          #p response
-          XMLQuerier.new(response.body)
+      def list
+        response = call_webservice_action('listRecurringDetails', list_request_body)
+        response.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
+          {
+            :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
+            :details                  => result.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
+            :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
+            :shopper_reference        => result.text('./recurring:shopperReference')
+          }
+        end
+      end
+
+      # @todo add support for elv
+      def parse_recurring_detail(node)
+        result = if node.xpath('./recurring:bank').children.empty?
+          parse_card_details(node)
+        else
+          parse_bank_details(node)
+        end
+
+        result.merge({
+          :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
+          :variant                    => node.text('./recurring:variant'),
+          :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
+        })
+      end
+
+      def parse_card_details(node)
+        node.xpath('./recurring:card') do |card|
+          {
+            :card => {
+              :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
+              :holder_name => card.text('./payment:holderName'),
+              :number      => card.text('./payment:number')
+            }
+          }
+        end
+      end
+
+      def parse_bank_details(node)
+        node.xpath('./recurring:bank') do |bank|
+          {
+            :bank => {
+              :bank_account_number => bank.text('./payment:bankAccountNumber'),
+              :bank_location_id    => bank.text('./payment:bankLocationId'),
+              :bank_name           => bank.text('./payment:bankName'),
+              :bic                 => bank.text('./payment:bic'),
+              :country_code        => bank.text('./payment:countryCode'),
+              :iban                => bank.text('./payment:iban'),
+              :owner_name          => bank.text('./payment:ownerName')
+            }
+          }
         end
       end
     end

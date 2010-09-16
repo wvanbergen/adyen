@@ -53,38 +53,38 @@ Adyen::SOAP.password = 'aT"gn!e;l35g'
   #end
 #end
 
-payment = Adyen::SOAP::NewPaymentService.new({
-  :merchant_account => 'FngtpsCOM',
-  :reference => '5678',
-  :amount => {
-    :currency => 'EUR',
-    :value => 2000,
-  },
-  :recurring => true,
-  :card => {
-    :expiry_month => 12,
-    :expiry_year => 2012,
-    :holder_name => 'Adyen Test',
-    :number => '5555 5555 5555 4444',
-    :cvc => '737',
-    # Maestro UK/Solo only
-    #:issue_number => ,
-    #:start_month => ,
-    #:start_year => ,
-  },
-  :shopper => {
-    :ip => '61.294.12.12',
-    :email => 's.hopper@test.com',
-    :reference => '12',
-  },
-  # TODO: figure out if the value has any significance
-  #:fraud_offset => 1,
-})
+#payment = Adyen::SOAP::NewPaymentService.new({
+  #:merchant_account => 'FngtpsCOM',
+  #:reference => '5678',
+  #:amount => {
+    #:currency => 'EUR',
+    #:value => 2000,
+  #},
+  #:recurring => true,
+  #:card => {
+    #:expiry_month => 12,
+    #:expiry_year => 2012,
+    #:holder_name => 'Adyen Test',
+    #:number => '5555 5555 5555 4444',
+    #:cvc => '737',
+    ## Maestro UK/Solo only
+    ##:issue_number => ,
+    ##:start_month => ,
+    ##:start_year => ,
+  #},
+  #:shopper => {
+    #:ip => '61.294.12.12',
+    #:email => 's.hopper@test.com',
+    #:reference => '12',
+  #},
+  ## TODO: figure out if the value has any significance
+  ##:fraud_offset => 1,
+#})
 
-puts payment.authorise_payment_request_body
-response = payment.authorise_payment
-p response
-puts response.body
+#puts payment.authorise_payment_request_body
+#response = payment.authorise_payment
+#p response
+#puts response.body
 
-#require 'adyen/soap'
-#p Adyen::SOAP::RecurringService.list(:merchant_account => 'FngtpsCOM', :shopper_reference => '12')
+require 'adyen/soap'
+p Adyen::SOAP::RecurringService.list(:merchant_account => 'FngtpsCOM', :shopper_reference => '12')

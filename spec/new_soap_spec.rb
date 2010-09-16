@@ -13,6 +13,10 @@ module Net
       def basic_auth(username, password)
         @assigned_basic_auth = [username, password]
       end
+
+      def soap_action
+        header['soapaction'].first
+      end
     end
 
     class << self
@@ -39,10 +43,29 @@ module Net
   end
 end
 
+module SOAPSpecHelper
+  def node_for_current_method(object)
+    node = Adyen::SOAP::XMLQuerier.new(object.send(@method))
+  end
+
+  def xpath(query, &block)
+    node_for_current_method.xpath(query, &block)
+  end
+
+  def text(query)
+    node_for_current_method.text(query)
+  end
+end
+
 Adyen::SOAP.username = 'SuperShopper'
 Adyen::SOAP.password = 'secret'
 
 describe Adyen::SOAP::NewPaymentService do
+  include SOAPSpecHelper
+  def node_for_current_method
+    super(@payment).xpath('//payment:authorise/payment:paymentRequest')
+  end
+
   describe "for a normal payment request" do
     before do
       @params = {
@@ -153,6 +176,10 @@ describe Adyen::SOAP::NewPaymentService do
         @post.body.should == @payment.authorise_payment_request_body
       end
 
+      it "posts to the correct SOAP action" do
+        @post.soap_action.should == 'authorise'
+      end
+
       it "posts to Adyen::SOAP::NewPaymentService.endpoint" do
         endpoint = Adyen::SOAP::NewPaymentService.endpoint
         @request.host.should == endpoint.host
@@ -194,20 +221,93 @@ describe Adyen::SOAP::NewPaymentService do
       end
     end
   end
+end
 
-  private
-
+describe Adyen::SOAP::NewRecurringService do
+  include SOAPSpecHelper
   def node_for_current_method
-    node = Adyen::SOAP::XMLQuerier.new(@payment.send(@method))
-    node.xpath('//payment:authorise/payment:paymentRequest')
+    super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
   end
 
-  def xpath(query, &block)
-    node_for_current_method.xpath(query, &block)
+  before do
+    @params = {
+      :merchant_account => 'SuperShopper',
+      :shopper => { :reference => 'user-id' }
+    }
+    @recurring = Adyen::SOAP::NewRecurringService.new(@params)
   end
 
-  def text(query)
-    node_for_current_method.text(query)
+  describe "list_request_body" do
+    before :all do
+      @method = :list_request_body
+    end
+
+    it "includes the merchant account handle" do
+      text('./recurring:merchantAccount').should == 'SuperShopper'
+    end
+
+    it "includes the shopper’s reference" do
+      text('./recurring:shopperReference').should == 'user-id'
+    end
+
+    it "includes the type of contract, which is always `RECURRING'" do
+      text('./recurring:recurring/recurring:contract').should == 'RECURRING'
+    end
+  end
+
+  describe "list" do
+    before do
+      Net::HTTP.reset!
+
+      response = Net::HTTPOK.new('1.1', '200', 'OK')
+      response.stub!(:body).and_return(LIST_RESPONSE)
+      Net::HTTP.stubbed_response = response
+
+      @recurring.list
+      @request, @post = Net::HTTP.posted
+    end
+
+    it "posts the body generated for the given parameters" do
+      @post.body.should == @recurring.list_request_body
+    end
+
+    it "posts to the correct SOAP action" do
+      @post.soap_action.should == 'listRecurringDetails'
+    end
+
+    it "returns a hash with parsed response details" do
+      @recurring.list.should == {
+        :creation_date => DateTime.parse('2009-10-27T11:26:22.203+01:00'),
+        :last_known_shopper_email => 's.hopper@example.com',
+        :shopper_reference => 'user-id',
+        :details => [
+          {
+            :card => {
+              :expiry_date => Date.new(2012, 12, 31),
+              :holder_name => 'S. Hopper',
+              :number => '1111'
+            },
+            :recurring_detail_reference => 'RecurringDetailReference1',
+            :variant => 'mc',
+            :creation_date => DateTime.parse('2009-10-27T11:50:12.178+01:00')
+          },
+          {
+            :bank => {
+              :bank_account_number => '123456789',
+              :bank_location_id => 'bank-location-id',
+              :bank_name => 'AnyBank',
+              :bic => 'BBBBCCLLbbb',
+              :country_code => 'NL',
+              :iban => 'NL69PSTB0001234567',
+              :owner_name => 'S. Hopper'
+            },
+            :recurring_detail_reference => 'RecurringDetailReference2',
+            :variant => 'IDEAL',
+            :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
+          },
+        ],
+      }
+    end
   end
 end
 
@@ -230,6 +330,58 @@ AUTHORISE_RESPONSE = <<EOS
         <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
       </ns1:paymentResult>
     </ns1:authoriseResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+LIST_RESPONSE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:listRecurringDetailsResponse xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:result xmlns:ns2="http://payment.services.adyen.com">
+        <ns1:creationDate>2009-10-27T11:26:22.203+01:00</ns1:creationDate>
+        <details xmlns="http://recurring.services.adyen.com">
+          <RecurringDetail>
+            <bank xsi:nil="true"/>
+            <card>
+              <cvc xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+              <expiryMonth xmlns="http://payment.services.adyen.com">12</expiryMonth>
+              <expiryYear xmlns="http://payment.services.adyen.com">2012</expiryYear>
+              <holderName xmlns="http://payment.services.adyen.com">S. Hopper</holderName>
+              <issueNumber xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+              <number xmlns="http://payment.services.adyen.com">1111</number>
+              <startMonth xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+              <startYear xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+            </card>
+            <creationDate>2009-10-27T11:50:12.178+01:00</creationDate>
+            <elv xsi:nil="true"/>
+            <name/>
+            <recurringDetailReference>RecurringDetailReference1</recurringDetailReference>
+            <variant>mc</variant>
+          </RecurringDetail>
+          <RecurringDetail>
+            <bank>
+              <bankAccountNumber xmlns="http://payment.services.adyen.com">123456789</bankAccountNumber>
+              <bankLocationId xmlns="http://payment.services.adyen.com">bank-location-id</bankLocationId>
+              <bankName xmlns="http://payment.services.adyen.com">AnyBank</bankName>
+              <bic xmlns="http://payment.services.adyen.com">BBBBCCLLbbb</bic>
+              <countryCode xmlns="http://payment.services.adyen.com">NL</countryCode>
+              <iban xmlns="http://payment.services.adyen.com">NL69PSTB0001234567</iban>
+              <ownerName xmlns="http://payment.services.adyen.com">S. Hopper</ownerName>
+            </bank>
+            <card xsi:nil="true"/>
+            <creationDate>2009-10-27T11:26:22.216+01:00</creationDate>
+            <elv xsi:nil="true"/>
+            <name/>
+            <recurringDetailReference>RecurringDetailReference2</recurringDetailReference>
+            <variant>IDEAL</variant>
+          </RecurringDetail>
+        </details>
+        <ns1:lastKnownShopperEmail>s.hopper@example.com</ns1:lastKnownShopperEmail>
+        <ns1:shopperReference>user-id</ns1:shopperReference>
+      </ns1:result>
+    </ns1:listRecurringDetailsResponse>
   </soap:Body>
 </soap:Envelope>
 EOS
