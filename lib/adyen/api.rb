@@ -166,12 +166,46 @@ module Adyen
         'common'    => 'http://common.services.adyen.com'
       }
 
+      class << self
+        attr_accessor :backend
+
+        def backend=(backend)
+          @backend = backend
+          class_eval do
+            private
+            if backend == :nokogiri
+              def document_for_xml(xml)
+                Nokogiri::XML::Document.parse(xml)
+              end
+              def perform_xpath(query)
+                @node.xpath(query, NS)
+              end
+            else
+              def document_for_xml(xml)
+                REXML::Document.new(xml)
+              end
+              def perform_xpath(query)
+                REXML::XPath.match(@node, query, NS)
+              end
+            end
+          end
+        end
+      end
+
+      begin
+        require 'nokogiri'
+        self.backend = :nokogiri
+      rescue LoadError
+        require 'rexml/document'
+        self.backend = :rexml
+      end
+
       def initialize(data)
-        @node = data.is_a?(String) ? Nokogiri::XML::Document.parse(data) : data
+        @node = data.is_a?(String) ? document_for_xml(data) : data
       end
 
       def xpath(query)
-        result = self.class.new(@node.xpath(query, NS))
+        result = self.class.new(perform_xpath(query))
         block_given? ? yield(result) : result
       end
 
@@ -180,7 +214,7 @@ module Adyen
       end
 
       def children
-        @node.children
+        @node.first.children
       end
 
       def empty?

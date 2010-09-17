@@ -3,6 +3,7 @@ require 'adyen/api'
 
 require 'rubygems'
 require 'nokogiri'
+require 'rexml/document'
 
 module Net
   class HTTP
@@ -88,6 +89,22 @@ module APISpecHelper
     response = Net::HTTPOK.new('1.1', '200', 'OK')
     response.stub!(:body).and_return(response_body)
     Net::HTTP.stubbed_response = response
+  end
+
+  def self.included(klass)
+    klass.extend ClassMethods
+  end
+
+  module ClassMethods
+    def for_each_xml_backend(&block)
+      [:nokogiri, :rexml].each do |xml_backend|
+        describe "with a #{xml_backend} backend" do
+          before { Adyen::API::XMLQuerier.backend = xml_backend }
+          after  { Adyen::API::XMLQuerier.backend = :nokogiri }
+          instance_eval(&block)
+        end
+      end
+    end
   end
 
   class SOAPClient < Adyen::API::SimpleSOAPClient
@@ -282,13 +299,15 @@ describe Adyen::API do
           @post.soap_action.should == 'authorise'
         end
 
-        it "returns a hash with parsed response details" do
-          @payment.authorise_payment.should == {
-            :psp_reference => '9876543210987654',
-            :result_code => 'Authorised',
-            :auth_code => '1234',
-            :refusal_reason => ''
-          }
+        for_each_xml_backend do
+          it "returns a hash with parsed response details" do
+            @payment.authorise_payment.should == {
+              :psp_reference => '9876543210987654',
+              :result_code => 'Authorised',
+              :auth_code => '1234',
+              :refusal_reason => ''
+            }
+          end
         end
       end
     end
@@ -346,38 +365,40 @@ describe Adyen::API do
         @post.soap_action.should == 'listRecurringDetails'
       end
 
-      it "returns a hash with parsed response details" do
-        @recurring.list.should == {
-          :creation_date => DateTime.parse('2009-10-27T11:26:22.203+01:00'),
-          :last_known_shopper_email => 's.hopper@example.com',
-          :shopper_reference => 'user-id',
-          :details => [
-            {
-              :card => {
-                :expiry_date => Date.new(2012, 12, 31),
-                :holder_name => 'S. Hopper',
-                :number => '1111'
+      for_each_xml_backend do
+        it "returns a hash with parsed response details" do
+          @recurring.list.should == {
+            :creation_date => DateTime.parse('2009-10-27T11:26:22.203+01:00'),
+            :last_known_shopper_email => 's.hopper@example.com',
+            :shopper_reference => 'user-id',
+            :details => [
+              {
+                :card => {
+                  :expiry_date => Date.new(2012, 12, 31),
+                  :holder_name => 'S. Hopper',
+                  :number => '1111'
+                },
+                :recurring_detail_reference => 'RecurringDetailReference1',
+                :variant => 'mc',
+                :creation_date => DateTime.parse('2009-10-27T11:50:12.178+01:00')
               },
-              :recurring_detail_reference => 'RecurringDetailReference1',
-              :variant => 'mc',
-              :creation_date => DateTime.parse('2009-10-27T11:50:12.178+01:00')
-            },
-            {
-              :bank => {
-                :bank_account_number => '123456789',
-                :bank_location_id => 'bank-location-id',
-                :bank_name => 'AnyBank',
-                :bic => 'BBBBCCLLbbb',
-                :country_code => 'NL',
-                :iban => 'NL69PSTB0001234567',
-                :owner_name => 'S. Hopper'
+              {
+                :bank => {
+                  :bank_account_number => '123456789',
+                  :bank_location_id => 'bank-location-id',
+                  :bank_name => 'AnyBank',
+                  :bic => 'BBBBCCLLbbb',
+                  :country_code => 'NL',
+                  :iban => 'NL69PSTB0001234567',
+                  :owner_name => 'S. Hopper'
+                },
+                :recurring_detail_reference => 'RecurringDetailReference2',
+                :variant => 'IDEAL',
+                :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
               },
-              :recurring_detail_reference => 'RecurringDetailReference2',
-              :variant => 'IDEAL',
-              :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
-            },
-          ],
-        }
+            ],
+          }
+        end
       end
     end
 
