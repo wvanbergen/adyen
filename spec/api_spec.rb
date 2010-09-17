@@ -43,6 +43,18 @@ module Net
   end
 end
 
+module Adyen
+  module API
+    class PaymentService
+      public :authorise_payment_request_body
+    end
+
+    class RecurringService
+      public :list_request_body
+    end
+  end
+end
+
 module APISpecHelper
   def node_for_current_method(object)
     node = Adyen::API::XMLQuerier.new(object.send(@method))
@@ -60,7 +72,7 @@ end
 Adyen::API.username = 'SuperShopper'
 Adyen::API.password = 'secret'
 
-describe Adyen::API::NewPaymentService do
+describe Adyen::API::PaymentService do
   include APISpecHelper
   def node_for_current_method
     super(@payment).xpath('//payment:authorise/payment:paymentRequest')
@@ -92,7 +104,7 @@ describe Adyen::API::NewPaymentService do
           #:start_year => ,
         }
       }
-      @payment = Adyen::API::NewPaymentService.new(@params)
+      @payment = Adyen::API::PaymentService.new(@params)
     end
 
     describe "authorise_payment_request_body" do
@@ -180,8 +192,8 @@ describe Adyen::API::NewPaymentService do
         @post.soap_action.should == 'authorise'
       end
 
-      it "posts to Adyen::API::NewPaymentService.endpoint" do
-        endpoint = Adyen::API::NewPaymentService.endpoint
+      it "posts to Adyen::API::PaymentService.endpoint" do
+        endpoint = Adyen::API::PaymentService.endpoint
         @request.host.should == endpoint.host
         @request.port.should == endpoint.port
         @post.path.should == endpoint.path
@@ -192,8 +204,8 @@ describe Adyen::API::NewPaymentService do
       end
 
       it "verifies certificates" do
-        File.should exist(Adyen::API::CACERT)
-        @request.ca_file.should == Adyen::API::CACERT
+        File.should exist(Adyen::API::SimpleSOAPClient::CACERT)
+        @request.ca_file.should == Adyen::API::SimpleSOAPClient::CACERT
         @request.verify_mode.should == OpenSSL::SSL::VERIFY_PEER
       end
 
@@ -223,7 +235,7 @@ describe Adyen::API::NewPaymentService do
   end
 end
 
-describe Adyen::API::NewRecurringService do
+describe Adyen::API::RecurringService do
   include APISpecHelper
   def node_for_current_method
     super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
@@ -234,7 +246,7 @@ describe Adyen::API::NewRecurringService do
       :merchant_account => 'SuperShopper',
       :shopper => { :reference => 'user-id' }
     }
-    @recurring = Adyen::API::NewRecurringService.new(@params)
+    @recurring = Adyen::API::RecurringService.new(@params)
   end
 
   describe "list_request_body" do
