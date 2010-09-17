@@ -46,6 +46,8 @@ module Adyen
 
         request.start do |http|
           response = http.request(post)
+          # TODO: handle not 2xx responses
+          #p response
           XMLQuerier.new(response.body)
         end
       end

@@ -5,3 +5,4 @@ adyen-*.gem
 .yardoc
 *.swp
 .DS_Store
+spec/functional/initializer.rb
