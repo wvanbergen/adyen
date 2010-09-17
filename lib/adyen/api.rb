@@ -1,7 +1,7 @@
 require "net/https"
 
 module Adyen
-  module SOAP
+  module API
     # from http://curl.haxx.se/ca/cacert.pem
     CACERT = File.expand_path('../../../support/cacert.pem', __FILE__)
 
@@ -69,7 +69,7 @@ module Adyen
         endpoint = self.class.endpoint
 
         post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
-        post.basic_auth(Adyen::SOAP.username, Adyen::SOAP.password)
+        post.basic_auth(API.username, API.password)
         post.body = data
 
         request = Net::HTTP.new(endpoint.host, endpoint.port)

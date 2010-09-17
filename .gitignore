@@ -4,3 +4,4 @@
 adyen-*.gem
 .yardoc
 *.swp
+.DS_Store

@@ -1,5 +1,5 @@
 require File.expand_path('../spec_helper', __FILE__)
-require 'adyen/new_soap'
+require 'adyen/api'
 
 require 'rubygems'
 require 'nokogiri'
@@ -43,9 +43,9 @@ module Net
   end
 end
 
-module SOAPSpecHelper
+module APISpecHelper
   def node_for_current_method(object)
-    node = Adyen::SOAP::XMLQuerier.new(object.send(@method))
+    node = Adyen::API::XMLQuerier.new(object.send(@method))
   end
 
   def xpath(query, &block)
@@ -57,11 +57,11 @@ module SOAPSpecHelper
   end
 end
 
-Adyen::SOAP.username = 'SuperShopper'
-Adyen::SOAP.password = 'secret'
+Adyen::API.username = 'SuperShopper'
+Adyen::API.password = 'secret'
 
-describe Adyen::SOAP::NewPaymentService do
-  include SOAPSpecHelper
+describe Adyen::API::NewPaymentService do
+  include APISpecHelper
   def node_for_current_method
     super(@payment).xpath('//payment:authorise/payment:paymentRequest')
   end
@@ -92,7 +92,7 @@ describe Adyen::SOAP::NewPaymentService do
           #:start_year => ,
         }
       }
-      @payment = Adyen::SOAP::NewPaymentService.new(@params)
+      @payment = Adyen::API::NewPaymentService.new(@params)
     end
 
     describe "authorise_payment_request_body" do
@@ -180,8 +180,8 @@ describe Adyen::SOAP::NewPaymentService do
         @post.soap_action.should == 'authorise'
       end
 
-      it "posts to Adyen::SOAP::NewPaymentService.endpoint" do
-        endpoint = Adyen::SOAP::NewPaymentService.endpoint
+      it "posts to Adyen::API::NewPaymentService.endpoint" do
+        endpoint = Adyen::API::NewPaymentService.endpoint
         @request.host.should == endpoint.host
         @request.port.should == endpoint.port
         @post.path.should == endpoint.path
@@ -192,12 +192,12 @@ describe Adyen::SOAP::NewPaymentService do
       end
 
       it "verifies certificates" do
-        File.should exist(Adyen::SOAP::CACERT)
-        @request.ca_file.should == Adyen::SOAP::CACERT
+        File.should exist(Adyen::API::CACERT)
+        @request.ca_file.should == Adyen::API::CACERT
         @request.verify_mode.should == OpenSSL::SSL::VERIFY_PEER
       end
 
-      it "uses basic-authentication with the credentials set on the Adyen::SOAP module" do
+      it "uses basic-authentication with the credentials set on the Adyen::API module" do
         username, password = @post.assigned_basic_auth
         username.should == 'SuperShopper'
         password.should == 'secret'
@@ -223,8 +223,8 @@ describe Adyen::SOAP::NewPaymentService do
   end
 end
 
-describe Adyen::SOAP::NewRecurringService do
-  include SOAPSpecHelper
+describe Adyen::API::NewRecurringService do
+  include APISpecHelper
   def node_for_current_method
     super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
   end
@@ -234,7 +234,7 @@ describe Adyen::SOAP::NewRecurringService do
       :merchant_account => 'SuperShopper',
       :shopper => { :reference => 'user-id' }
     }
-    @recurring = Adyen::SOAP::NewRecurringService.new(@params)
+    @recurring = Adyen::API::NewRecurringService.new(@params)
   end
 
   describe "list_request_body" do
