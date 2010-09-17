@@ -12,7 +12,11 @@ module Adyen
       # your password yourself in the user management tool of the merchant area.
       # @return [String] 
       attr_accessor :password
+
+      attr_accessor :default_params
     end
+
+    self.default_params = {}
 
     class SimpleSOAPClient
       # from http://curl.haxx.se/ca/cacert.pem
@@ -25,7 +29,7 @@ module Adyen
       attr_reader :params
 
       def initialize(params = {})
-        @params = params
+        @params = API.default_params.merge(params)
       end
 
       def call_webservice_action(action, data)

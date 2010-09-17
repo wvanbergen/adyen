@@ -10,8 +10,13 @@ module Net
       attr_reader :header
       attr_reader :assigned_basic_auth
 
+      alias old_basic_auth basic_auth
       def basic_auth(username, password)
-        @assigned_basic_auth = [username, password]
+        if Net::HTTP.stubbing_enabled
+          @assigned_basic_auth = [username, password]
+        else
+          old_basic_auth
+        end
       end
 
       def soap_action
@@ -20,7 +25,11 @@ module Net
     end
 
     class << self
-      attr_accessor :posted, :stubbed_response
+      attr_accessor :stubbing_enabled, :posted, :stubbed_response
+
+      def stubbing_enabled=(enabled)
+        reset! if @stubbing_enabled = enabled
+      end
 
       def reset!
         @posted = nil
@@ -32,13 +41,19 @@ module Net
       @address
     end
 
+    alias old_start start
     def start
-      yield self
+      Net::HTTP.stubbing_enabled ? yield(self) : old_start
     end
 
+    alias old_request request
     def request(request)
-      self.class.posted = [self, request]
-      self.class.stubbed_response
+      if Net::HTTP.stubbing_enabled
+        self.class.posted = [self, request]
+        self.class.stubbed_response
+      else
+        old_request(request)
+      end
     end
   end
 end
@@ -67,17 +82,90 @@ module APISpecHelper
   def text(query)
     node_for_current_method.text(query)
   end
+
+  def stub_net_http(response_body)
+    Net::HTTP.stubbing_enabled = true
+    response = Net::HTTPOK.new('1.1', '200', 'OK')
+    response.stub!(:body).and_return(response_body)
+    Net::HTTP.stubbed_response = response
+  end
+
+  class SOAPClient < Adyen::API::SimpleSOAPClient
+    ENDPOINT_URI = 'https://%s.example.com/soap/Action'
+  end
 end
 
+Adyen::API.default_params = { :merchant_account => 'SuperShopper' }
 Adyen::API.username = 'SuperShopper'
 Adyen::API.password = 'secret'
 
-describe Adyen::API::PaymentService do
-  include APISpecHelper
-  def node_for_current_method
-    super(@payment).xpath('//payment:authorise/payment:paymentRequest')
+describe Adyen::API::SimpleSOAPClient do
+  before do
+    @client = APISpecHelper::SOAPClient.new(:reference => 'order-id')
   end
 
+  it "returns the endpoint, for the current environment, from the ENDPOINT_URI constant" do
+    uri = APISpecHelper::SOAPClient.endpoint
+    uri.scheme.should == 'https'
+    uri.host.should == 'test.example.com'
+    uri.path.should == '/soap/Action'
+  end
+
+  it "initializes with the given parameters" do
+    @client.params[:reference].should == 'order-id'
+  end
+
+  it "merges the default parameters with the given ones" do
+    @client.params[:merchant_account].should == 'SuperShopper'
+  end
+
+  describe "call_webservice_action" do
+    include APISpecHelper
+
+    before do
+      stub_net_http(AUTHORISE_RESPONSE)
+      @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>')
+      @request, @post = Net::HTTP.posted
+    end
+
+    after do
+      Net::HTTP.stubbing_enabled = false
+    end
+
+    it "posts to the class's endpoint" do
+      endpoint = APISpecHelper::SOAPClient.endpoint
+      @request.host.should == endpoint.host
+      @request.port.should == endpoint.port
+      @post.path.should == endpoint.path
+    end
+
+    it "makes a request over SSL" do
+      @request.use_ssl.should == true
+    end
+
+    it "verifies certificates" do
+      File.should exist(Adyen::API::SimpleSOAPClient::CACERT)
+      @request.ca_file.should == Adyen::API::SimpleSOAPClient::CACERT
+      @request.verify_mode.should == OpenSSL::SSL::VERIFY_PEER
+    end
+
+    it "uses basic-authentication with the credentials set on the Adyen::API module" do
+      username, password = @post.assigned_basic_auth
+      username.should == 'SuperShopper'
+      password.should == 'secret'
+    end
+
+    it "sends the proper headers" do
+      @post.header.should == {
+        'accept'       => ['text/xml'],
+        'content-type' => ['text/xml; charset=utf-8'],
+        'soapaction'   => ['Action']
+      }
+    end
+  end
+end
+
+describe Adyen::API::PaymentService do
   describe "for a normal payment request" do
     before do
       @params = {
@@ -174,14 +262,13 @@ describe Adyen::API::PaymentService do
 
     describe "authorise_payment" do
       before do
-        Net::HTTP.reset!
-
-        response = Net::HTTPOK.new('1.1', '200', 'OK')
-        response.stub!(:body).and_return(AUTHORISE_RESPONSE)
-        Net::HTTP.stubbed_response = response
-
+        stub_net_http(AUTHORISE_RESPONSE)
         @payment.authorise_payment
         @request, @post = Net::HTTP.posted
+      end
+
+      after do
+        Net::HTTP.stubbing_enabled = false
       end
 
       it "posts the body generated for the given parameters" do
@@ -190,37 +277,6 @@ describe Adyen::API::PaymentService do
 
       it "posts to the correct SOAP action" do
         @post.soap_action.should == 'authorise'
-      end
-
-      it "posts to Adyen::API::PaymentService.endpoint" do
-        endpoint = Adyen::API::PaymentService.endpoint
-        @request.host.should == endpoint.host
-        @request.port.should == endpoint.port
-        @post.path.should == endpoint.path
-      end
-
-      it "makes a request over SSL" do
-        @request.use_ssl.should == true
-      end
-
-      it "verifies certificates" do
-        File.should exist(Adyen::API::SimpleSOAPClient::CACERT)
-        @request.ca_file.should == Adyen::API::SimpleSOAPClient::CACERT
-        @request.verify_mode.should == OpenSSL::SSL::VERIFY_PEER
-      end
-
-      it "uses basic-authentication with the credentials set on the Adyen::API module" do
-        username, password = @post.assigned_basic_auth
-        username.should == 'SuperShopper'
-        password.should == 'secret'
-      end
-
-      it "sends the proper headers" do
-        @post.header.should == {
-          'accept'       => ['text/xml'],
-          'content-type' => ['text/xml; charset=utf-8'],
-          'soapaction'   => ['authorise']
-        }
       end
 
       it "returns a hash with parsed response details" do
@@ -233,14 +289,17 @@ describe Adyen::API::PaymentService do
       end
     end
   end
+
+  private
+
+  include APISpecHelper
+
+  def node_for_current_method
+    super(@payment).xpath('//payment:authorise/payment:paymentRequest')
+  end
 end
 
 describe Adyen::API::RecurringService do
-  include APISpecHelper
-  def node_for_current_method
-    super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
-  end
-
   before do
     @params = {
       :merchant_account => 'SuperShopper',
@@ -269,14 +328,13 @@ describe Adyen::API::RecurringService do
 
   describe "list" do
     before do
-      Net::HTTP.reset!
-
-      response = Net::HTTPOK.new('1.1', '200', 'OK')
-      response.stub!(:body).and_return(LIST_RESPONSE)
-      Net::HTTP.stubbed_response = response
-
+      stub_net_http(LIST_RESPONSE)
       @recurring.list
       @request, @post = Net::HTTP.posted
+    end
+
+    after do
+      Net::HTTP.stubbing_enabled = false
     end
 
     it "posts the body generated for the given parameters" do
@@ -320,6 +378,14 @@ describe Adyen::API::RecurringService do
         ],
       }
     end
+  end
+
+  private
+
+  include APISpecHelper
+
+  def node_for_current_method
+    super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
   end
 end
 
