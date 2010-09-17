@@ -69,6 +69,18 @@ module Adyen
         end
       end
 
+      def authorise_recurring_payment
+        response = call_webservice_action('authorise', authorise_recurring_payment_request_body)
+        response.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+          {
+            :psp_reference  => result.text('./payment:pspReference'),
+            :result_code    => result.text('./payment:resultCode'),
+            :auth_code      => result.text('./payment:authCode'),
+            :refusal_reason => result.text('./payment:refusalReason')
+          }
+        end 
+      end
+
       private
 
       def authorise_payment_request_body

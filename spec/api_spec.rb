@@ -343,6 +343,37 @@ describe Adyen::API do
           text('./payment:selectedRecurringDetailReference').should == 'RecurringDetailReference1'
         end
       end
+
+      describe "authorise_recurring_payment" do
+        before do
+          stub_net_http(AUTHORISE_RESPONSE)
+          @payment.authorise_recurring_payment
+          @request, @post = Net::HTTP.posted
+        end
+
+        after do
+          Net::HTTP.stubbing_enabled = false
+        end
+
+        it "posts the body generated for the given parameters" do
+          @post.body.should == @payment.authorise_recurring_payment_request_body
+        end
+
+        it "posts to the correct SOAP action" do
+          @post.soap_action.should == 'authorise'
+        end
+
+        for_each_xml_backend do
+          it "returns a hash with parsed response details" do
+            @payment.authorise_recurring_payment.should == {
+              :psp_reference => '9876543210987654',
+              :result_code => 'Authorised',
+              :auth_code => '1234',
+              :refusal_reason => ''
+            }
+          end
+        end
+      end
     end
 
     private
