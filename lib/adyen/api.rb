@@ -18,6 +18,24 @@ module Adyen
 
     self.default_params = {}
 
+    #
+    # Shortcut methods
+    #
+
+    def self.authorise_payment(params = {})
+      PaymentService.new(params).authorise_payment
+    end
+
+    def self.authorise_recurring_payment(params = {})
+      PaymentService.new(params).authorise_recurring_payment
+    end
+
+    # TODO: the rest
+
+    #
+    # The actual classes
+    #
+
     class SimpleSOAPClient
       # from http://curl.haxx.se/ca/cacert.pem
       CACERT = File.expand_path('../../../support/cacert.pem', __FILE__)
@@ -113,6 +131,7 @@ module Adyen
     class RecurringService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
+      # TODO: rename to list_details and make shortcut method take the only necessary param
       def list
         response = call_webservice_action('listRecurringDetails', list_request_body)
         response.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|

@@ -13,7 +13,7 @@ if File.exist?(API_SPEC_INITIALIZER)
     end
 
     it "performs a payment request" do
-      payment = Adyen::API::PaymentService.new({
+      response = Adyen::API.authorise_payment({
         :reference => 'order-id',
         :amount => {
           :currency => 'EUR',
@@ -36,7 +36,6 @@ if File.exist?(API_SPEC_INITIALIZER)
           #:start_year => ,
         }
       })
-      response = payment.authorise_payment
       response[:result_code].should == 'Authorised'
       response[:psp_reference].should_not be_empty
     end

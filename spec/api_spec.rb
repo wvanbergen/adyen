@@ -224,11 +224,26 @@ describe Adyen::API do
     end
   end
 
+  describe "shortcut methods" do
+    it "performs a `authorise payment' request" do
+      payment = mock('PaymentService')
+      Adyen::API::PaymentService.should_receive(:new).with(:reference => 'order-id').and_return(payment)
+      payment.should_receive(:authorise_payment)
+      Adyen::API.authorise_payment(:reference => 'order-id')
+    end
+
+    it "performs a `authorise recurring payment' request" do
+      payment = mock('PaymentService')
+      Adyen::API::PaymentService.should_receive(:new).with(:reference => 'order-id').and_return(payment)
+      payment.should_receive(:authorise_recurring_payment)
+      Adyen::API.authorise_recurring_payment(:reference => 'order-id')
+    end
+  end
+
   describe Adyen::API::PaymentService do
     describe "for a normal payment request" do
       before do
         @params = {
-          :merchant_account => 'SuperShopper',
           :reference => 'order-id',
           :amount => {
             :currency => 'EUR',
@@ -385,10 +400,7 @@ describe Adyen::API do
 
   describe Adyen::API::RecurringService do
     before do
-      @params = {
-        :merchant_account => 'SuperShopper',
-        :shopper => { :reference => 'user-id' }
-      }
+      @params = { :shopper => { :reference => 'user-id' } }
       @recurring = Adyen::API::RecurringService.new(@params)
     end
 
