@@ -71,21 +71,21 @@ module Adyen
 
       private
 
-      def authorise_payment_request_body(recurring_body = nil)
-        body = ''
-        body << amount_partial
-        body << card_partial
-        body << RECURRING_PARTIAL if @params[:recurring]
-        body << shopper_partial   if @params[:shopper]
-        LAYOUT % [@params[:merchant_account], @params[:reference], body]
+      def authorise_payment_request_body
+        content = card_partial
+        content << RECURRING_PARTIAL if @params[:recurring]
+        payment_request_body(content)
       end
 
       def authorise_recurring_payment_request_body
-        body = ''
-        body << amount_partial
-        body << RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
-        body << shopper_partial if @params[:shopper]
-        LAYOUT % [@params[:merchant_account], @params[:reference], body]
+        content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
+        payment_request_body(content)
+      end
+
+      def payment_request_body(content)
+        content << amount_partial
+        content << shopper_partial if @params[:shopper]
+        LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
       def amount_partial
