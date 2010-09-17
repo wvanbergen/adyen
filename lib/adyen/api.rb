@@ -56,9 +56,18 @@ module Adyen
     class PaymentService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
-      # TODO: validate necessary params
       def authorise_payment
-        response = call_webservice_action('authorise', authorise_payment_request_body)
+        make_payment_request(authorise_payment_request_body)
+      end
+
+      def authorise_recurring_payment
+        make_payment_request(authorise_recurring_payment_request_body)
+      end
+
+      private
+
+      def make_payment_request(data)
+        response = call_webservice_action('authorise', data)
         response.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
           {
             :psp_reference  => result.text('./payment:pspReference'),
@@ -68,20 +77,6 @@ module Adyen
           }
         end
       end
-
-      def authorise_recurring_payment
-        response = call_webservice_action('authorise', authorise_recurring_payment_request_body)
-        response.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
-          {
-            :psp_reference  => result.text('./payment:pspReference'),
-            :result_code    => result.text('./payment:resultCode'),
-            :auth_code      => result.text('./payment:authCode'),
-            :refusal_reason => result.text('./payment:refusalReason')
-          }
-        end 
-      end
-
-      private
 
       def authorise_payment_request_body
         content = card_partial
