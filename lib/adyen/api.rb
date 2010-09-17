@@ -71,12 +71,20 @@ module Adyen
 
       private
 
-      def authorise_payment_request_body
+      def authorise_payment_request_body(recurring_body = nil)
         body = ''
         body << amount_partial
         body << card_partial
-        body << recurring_partial if @params[:recurring]
+        body << RECURRING_PARTIAL if @params[:recurring]
         body << shopper_partial   if @params[:shopper]
+        LAYOUT % [@params[:merchant_account], @params[:reference], body]
+      end
+
+      def authorise_recurring_payment_request_body
+        body = ''
+        body << amount_partial
+        body << RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
+        body << shopper_partial if @params[:shopper]
         LAYOUT % [@params[:merchant_account], @params[:reference], body]
       end
 
@@ -92,10 +100,6 @@ module Adyen
 
       def shopper_partial
         @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
-      end
-
-      def recurring_partial
-        RECURRING_PARTIAL
       end
     end
 
@@ -277,6 +281,11 @@ EOS
         <recurring xmlns="http://recurring.services.adyen.com">
           <contract xmlns="http://payment.services.adyen.com">RECURRING</contract>
         </recurring>
+EOS
+
+      RECURRING_PAYMENT_BODY_PARTIAL = RECURRING_PARTIAL + <<EOS
+        <ns1:selectedRecurringDetailReference>%s</ns1:selectedRecurringDetailReference>
+        <ns1:shopperInteraction>ContAuth</ns1:shopperInteraction>
 EOS
 
       SHOPPER_PARTIALS = {

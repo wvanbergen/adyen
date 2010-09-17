@@ -62,7 +62,7 @@ end
 module Adyen
   module API
     class PaymentService
-      public :authorise_payment_request_body
+      public :authorise_payment_request_body, :authorise_recurring_payment_request_body
     end
 
     class RecurringService
@@ -109,6 +109,45 @@ module APISpecHelper
 
   class SOAPClient < Adyen::API::SimpleSOAPClient
     ENDPOINT_URI = 'https://%s.example.com/soap/Action'
+  end
+end
+
+shared_examples_for "payment requests" do
+  it "includes the merchant account handle" do
+    text('./payment:merchantAccount').should == 'SuperShopper'
+  end
+
+  it "includes the payment reference of the merchant" do
+    text('./payment:reference').should == 'order-id'
+  end
+
+  it "includes the given amount of `currency'" do
+    xpath('./payment:amount') do |amount|
+      amount.text('./common:currency').should == 'EUR'
+      amount.text('./common:value').should == '1234'
+    end
+  end
+
+  it "includes the shopper’s details" do
+    text('./payment:shopperReference').should == 'user-id'
+    text('./payment:shopperEmail').should == 's.hopper@example.com'
+    text('./payment:shopperIP').should == '61.294.12.12'
+  end
+
+  it "only includes shopper details for given parameters" do
+    @payment.params[:shopper].delete(:reference)
+    xpath('./payment:shopperReference').should be_empty
+    @payment.params[:shopper].delete(:email)
+    xpath('./payment:shopperEmail').should be_empty
+    @payment.params[:shopper].delete(:ip)
+    xpath('./payment:shopperIP').should be_empty
+  end
+
+  it "does not include any shopper details if none are given" do
+    @payment.params.delete(:shopper)
+    xpath('./payment:shopperReference').should be_empty
+    xpath('./payment:shopperEmail').should be_empty
+    xpath('./payment:shopperIP').should be_empty
   end
 end
 
@@ -220,24 +259,11 @@ describe Adyen::API do
           @method = :authorise_payment_request_body
         end
 
-        it "includes the merchant account handle" do
-          text('./payment:merchantAccount').should == 'SuperShopper'
-        end
-
-        it "includes the payment reference of the merchant" do
-          text('./payment:reference').should == 'order-id'
-        end
-
-        it "includes the given amount of `currency'" do
-          xpath('./payment:amount') do |amount|
-            amount.text('./common:currency').should == 'EUR'
-            amount.text('./common:value').should == '1234'
-          end
-        end
+        it_should_behave_like "payment requests"
 
         it "includes the creditcard details" do
           xpath('./payment:card') do |card|
-            # there's no reason why Nokogiri should escape these characters, but as longs as they're correct
+            # there's no reason why Nokogiri should escape these characters, but as long as they're correct
             card.text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
             card.text('./payment:number').should == '4444333322221111'
             card.text('./payment:cvc').should == '737'
@@ -249,28 +275,6 @@ describe Adyen::API do
         it "formats the creditcard’s expiry month as a two digit number" do
           @payment.params[:card][:expiry_month] = 6
           text('./payment:card/payment:expiryMonth').should == '06'
-        end
-
-        it "includes the shopper’s details" do
-          text('./payment:shopperReference').should == 'user-id'
-          text('./payment:shopperEmail').should == 's.hopper@example.com'
-          text('./payment:shopperIP').should == '61.294.12.12'
-        end
-
-        it "only includes shopper details for given parameters" do
-          @payment.params[:shopper].delete(:reference)
-          xpath('./payment:shopperReference').should be_empty
-          @payment.params[:shopper].delete(:email)
-          xpath('./payment:shopperEmail').should be_empty
-          @payment.params[:shopper].delete(:ip)
-          xpath('./payment:shopperIP').should be_empty
-        end
-
-        it "does not include any shopper details if none are given" do
-          @payment.params.delete(:shopper)
-          xpath('./payment:shopperReference').should be_empty
-          xpath('./payment:shopperEmail').should be_empty
-          xpath('./payment:shopperIP').should be_empty
         end
 
         it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
@@ -308,6 +312,35 @@ describe Adyen::API do
               :refusal_reason => ''
             }
           end
+        end
+      end
+
+      describe "authorise_recurring_payment_request_body" do
+        before :all do
+          @method = :authorise_recurring_payment_request_body
+        end
+
+        it_should_behave_like "payment requests"
+
+        it "does not include any creditcard details" do
+          xpath('./payment:card').should be_empty
+        end
+
+        it "includes the contract type, which is always `RECURRING'" do
+          text('./recurring:recurring/payment:contract').should == 'RECURRING'
+        end
+
+        it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
+          text('./payment:shopperInteraction').should == 'ContAuth'
+        end
+
+        it "uses the latest recurring detail reference, by default" do
+          text('./payment:selectedRecurringDetailReference').should == 'LATEST'
+        end
+
+        it "uses the given recurring detail reference" do
+          @payment.params[:recurring_detail_reference] = 'RecurringDetailReference1'
+          text('./payment:selectedRecurringDetailReference').should == 'RecurringDetailReference1'
         end
       end
     end
