@@ -26,7 +26,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency('nokogiri')
 
   s.requirements << 'Handsoap is required for accessing the SOAP services. See http://github.com/troelskn/handsoap.'
-  s.requirements << 'LibXML is required for using the RSpec matchers.'
   s.requirements << 'ActiveRecord is required for storing the notifications in your database.'
 
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
