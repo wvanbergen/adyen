@@ -21,8 +21,8 @@ module Adyen
   # @see Adyen::Form.redirect_url
   # @see Adyen::Form.redirect_signature_check
   module Form
-
-    extend ActionView::Helpers::TagHelper
+    include ActionView::Helpers::TagHelper
+    extend self
 
     ######################################################
     # SKINS
@@ -30,7 +30,7 @@ module Adyen
 
     # Returns all registered skins and their accompanying skin code and shared secret.
     # @return [Hash] The hash of registered skins.
-    def self.skins
+    def skins
       @skins ||= {}
     end
     
@@ -38,7 +38,7 @@ module Adyen
     # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash 
     #    (which should include +:skin_code+ and +:shared_secret+) as value.
     # @see Adyen::Form.register_skin
-    def self.skins=(hash)
+    def skins=(hash)
       @skins = hash.inject({}) do |skins, (name, skin)|
         skins[name.to_sym] = skin.merge(:name => name.to_sym)
         skins
@@ -58,28 +58,28 @@ module Adyen
     # @param [String] skin_code The skin code for this skin, as defined by Adyen.
     # @param [String] shared_secret The shared secret used for signature calculation.
     # @see Adyen.load_config
-    def self.register_skin(name, skin_code, shared_secret)
-      self.skins[name.to_sym] = {:name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
+    def register_skin(name, skin_code, shared_secret)
+      skins[name.to_sym] = {:name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
     end
 
     # Returns skin information given a skin name.
     # @param [Symbol] skin_name The name of the skin
     # @return [Hash, nil] A hash with the skin information, or nil if not found.
-    def self.skin_by_name(skin_name)
-      self.skins[skin_name.to_sym]
+    def skin_by_name(skin_name)
+      skins[skin_name.to_sym]
     end
 
     # Returns skin information given a skin code.
     # @param [String] skin_code The skin code of the skin
     # @return [Hash, nil] A hash with the skin information, or nil if not found.
-    def self.skin_by_code(skin_code)
-      self.skins.detect { |(name, skin)| skin[:skin_code] == skin_code }.last rescue nil
+    def skin_by_code(skin_code)
+      skins.detect { |(name, skin)| skin[:skin_code] == skin_code }.last rescue nil
     end
 
     # Returns the shared secret belonging to a skin code.
     # @param [String] skin_code The skin code of the skin
     # @return [String, nil] The shared secret for the skin, or nil if not found. 
-    def self.lookup_shared_secret(skin_code)
+    def lookup_shared_secret(skin_code)
       skin = skin_by_code(skin_code)[:shared_secret] rescue nil
     end
 
@@ -90,14 +90,14 @@ module Adyen
     # Returns the default parameters to use, unless they are overridden.
     # @see Adyen::Form.default_parameters
     # @return [Hash] The hash of default parameters
-    def self.default_parameters
+    def default_parameters
       @default_arguments ||= {}
     end
     
     # Sets the default parameters to use.
     # @see Adyen::Form.default_parameters
     # @param [Hash] hash The hash of default parameters
-    def self.default_parameters=(hash)
+    def default_parameters=(hash)
       @default_arguments = hash
     end
 
@@ -117,7 +117,7 @@ module Adyen
     #    for payment forms or redirects.
     # @see Adyen::Form.environment
     # @see Adyen::Form.redirect_url
-    def self.url(environment = nil)
+    def url(environment = nil)
       environment ||= Adyen.environment
       Adyen::Form::ACTION_URL % environment.to_s
     end
@@ -133,7 +133,7 @@ module Adyen
     #
     # @private
     # @param [Hash] parameters The payment parameters hash to transform
-    def self.do_parameter_transformations!(parameters = {})
+    def do_parameter_transformations!(parameters = {})
       raise "YENs are not yet supported!" if parameters[:currency_code] == 'JPY' # TODO: fixme
 
       parameters.replace(default_parameters.merge(parameters))
@@ -160,7 +160,7 @@ module Adyen
     #    is provided as the +:shared_secret+ parameter.
     # @return [Hash] The payment parameters with the +:merchant_signature+ parameter set.
     # @raise [StandardError] Thrown if some parameter health check fails.
-    def self.payment_parameters(parameters = {}, shared_secret = nil)
+    def payment_parameters(parameters = {}, shared_secret = nil)
       do_parameter_transformations!(parameters)
       
       raise "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
@@ -204,8 +204,8 @@ module Adyen
     #
     # @param [Hash] parameters The payment parameters to include in the payment request.
     # @return [String] An absolute URL to redirect to the Adyen payment system.
-    def self.redirect_url(parameters = {})
-      self.url + '?' + payment_parameters(parameters).map { |(k, v)| 
+    def redirect_url(parameters = {})
+      url + '?' + payment_parameters(parameters).map { |(k, v)| 
         "#{k.to_s.camelize(:lower)}=#{CGI.escape(v.to_s)}" }.join('&')
     end
     
@@ -230,12 +230,14 @@ module Adyen
     # @param [Hash] parameters The payment parameters to include in the payment request.
     # @return [String] An HTML snippet that can be included in a form that POSTs to the
     #       Adyen payment system.
-    def self.hidden_fields(parameters = {})
+    def hidden_fields(parameters = {})
       
       # Generate a hidden input tag per parameter, join them by newlines.
-      payment_parameters(parameters).map { |key, value|
-        self.tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
+      form_str = payment_parameters(parameters).map { |key, value|
+        tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
       }.join("\n")
+      
+      form_str.respond_to?(:html_safe) ? form_str.html_safe : form_str
     end
     
     ######################################################
@@ -246,7 +248,7 @@ module Adyen
     # is used by Adyen to check whether the request is genuinely originating from you.
     # @param [Hash] parameters The parameters that will be included in the payment request.
     # @return [String] The string for which the siganture is calculated.
-    def self.calculate_signature_string(parameters)
+    def calculate_signature_string(parameters)
       merchant_sig_string = ""
       merchant_sig_string << parameters[:payment_amount].to_s    << parameters[:currency_code].to_s      <<
                              parameters[:ship_before_date].to_s  << parameters[:merchant_reference].to_s <<
@@ -270,7 +272,7 @@ module Adyen
     #    It should correspond with the skin_code parameter. This parameter can be 
     #    left out if the shared_secret is included as key in the parameters.
     # @return [String] The signature of the payment request
-    def self.calculate_signature(parameters, shared_secret = nil)
+    def calculate_signature(parameters, shared_secret = nil)
       shared_secret ||= parameters.delete(:shared_secret)
       Adyen::Encoding.hmac_base64(shared_secret, calculate_signature_string(parameters))
     end
@@ -282,7 +284,7 @@ module Adyen
     # Generates the string for which the redirect signature is calculated, using the request paramaters.
     # @param [Hash] params A hash of HTTP GET parameters for the redirect request.
     # @return [String] The signature string.
-    def self.redirect_signature_string(params)
+    def redirect_signature_string(params)
       params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + params[:skinCode].to_s
     end
     
@@ -294,7 +296,7 @@ module Adyen
     #     the original payment form. You can leave this out of the skin is registered 
     #     using the {Adyen::Form.register_skin} method.
     # @return [String] The redirect signature
-    def self.redirect_signature(params, shared_secret = nil)
+    def redirect_signature(params, shared_secret = nil)
       shared_secret ||= lookup_shared_secret(params[:skinCode])
       Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
     end
@@ -329,7 +331,7 @@ module Adyen
     #     the original payment form. You can leave this out of the skin is registered 
     #     using the {Adyen::Form.register_skin} method.
     # @return [true, false] Returns true only if the signature in the parameters is correct.
-    def self.redirect_signature_check(params, shared_secret = nil)
+    def redirect_signature_check(params, shared_secret = nil)
       params[:merchantSig] == redirect_signature(params, shared_secret)
     end
   end
