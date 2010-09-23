@@ -105,15 +105,15 @@ module Adyen
       end
 
       def live=(value)
-        self.write_attribute(:live, [true, 1, '1', 'true'].include?(value))
+        super([true, 1, '1', 'true'].include?(value))
       end
 
       def success=(value)
-        self.write_attribute(:success, [true, 1, '1', 'true'].include?(value))
+        super([true, 1, '1', 'true'].include?(value))
       end
 
       def value=(value)
-        self.write_attribute(:value, Adyen::Formatter::Price.from_cents(value)) unless value.blank?
+        super(Adyen::Formatter::Price.from_cents(value)) unless value.blank?
       end
     end
 
