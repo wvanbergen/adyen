@@ -1,31 +1,31 @@
-require "#{File.dirname(__FILE__)}/spec_helper.rb"
+require 'spec_helper'
 
 describe Adyen::SOAP::PaymentService do
 
   describe '#authorise' do
     before(:all) do
-      setup_mock_driver(<<EOF)
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:paymentResult>
-        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
-        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
-      </ns1:paymentResult>
-    </ns1:authoriseResponse>
-  </soap:Body>
-</soap:Envelope>
-EOF
+      setup_mock_driver(<<-XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <soap:Body>
+            <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+              <ns1:paymentResult>
+                <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+                <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+                <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+                <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
+              </ns1:paymentResult>
+            </ns1:authoriseResponse>
+          </soap:Body>
+        </soap:Envelope>
+      XML
 
       @response = Adyen::SOAP::PaymentService.authorise({
         :selected_recurring_detail_reference => '6543210987654321',
@@ -93,19 +93,19 @@ EOF
 
   describe '#capture' do
     before(:all) do
-      setup_mock_driver(<<EOF)
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    <ns1:captureResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:captureResult>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <response xmlns="http://payment.services.adyen.com">[capture-received]</response>
-      </ns1:captureResult>
-    </ns1:captureResponse>
-  </soap:Body>
-</soap:Envelope>
-EOF
+      setup_mock_driver(<<-XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <soap:Body>
+            <ns1:captureResponse xmlns:ns1="http://payment.services.adyen.com">
+              <ns1:captureResult>
+                <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+                <response xmlns="http://payment.services.adyen.com">[capture-received]</response>
+              </ns1:captureResult>
+            </ns1:captureResponse>
+          </soap:Body>
+        </soap:Envelope>
+      XML
 
       @response = Adyen::SOAP::PaymentService.capture({
         :merchant_account => 'YourMerchantAccount',
@@ -154,19 +154,19 @@ EOF
 
   describe "#cancel" do
     before(:all) do
-      setup_mock_driver(<<EOF)
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    <ns1:cancelResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:cancelResult>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <response xmlns="http://payment.services.adyen.com">[cancel-received]</response>
-      </ns1:cancelResult>
-    </ns1:cancelResponse>
-  </soap:Body>
-</soap:Envelope>
-EOF
+      setup_mock_driver(<<-XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <soap:Body>
+            <ns1:cancelResponse xmlns:ns1="http://payment.services.adyen.com">
+              <ns1:cancelResult>
+                <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+                <response xmlns="http://payment.services.adyen.com">[cancel-received]</response>
+              </ns1:cancelResult>
+            </ns1:cancelResponse>
+          </soap:Body>
+        </soap:Envelope>
+      XML
 
       @response = Adyen::SOAP::PaymentService.cancel({
         :merchant_account => 'YourMerchantAccount',
@@ -205,19 +205,19 @@ EOF
 
   describe "#refund" do
     before(:all) do
-      setup_mock_driver(<<EOF)
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    <ns1:refundResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:refundResult>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <response xmlns="http://payment.services.adyen.com">[refund-received]</response>
-      </ns1:refundResult>
-    </ns1:refundResponse>
-  </soap:Body>
-</soap:Envelope>
-EOF
+      setup_mock_driver(<<-XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <soap:Body>
+            <ns1:refundResponse xmlns:ns1="http://payment.services.adyen.com">
+              <ns1:refundResult>
+                <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+                <response xmlns="http://payment.services.adyen.com">[refund-received]</response>
+              </ns1:refundResult>
+            </ns1:refundResponse>
+          </soap:Body>
+        </soap:Envelope>
+      XML
 
       @response = Adyen::SOAP::PaymentService.refund({
         :merchant_account => 'YourMerchantAccount',
@@ -261,20 +261,20 @@ EOF
 
   describe "#cancel_or_refund" do
     before(:all) do
-      setup_mock_driver(<<EOF)
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    <ns1:cancelOrRefundResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:cancelOrRefundResult>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <response xmlns="http://payment.services.adyen.com">[cancelOrRefund-received]</response>
-      </ns1:cancelOrRefundResult>
-    </ns1:cancelOrRefundResponse>
-  </soap:Body>
-</soap:Envelope>
-EOF
-
+      setup_mock_driver(<<-XML)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <soap:Body>
+            <ns1:cancelOrRefundResponse xmlns:ns1="http://payment.services.adyen.com">
+              <ns1:cancelOrRefundResult>
+                <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+                <response xmlns="http://payment.services.adyen.com">[cancelOrRefund-received]</response>
+              </ns1:cancelOrRefundResult>
+            </ns1:cancelOrRefundResponse>
+          </soap:Body>
+        </soap:Envelope>
+      XML
+        
       @response = Adyen::SOAP::PaymentService.cancel_or_refund({
         :merchant_account => 'YourMerchantAccount',
         :original_reference => '1234567890123456'
@@ -320,7 +320,7 @@ private
         'Server: Apache',
         'Content-Type: text/xml;charset=UTF-8'
       ].join("\r\n"),
-      :content => content
+      :content => content.strip
     })
     Handsoap.http_driver = :mock
   end

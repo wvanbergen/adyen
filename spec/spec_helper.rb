@@ -1,4 +1,4 @@
-$: << File.join(File.dirname(__FILE__), '..', 'lib')
+require 'spec_helper'
 
 require 'rubygems'
 require 'spec'
