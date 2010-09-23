@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name    = 'adyen'
-  s.version = "0.3.7"
-  s.date    = "2010-07-21"
+  s.version = "0.3.8"
+  s.date    = "2010-09-23"
 
   s.summary = "Integrate Adyen payment services in your Ruby on Rails application."
   s.description = <<-EOS
@@ -31,6 +31,6 @@ Gem::Specification.new do |s|
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   s.extra_rdoc_files = ['README.rdoc']
 
-  s.files = %w(spec/spec_helper.rb spec/adyen_spec.rb lib/adyen/form.rb .gitignore spec/notification_spec.rb lib/adyen/soap.rb LICENSE spec/soap_spec.rb init.rb adyen.gemspec Rakefile spec/form_spec.rb README.rdoc lib/adyen/notification.rb lib/adyen/formatter.rb tasks/github-gem.rake lib/adyen/encoding.rb lib/adyen/matchers.rb lib/adyen.rb)
+  s.files = %w(spec/spec_helper.rb spec/adyen_spec.rb lib/adyen/form.rb .gitignore spec/notification_spec.rb lib/adyen/soap.rb LICENSE spec/soap_spec.rb init.rb adyen.gemspec Rakefile spec/form_spec.rb README.rdoc lib/adyen/notification.rb lib/adyen/formatter.rb tasks/github-gem.rake lib/adyen/encoding.rb TODO lib/adyen/matchers.rb lib/adyen.rb)
   s.test_files = %w(spec/adyen_spec.rb spec/notification_spec.rb spec/soap_spec.rb spec/form_spec.rb)
 end
