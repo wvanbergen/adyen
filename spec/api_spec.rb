@@ -349,7 +349,7 @@ describe Adyen::API do
         end
 
         it "includes the contract type, which is always `RECURRING'" do
-          text('./recurring:recurring/payment:contract').should == 'RECURRING'
+          text('./payment:recurring/payment:contract').should == 'RECURRING'
         end
 
         it "obviously includes the obligatory self-‘describing’ nonsense parameters" do

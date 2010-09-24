@@ -15,6 +15,7 @@ if File.exist?(API_SPEC_INITIALIZER)
     it "performs a payment request" do
       response = Adyen::API.authorise_payment({
         :reference => 'order-id',
+        :recurring => true,
         :amount => {
           :currency => 'EUR',
           :value => '1234',
@@ -39,6 +40,23 @@ if File.exist?(API_SPEC_INITIALIZER)
       response[:result_code].should == 'Authorised'
       response[:psp_reference].should_not be_empty
     end
+
+    #it "performs a recurring payment request" do
+      #response = Adyen::API.authorise_recurring_payment({
+        #:reference => 'order-id',
+        #:amount => {
+          #:currency => 'EUR',
+          #:value => '1234',
+        #},
+        #:shopper => {
+          #:email => 's.hopper@example.com',
+          #:reference => 'user-id',
+          #:ip => '61.294.12.12',
+        #}
+      #})
+      #response[:result_code].should == 'Authorised'
+      #response[:psp_reference].should_not be_empty
+    #end
   end
 
 else

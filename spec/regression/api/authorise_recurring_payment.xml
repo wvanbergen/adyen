@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:authorise xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentRequest>
+        <ns1:merchantAccount>YourMerchantAccount</ns1:merchantAccount>
+        <ns1:reference>RecurringPayment-0001</ns1:reference>
+        <ns1:recurring>
+          <ns1:contract>RECURRING</ns1:contract>
+        </ns1:recurring>
+        <ns1:selectedRecurringDetailReference>LATEST</ns1:selectedRecurringDetailReference>
+        <ns1:shopperInteraction>ContAuth</ns1:shopperInteraction>
+        <amount xmlns="http://payment.services.adyen.com">
+          <currency xmlns="http://common.services.adyen.com">EUR</currency>
+          <value xmlns="http://common.services.adyen.com">100</value>
+        </amount>
+        <ns1:shopperIP>1.1.1.1</ns1:shopperIP>
+        <ns1:shopperEmail>email@shopper.com</ns1:shopperEmail>
+        <ns1:shopperReference>TheShopperReference</ns1:shopperReference>
+      </ns1:paymentRequest>
+    </ns1:authorise>
+  </soap:Body>
+</soap:Envelope>
