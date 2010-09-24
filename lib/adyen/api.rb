@@ -30,6 +30,10 @@ module Adyen
       PaymentService.new(params).authorise_recurring_payment
     end
 
+    def self.disable_recurring_contract(params = {})
+      RecurringService.new(params).disable
+    end
+
     # TODO: the rest
 
     #

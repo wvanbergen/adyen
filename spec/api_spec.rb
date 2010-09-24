@@ -238,6 +238,13 @@ describe Adyen::API do
       payment.should_receive(:authorise_recurring_payment)
       Adyen::API.authorise_recurring_payment(:reference => 'order-id')
     end
+
+    it "performs a `disable recurring contract' request" do
+      recurring = mock('RecurringService')
+      Adyen::API::RecurringService.should_receive(:new).with(:shopper => { :reference => 'user-id' }).and_return(recurring)
+      recurring.should_receive(:disable)
+      Adyen::API.disable_recurring_contract(:shopper => { :reference => 'user-id' })
+    end
   end
 
   describe Adyen::API::PaymentService do
