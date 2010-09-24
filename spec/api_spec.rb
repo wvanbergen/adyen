@@ -66,7 +66,7 @@ module Adyen
     end
 
     class RecurringService
-      public :list_request_body
+      public :list_request_body, :deactivate_request_body
     end
   end
 end
@@ -420,6 +420,12 @@ describe Adyen::API do
       it "includes the type of contract, which is always `RECURRING'" do
         text('./recurring:recurring/recurring:contract').should == 'RECURRING'
       end
+
+      private
+
+      def node_for_current_method
+        super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
+      end
     end
 
     describe "list" do
@@ -476,12 +482,32 @@ describe Adyen::API do
           }
         end
       end
-    end
 
-    private
+      describe "deactivate_request_body" do
+        before :all do
+          @method = :deactivate_request_body
+        end
 
-    def node_for_current_method
-      super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
+        it "includes the merchant account handle" do
+          text('./recurring:merchantAccount').should == 'SuperShopper'
+        end
+
+        it "includes the shopper’s reference" do
+          text('./recurring:shopperReference').should == 'user-id'
+        end
+
+        it "includes the shopper’s recurring detail reference if it is given" do
+          xpath('./recurring:recurringDetailReference').should be_empty
+          @recurring.params[:recurring_detail_reference] = 'RecurringDetailReference1'
+          text('./recurring:recurringDetailReference').should == 'RecurringDetailReference1'
+        end
+
+        private
+
+        def node_for_current_method
+          super(@recurring).xpath('//recurring:disable/recurring:request')
+        end
+      end
     end
   end
 end

@@ -147,7 +147,14 @@ module Adyen
       private
 
       def list_request_body
-        LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
+        LIST_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
+      end
+
+      def deactivate_request_body
+        if reference = @params[:recurring_detail_reference]
+          reference = RECURRING_DETAIL_PARTIAL % reference
+        end
+        DISABLE_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], reference || '']
       end
 
       # @todo add support for elv
@@ -322,7 +329,7 @@ EOS
     end
 
     class RecurringService
-      LAYOUT = <<EOS
+      LIST_LAYOUT = <<EOS
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
@@ -337,6 +344,25 @@ EOS
     </ns1:listRecurringDetails>
   </soap:Body>
 </soap:Envelope>
+EOS
+
+      DISABLE_LAYOUT = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:disable xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:request>
+        <ns1:merchantAccount>%s</ns1:merchantAccount>
+        <ns1:shopperReference>%s</ns1:shopperReference>
+        %s
+      </ns1:request>
+    </ns1:disable>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+      RECURRING_DETAIL_PARTIAL = <<EOS
+        <ns1:recurringDetailReference>%s</ns1:recurringDetailReference>
 EOS
     end
   end
