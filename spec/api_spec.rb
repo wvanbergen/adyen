@@ -66,7 +66,7 @@ module Adyen
     end
 
     class RecurringService
-      public :list_request_body, :deactivate_request_body
+      public :list_request_body, :disable_request_body
     end
   end
 end
@@ -483,9 +483,9 @@ describe Adyen::API do
         end
       end
 
-      describe "deactivate_request_body" do
+      describe "disable_request_body" do
         before :all do
-          @method = :deactivate_request_body
+          @method = :disable_request_body
         end
 
         it "includes the merchant account handle" do
@@ -506,6 +506,32 @@ describe Adyen::API do
 
         def node_for_current_method
           super(@recurring).xpath('//recurring:disable/recurring:request')
+        end
+      end
+
+      describe "disable" do
+        before do
+          stub_net_http(DISABLE_RESPONSE)
+          @recurring.disable
+          @request, @post = Net::HTTP.posted
+        end
+
+        after do
+          Net::HTTP.stubbing_enabled = false
+        end
+
+        it "posts the body generated for the given parameters" do
+          @post.body.should == @recurring.disable_request_body
+        end
+
+        it "posts to the correct SOAP action" do
+          @post.soap_action.should == 'disable'
+        end
+
+        for_each_xml_backend do
+          it "returns a hash with parsed response details" do
+            @recurring.disable.should == { :response => '[detail-successfully-disabled]' }
+          end
         end
       end
     end
@@ -583,6 +609,21 @@ LIST_RESPONSE = <<EOS
         <ns1:shopperReference>user-id</ns1:shopperReference>
       </ns1:result>
     </ns1:listRecurringDetailsResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+DISABLE_RESPONSE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:result>
+        <response xmlns="http://recurring.services.adyen.com">
+          [detail-successfully-disabled]
+        </response>
+      </ns1:result>
+    </ns1:disableResponse>
   </soap:Body>
 </soap:Envelope>
 EOS

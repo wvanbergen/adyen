@@ -144,13 +144,18 @@ module Adyen
         end
       end
 
+      def disable
+        response = call_webservice_action('disable', disable_request_body)
+        { :response => response.text('//recurring:disableResponse/recurring:result/recurring:response') }
+      end
+
       private
 
       def list_request_body
         LIST_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
       end
 
-      def deactivate_request_body
+      def disable_request_body
         if reference = @params[:recurring_detail_reference]
           reference = RECURRING_DETAIL_PARTIAL % reference
         end
@@ -247,7 +252,7 @@ module Adyen
       end
 
       def text(query)
-        xpath("#{query}/text()").to_s
+        xpath("#{query}/text()").to_s.strip
       end
 
       def children
