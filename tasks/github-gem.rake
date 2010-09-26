@@ -2,6 +2,7 @@ require 'rubygems'
 require 'rake'
 require 'rake/tasklib'
 require 'date'
+require 'set'
 
 module GithubGem
 
@@ -32,7 +33,7 @@ module GithubGem
       @gemspec_file   = GithubGem.detect_gemspec_file
       @task_namespace = task_namespace
       @main_include   = GithubGem.detect_main_include
-      @modified_files = []
+      @modified_files = Set.new
       @root_dir       = Dir.pwd
       @test_pattern   = 'test/**/*_test.rb'
       @spec_pattern   = 'spec/**/*_spec.rb'
@@ -49,7 +50,7 @@ module GithubGem
     protected
 
     def git
-      ENV['GIT'] || 'git'
+      @git ||= ENV['GIT'] || 'git'
     end
 
     # Define Unit test tasks
@@ -182,7 +183,7 @@ module GithubGem
     end
 
     def newest_version
-      `#{git} tag`.split("\n").map { |tag| tag.name.split('-').last }.compact.map { |v| Gem::Version.new(v) }.max || Gem::Version.new('0.0.0')
+      `#{git} tag`.split("\n").map { |tag| tag.split('-').last }.compact.map { |v| Gem::Version.new(v) }.max || Gem::Version.new('0.0.0')
     end
 
     def next_version(increment = nil)
@@ -245,24 +246,25 @@ module GithubGem
 
     # Commits every file that has been changed by the release task.
     def commit_modified_files_task
-      if modified_files.any?
-        modified_files.each { |file| sh git, 'add', file }
-        sh git, "commit -m", "Released #{gemspec.name} gem version #{gemspec.version}."
+      really_modified = `#{git} ls-files -m #{modified_files.entries.join(' ')}`.split("\n")
+      if really_modified.any?
+        really_modified.each { |file| sh git, 'add', file }
+        sh git, 'commit', '-m', "Released #{gemspec.name} gem version #{gemspec.version}."
       end
     end
 
     # Adds a tag for the released version
     def tag_version_task
-      sh git 'tag -a', "#{gemspec.name}-#{gemspec.version}"
+      sh git, 'tag', '-a', "#{gemspec.name}-#{gemspec.version}", '-m', "Released #{gemspec.name} gem version #{gemspec.version}."
     end
 
     # Pushes the changes and tag to github
     def github_release_task
-      sh git, 'push --tags', remote, remote_branch
+      sh git, 'push', '--tags', remote, remote_branch
     end
 
     def gemcutter_release_task
-      sh "gem push", "pkg/#{gemspec.name}-#{gemspec.version}.gem"
+      sh "gem", 'push', "pkg/#{gemspec.name}-#{gemspec.version}.gem"
     end
 
     # Gem release task.
@@ -348,11 +350,10 @@ module GithubGem
       relative_file = File.expand_path(__FILE__).sub(%r[^#{@root_dir}/], '')
       if `#{git} ls-files -m #{relative_file}`.split("\n").any?
         sh git, 'add', relative_file
-        sh git, 'commit -m', "Updated to latest gem release management tasks."
+        sh git, 'commit', '-m', "Updated to latest gem release management tasks."
       else
         puts "Release managament tasks already are at the latest version."
       end
     end
-
   end
 end
