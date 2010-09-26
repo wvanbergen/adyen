@@ -13,12 +13,11 @@ Gem::Specification.new do |s|
 
   s.authors  = ['Willem van Bergen', 'Michel Barbosa', 'Stefan Borsje', 'Eloy Duran']
   s.email    = ['willem@vanbergen.org', 'cicaboo@gmail.com', 'mail@sborsje.nl', 'eloy.de.enige@gmail.com']
-  s.homepage = 'http://wiki.github.com/wvanbergen/adyen'
+  s.homepage = 'http://github.com/wvanbergen/adyen/wiki'
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '>= 1.1.4')
   s.add_development_dependency('git', '>= 1.1.0')
-  s.add_development_dependency('gemcutter')
   
   # Drop or make runtime dependency.
   s.add_development_dependency('activerecord')
