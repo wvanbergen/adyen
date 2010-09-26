@@ -17,7 +17,6 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '>= 1.1.4')
-  s.add_development_dependency('git', '>= 1.1.0')
   
   # Drop or make runtime dependency.
   s.add_development_dependency('activerecord')
