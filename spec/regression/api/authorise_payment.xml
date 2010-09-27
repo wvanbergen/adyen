@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <payment:authorise xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+      <payment:paymentRequest>
+        <payment:merchantAccount>YourMerchant</payment:merchantAccount>
+        <payment:reference>Your Reference Here</payment:reference>
+        <payment:card>
+          <payment:holderName>Adyen Test</payment:holderName>
+          <payment:number>4111111111111111</payment:number>
+          <payment:cvc>737</payment:cvc>
+          <payment:expiryYear>2012</payment:expiryYear>
+          <payment:expiryMonth>12</payment:expiryMonth>
+        </payment:card>
+        <payment:amount>
+          <common:currency>EUR</common:currency>
+          <common:value>2000</common:value>
+        </payment:amount>
+        <payment:shopperIP>61.294.12.12</payment:shopperIP>
+        <payment:shopperEmail>s.hopper@test.com</payment:shopperEmail>
+        <payment:shopperReference>Simon Hopper</payment:shopperReference>
+      </payment:paymentRequest>
+    </payment:authorise>
+  </soap:Body>
+</soap:Envelope>
