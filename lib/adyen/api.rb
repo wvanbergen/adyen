@@ -292,52 +292,52 @@ module Adyen
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
-    <ns1:authorise xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:paymentRequest>
-        <merchantAccount xmlns="http://payment.services.adyen.com">%s</merchantAccount>
-        <reference xmlns="http://payment.services.adyen.com">%s</reference>
+    <payment:authorise xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+      <payment:paymentRequest>
+        <payment:merchantAccount>%s</payment:merchantAccount>
+        <payment:reference>%s</payment:reference>
 %s
-      </ns1:paymentRequest>
-    </ns1:authorise>
+      </payment:paymentRequest>
+    </payment:authorise>
   </soap:Body>
 </soap:Envelope>
 EOS
 
       AMOUNT_PARTIAL = <<EOS
-        <amount xmlns="http://payment.services.adyen.com">
-          <currency xmlns="http://common.services.adyen.com">%s</currency>
-          <value xmlns="http://common.services.adyen.com">%s</value>
-        </amount>
+        <payment:amount>
+          <common:currency>%s</common:currency>
+          <common:value>%s</common:value>
+        </payment:amount>
 EOS
 
       CARD_PARTIAL = <<EOS
-        <card xmlns="http://payment.services.adyen.com">
-          <holderName>%s</holderName>
-          <number>%s</number>
-          <cvc>%s</cvc>
-          <expiryYear>%s</expiryYear>
-          <expiryMonth>%02d</expiryMonth>
-        </card>
+        <payment:card>
+          <payment:holderName>%s</payment:holderName>
+          <payment:number>%s</payment:number>
+          <payment:cvc>%s</payment:cvc>
+          <payment:expiryYear>%s</payment:expiryYear>
+          <payment:expiryMonth>%02d</payment:expiryMonth>
+        </payment:card>
 EOS
 
       RECURRING_PARTIAL = <<EOS
-        <recurring xmlns="http://recurring.services.adyen.com">
-          <contract xmlns="http://payment.services.adyen.com">RECURRING</contract>
-        </recurring>
+        <recurring:recurring>
+          <payment:contract>RECURRING</payment:contract>
+        </recurring:recurring>
 EOS
 
       RECURRING_PAYMENT_BODY_PARTIAL = <<EOS
-        <ns1:recurring>
-          <ns1:contract>RECURRING</ns1:contract>
-        </ns1:recurring>
-        <ns1:selectedRecurringDetailReference>%s</ns1:selectedRecurringDetailReference>
-        <ns1:shopperInteraction>ContAuth</ns1:shopperInteraction>
+        <payment:recurring>
+          <payment:contract>RECURRING</payment:contract>
+        </payment:recurring>
+        <payment:selectedRecurringDetailReference>%s</payment:selectedRecurringDetailReference>
+        <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
 EOS
 
       SHOPPER_PARTIALS = {
-        :reference => '        <shopperReference xmlns="http://payment.services.adyen.com">%s</shopperReference>',
-        :email     => '        <shopperEmail xmlns="http://payment.services.adyen.com">%s</shopperEmail>',
-        :ip        => '        <shopperIP xmlns="http://payment.services.adyen.com">%s</shopperIP>',
+        :reference => '        <payment:shopperReference>%s</payment:shopperReference>',
+        :email     => '        <payment:shopperEmail>%s</payment:shopperEmail>',
+        :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
       }
     end
 
@@ -346,15 +346,15 @@ EOS
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
-    <ns1:listRecurringDetails xmlns:ns1="http://recurring.services.adyen.com">
-      <ns1:request>
-        <ns1:recurring>
-          <ns1:contract>RECURRING</ns1:contract>
-        </ns1:recurring>
-        <ns1:merchantAccount>%s</ns1:merchantAccount>
-        <ns1:shopperReference>%s</ns1:shopperReference>
-      </ns1:request>
-    </ns1:listRecurringDetails>
+    <recurring:listRecurringDetails xmlns:recurring="http://recurring.services.adyen.com">
+      <recurring:request>
+        <recurring:recurring>
+          <recurring:contract>RECURRING</recurring:contract>
+        </recurring:recurring>
+        <recurring:merchantAccount>%s</recurring:merchantAccount>
+        <recurring:shopperReference>%s</recurring:shopperReference>
+      </recurring:request>
+    </recurring:listRecurringDetails>
   </soap:Body>
 </soap:Envelope>
 EOS
@@ -363,19 +363,19 @@ EOS
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
-    <ns1:disable xmlns:ns1="http://recurring.services.adyen.com">
-      <ns1:request>
-        <ns1:merchantAccount>%s</ns1:merchantAccount>
-        <ns1:shopperReference>%s</ns1:shopperReference>
+    <recurring:disable xmlns:recurring="http://recurring.services.adyen.com">
+      <recurring:request>
+        <recurring:merchantAccount>%s</recurring:merchantAccount>
+        <recurring:shopperReference>%s</recurring:shopperReference>
         %s
-      </ns1:request>
-    </ns1:disable>
+      </recurring:request>
+    </recurring:disable>
   </soap:Body>
 </soap:Envelope>
 EOS
 
       RECURRING_DETAIL_PARTIAL = <<EOS
-        <ns1:recurringDetailReference>%s</ns1:recurringDetailReference>
+        <recurring:recurringDetailReference>%s</recurring:recurringDetailReference>
 EOS
     end
   end
