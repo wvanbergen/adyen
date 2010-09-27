@@ -327,8 +327,8 @@ EOS
 EOS
 
       RECURRING_PAYMENT_BODY_PARTIAL = <<EOS
-        <ns1:recurring xmlns="http://recurring.services.adyen.com">
-          <ns1:contract xmlns="http://payment.services.adyen.com">RECURRING</ns1:contract>
+        <ns1:recurring>
+          <ns1:contract>RECURRING</ns1:contract>
         </ns1:recurring>
         <ns1:selectedRecurringDetailReference>%s</ns1:selectedRecurringDetailReference>
         <ns1:shopperInteraction>ContAuth</ns1:shopperInteraction>
