@@ -106,6 +106,7 @@ module Adyen
 
     class XMLQuerier
       NS = {
+        'soap'      => 'http://schemas.xmlsoap.org/soap/envelope/',
         'payment'   => 'http://payment.services.adyen.com',
         'recurring' => 'http://recurring.services.adyen.com',
         'common'    => 'http://common.services.adyen.com'
@@ -234,6 +235,21 @@ module Adyen
 
         alias authorized? success?
 
+        def invalid_request?
+          !fault_message.nil?
+        end
+
+        ERRORS = {
+          'validation 101' => [:number, 'is not a valid creditcard number']
+        }
+
+        def errors
+          errors = {}
+          key, message = ERRORS[fault_message[0,14]]
+          errors[key] = message
+          errors
+        end
+
         def params
           @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
             {
@@ -243,6 +259,12 @@ module Adyen
               :refusal_reason => result.text('./payment:refusalReason')
             }
           end
+        end
+
+        private
+
+        def fault_message
+          @fault_message ||= xml_querier.text('//soap:Fault/faultstring')
         end
       end
     end

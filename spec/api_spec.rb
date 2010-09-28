@@ -391,7 +391,7 @@ describe Adyen::API do
           end
         end
 
-        describe "with a declined response" do
+        describe "with a `declined' response" do
           before do
             stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
             @response = @payment.authorise_payment
@@ -400,6 +400,26 @@ describe Adyen::API do
           it "returns that the request was not authorised" do
             @response.should_not be_success
             @response.should_not be_authorized
+          end
+        end
+
+        describe "with a `invalid' response" do
+          before do
+            stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE)
+            @response = @payment.authorise_payment
+          end
+
+          it "returns that the request was not authorised" do
+            @response.should_not be_success
+            @response.should_not be_authorized
+          end
+
+          it "it returns that the request was invalid" do
+            @response.should be_invalid_request
+          end
+
+          it "returns creditcard validation errors" do
+            @response.errors.should == { :number => 'is not a valid creditcard number' }
           end
         end
       end
