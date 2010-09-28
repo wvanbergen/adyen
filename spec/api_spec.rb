@@ -173,18 +173,12 @@ describe Adyen::API do
       http_response = Net::HTTPOK.new('1.1', '200', 'OK')
       http_response.add_field('Content-type', 'text/xml')
       http_response.stub!(:body).and_return(AUTHORISE_RESPONSE)
-      @response = Adyen::API::Response.new(http_response) do |xml_querier|
-        { :xml_querier => xml_querier }
-      end
+      @response = Adyen::API::Response.new(http_response)
     end
 
     it "returns a XMLQuerier instance with the response body" do
       @response.xml_querier.should be_instance_of(Adyen::API::XMLQuerier)
       @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
-    end
-
-    it "yields the xml_querier to the block, given to the constructor, to parse the response params" do
-      @response.params.should == { :xml_querier => @response.xml_querier }
     end
 
     describe "with a successful HTTP response" do
@@ -230,9 +224,7 @@ describe Adyen::API do
     describe "call_webservice_action" do
       before do
         stub_net_http(AUTHORISE_RESPONSE)
-        @response = @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>') do |xml_querier|
-          { :xml_querier => xml_querier }
-        end
+        @response = @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
         @request, @post = Net::HTTP.posted
       end
 
@@ -271,10 +263,9 @@ describe Adyen::API do
         }
       end
 
-      it "returns an Adyen::API::Response instance with the params parse block" do
+      it "returns an Adyen::API::Response instance" do
         @response.should be_instance_of(Adyen::API::Response)
         @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
-        @response.params.should == { :xml_querier => @response.xml_querier }
       end
     end
   end
@@ -516,7 +507,7 @@ describe Adyen::API do
     describe "list" do
       before do
         stub_net_http(LIST_RESPONSE)
-        @recurring.list
+        @response = @recurring.list
         @request, @post = Net::HTTP.posted
       end
 
@@ -566,6 +557,8 @@ describe Adyen::API do
             ],
           }
         end
+
+        it_should_have_shortcut_methods_for_params_on_the_response
       end
 
       describe "disable_request_body" do
@@ -597,7 +590,7 @@ describe Adyen::API do
       describe "disable" do
         before do
           stub_net_http(DISABLE_RESPONSE)
-          @recurring.disable
+          @response = @recurring.disable
           @request, @post = Net::HTTP.posted
         end
 
@@ -618,6 +611,8 @@ describe Adyen::API do
             @recurring.disable.params.should == { :response => '[detail-successfully-disabled]' }
           end
         end
+
+        it_should_have_shortcut_methods_for_params_on_the_response
       end
     end
   end

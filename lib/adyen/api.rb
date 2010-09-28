@@ -54,7 +54,7 @@ module Adyen
         @params = API.default_params.merge(params)
       end
 
-      def call_webservice_action(action, data, response_class = Response, &block)
+      def call_webservice_action(action, data, response_class)
         endpoint = self.class.endpoint
 
         post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
@@ -67,16 +67,22 @@ module Adyen
         request.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
         request.start do |http|
-          response_class.new(http.request(post), &block)
+          response_class.new(http.request(post))
         end
       end
     end
 
     class Response
+      def self.response_attrs(*attrs)
+        attrs.each do |attr|
+          define_method(attr) { params[attr] }
+        end
+      end
+
       attr_reader :http_response
 
-      def initialize(http_response, &block)
-        @http_response, @params_block = http_response, block
+      def initialize(http_response)
+        @http_response = http_response
       end
 
       # @return [Boolean] Whether or not the request was successful.
@@ -94,7 +100,7 @@ module Adyen
       end
 
       def params
-        @params ||= @params_block.call(xml_querier)
+        raise "The Adyen::API::Response#params method should be overriden in a subclass."
       end
     end
 
@@ -218,15 +224,9 @@ module Adyen
       end
 
       class AuthorizationResponse < Response
-        AUTHORISED = 'Authorised'
-
-        def self.response_attrs(*attrs)
-          attrs.each do |attr|
-            define_method(attr) { params[attr] }
-          end
-        end
-
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
+
+        AUTHORISED = 'Authorised'
 
         def success?
           super && params[:result_code] == AUTHORISED
@@ -252,22 +252,11 @@ module Adyen
 
       # TODO: rename to list_details and make shortcut method take the only necessary param
       def list
-        call_webservice_action('listRecurringDetails', list_request_body) do |xml|
-          xml.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
-            {
-              :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
-              :details                  => result.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
-              :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
-              :shopper_reference        => result.text('./recurring:shopperReference')
-            }
-          end
-        end
+        call_webservice_action('listRecurringDetails', list_request_body, ListResponse)
       end
 
       def disable
-        call_webservice_action('disable', disable_request_body) do |xml|
-          { :response => xml.text('//recurring:disableResponse/recurring:result/recurring:response') }
-        end
+        call_webservice_action('disable', disable_request_body, DisableResponse)
       end
 
       private
@@ -283,42 +272,67 @@ module Adyen
         DISABLE_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], reference || '']
       end
 
-      # @todo add support for elv
-      def parse_recurring_detail(node)
-        result = {
-          :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
-          :variant                    => node.text('./recurring:variant'),
-          :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
-        }
+      class DisableResponse < Response
+        response_attrs :response
 
-        card = node.xpath('./recurring:card')
-        if card.children.empty?
-          result[:bank] = parse_bank_details(node.xpath('./recurring:bank'))
-        else
-          result[:card] = parse_card_details(card)
+        def params
+          @params ||= { :response => xml_querier.text('//recurring:disableResponse/recurring:result/recurring:response') }
+        end
+      end
+
+      class ListResponse < Response
+        response_attrs :details, :last_known_shopper_email, :shopper_reference, :creation_date
+
+        def params
+          @params ||= xml_querier.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
+            {
+              :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
+              :details                  => result.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
+              :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
+              :shopper_reference        => result.text('./recurring:shopperReference')
+            }
+          end
         end
 
-        result
-      end
+        private
 
-      def parse_card_details(card)
-        {
-          :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
-          :holder_name => card.text('./payment:holderName'),
-          :number      => card.text('./payment:number')
-        }
-      end
+        # @todo add support for elv
+        def parse_recurring_detail(node)
+          result = {
+            :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
+            :variant                    => node.text('./recurring:variant'),
+            :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
+          }
 
-      def parse_bank_details(bank)
-        {
-          :bank_account_number => bank.text('./payment:bankAccountNumber'),
-          :bank_location_id    => bank.text('./payment:bankLocationId'),
-          :bank_name           => bank.text('./payment:bankName'),
-          :bic                 => bank.text('./payment:bic'),
-          :country_code        => bank.text('./payment:countryCode'),
-          :iban                => bank.text('./payment:iban'),
-          :owner_name          => bank.text('./payment:ownerName')
-        }
+          card = node.xpath('./recurring:card')
+          if card.children.empty?
+            result[:bank] = parse_bank_details(node.xpath('./recurring:bank'))
+          else
+            result[:card] = parse_card_details(card)
+          end
+
+          result
+        end
+
+        def parse_card_details(card)
+          {
+            :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
+            :holder_name => card.text('./payment:holderName'),
+            :number      => card.text('./payment:number')
+          }
+        end
+
+        def parse_bank_details(bank)
+          {
+            :bank_account_number => bank.text('./payment:bankAccountNumber'),
+            :bank_location_id    => bank.text('./payment:bankLocationId'),
+            :bank_name           => bank.text('./payment:bankName'),
+            :bic                 => bank.text('./payment:bic'),
+            :country_code        => bank.text('./payment:countryCode'),
+            :iban                => bank.text('./payment:iban'),
+            :owner_name          => bank.text('./payment:ownerName')
+          }
+        end
       end
     end
   end
