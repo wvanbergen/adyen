@@ -67,12 +67,7 @@ module Adyen
         request.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
         request.start do |http|
-          response = http.request(post)
-          # TODO: handle not 2xx responses
-          #p response
-          #raise "#{response.inspect}\n#{response.body}" unless response.is_a?(Net::HTTPSuccess)
-          #XMLQuerier.new(response.body)
-          response_class.new(response, &block)
+          response_class.new(http.request(post), &block)
         end
       end
     end
