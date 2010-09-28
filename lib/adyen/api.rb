@@ -206,6 +206,28 @@ module Adyen
       end
     end
 
+    class Response
+      attr_reader :http_response
+
+      def initialize(http_response)
+        @http_response = http_response
+      end
+
+      # @return [Boolean] Whether or not the request was successful.
+      def success?
+        !http_failure?
+      end
+
+      # @return [Boolean] Whether or not the HTTP request was a success.
+      def http_failure?
+        !@http_response.is_a?(Net::HTTPSuccess)
+      end
+
+      def xml_querier
+        XMLQuerier.new(@http_response.body)
+      end
+    end
+
     class XMLQuerier
       NS = {
         'payment'   => 'http://payment.services.adyen.com',
