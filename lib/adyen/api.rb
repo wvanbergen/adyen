@@ -54,7 +54,7 @@ module Adyen
         @params = API.default_params.merge(params)
       end
 
-      def call_webservice_action(action, data)
+      def call_webservice_action(action, data, response_class = Response, &block)
         endpoint = self.class.endpoint
 
         post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
@@ -72,146 +72,16 @@ module Adyen
           #p response
           #raise "#{response.inspect}\n#{response.body}" unless response.is_a?(Net::HTTPSuccess)
           #XMLQuerier.new(response.body)
-          Response.new(response)
+          response_class.new(response, &block)
         end
       end
     end
 
-    class PaymentService < SimpleSOAPClient
-      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
-
-      def authorise_payment
-        make_payment_request(authorise_payment_request_body)
-      end
-
-      def authorise_recurring_payment
-        make_payment_request(authorise_recurring_payment_request_body)
-      end
-
-      private
-
-      def make_payment_request(data)
-        response = call_webservice_action('authorise', data).xml_querier
-        response.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
-          {
-            :psp_reference  => result.text('./payment:pspReference'),
-            :result_code    => result.text('./payment:resultCode'),
-            :auth_code      => result.text('./payment:authCode'),
-            :refusal_reason => result.text('./payment:refusalReason')
-          }
-        end
-      end
-
-      def authorise_payment_request_body
-        content = card_partial
-        content << RECURRING_PARTIAL if @params[:recurring]
-        payment_request_body(content)
-      end
-
-      def authorise_recurring_payment_request_body
-        content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
-        payment_request_body(content)
-      end
-
-      def payment_request_body(content)
-        content << amount_partial
-        content << shopper_partial if @params[:shopper]
-        LAYOUT % [@params[:merchant_account], @params[:reference], content]
-      end
-
-      def amount_partial
-        AMOUNT_PARTIAL % @params[:amount].values_at(:currency, :value)
-      end
-
-      def card_partial
-        card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
-        card << @params[:card][:expiry_month].to_i
-        CARD_PARTIAL % card
-      end
-
-      def shopper_partial
-        @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
-      end
-    end
-
-    class RecurringService < SimpleSOAPClient
-      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
-
-      # TODO: rename to list_details and make shortcut method take the only necessary param
-      def list
-        response = call_webservice_action('listRecurringDetails', list_request_body).xml_querier
-        response.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
-          {
-            :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
-            :details                  => result.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
-            :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
-            :shopper_reference        => result.text('./recurring:shopperReference')
-          }
-        end
-      end
-
-      def disable
-        response = call_webservice_action('disable', disable_request_body).xml_querier
-        { :response => response.text('//recurring:disableResponse/recurring:result/recurring:response') }
-      end
-
-      private
-
-      def list_request_body
-        LIST_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
-      end
-
-      def disable_request_body
-        if reference = @params[:recurring_detail_reference]
-          reference = RECURRING_DETAIL_PARTIAL % reference
-        end
-        DISABLE_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], reference || '']
-      end
-
-      # @todo add support for elv
-      def parse_recurring_detail(node)
-        result = {
-          :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
-          :variant                    => node.text('./recurring:variant'),
-          :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
-        }
-
-        card = node.xpath('./recurring:card')
-        if card.children.empty?
-          result[:bank] = parse_bank_details(node.xpath('./recurring:bank'))
-        else
-          result[:card] = parse_card_details(card)
-        end
-
-        result
-      end
-
-      def parse_card_details(card)
-        {
-          :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
-          :holder_name => card.text('./payment:holderName'),
-          :number      => card.text('./payment:number')
-        }
-      end
-
-      def parse_bank_details(bank)
-        {
-          :bank_account_number => bank.text('./payment:bankAccountNumber'),
-          :bank_location_id    => bank.text('./payment:bankLocationId'),
-          :bank_name           => bank.text('./payment:bankName'),
-          :bic                 => bank.text('./payment:bic'),
-          :country_code        => bank.text('./payment:countryCode'),
-          :iban                => bank.text('./payment:iban'),
-          :owner_name          => bank.text('./payment:ownerName')
-        }
-      end
-    end
-
-    class Response
+        class Response
       attr_reader :http_response
 
-      def initialize(http_response)
-        @http_response = http_response
+      def initialize(http_response, &block)
+        @http_response, @params_block = http_response, block
       end
 
       # @return [Boolean] Whether or not the request was successful.
@@ -225,7 +95,11 @@ module Adyen
       end
 
       def xml_querier
-        XMLQuerier.new(@http_response.body)
+        @xml_querier ||= XMLQuerier.new(@http_response.body)
+      end
+
+      def params
+        @params ||= @params_block.call(xml_querier)
       end
     end
 
@@ -297,6 +171,143 @@ module Adyen
 
       def map(&block)
         @node.map { |n| self.class.new(n) }.map(&block)
+      end
+    end
+
+    class PaymentService < SimpleSOAPClient
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
+
+      def authorise_payment
+        make_payment_request(authorise_payment_request_body)
+      end
+
+      def authorise_recurring_payment
+        make_payment_request(authorise_recurring_payment_request_body)
+      end
+
+      private
+
+      def make_payment_request(data)
+        call_webservice_action('authorise', data, AuthorizationResponse)
+      end
+
+      def authorise_payment_request_body
+        content = card_partial
+        content << RECURRING_PARTIAL if @params[:recurring]
+        payment_request_body(content)
+      end
+
+      def authorise_recurring_payment_request_body
+        content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
+        payment_request_body(content)
+      end
+
+      def payment_request_body(content)
+        content << amount_partial
+        content << shopper_partial if @params[:shopper]
+        LAYOUT % [@params[:merchant_account], @params[:reference], content]
+      end
+
+      def amount_partial
+        AMOUNT_PARTIAL % @params[:amount].values_at(:currency, :value)
+      end
+
+      def card_partial
+        card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
+        card << @params[:card][:expiry_month].to_i
+        CARD_PARTIAL % card
+      end
+
+      def shopper_partial
+        @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
+      end
+
+      class AuthorizationResponse < Response
+        def params
+          @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+            {
+              :psp_reference  => result.text('./payment:pspReference'),
+              :result_code    => result.text('./payment:resultCode'),
+              :auth_code      => result.text('./payment:authCode'),
+              :refusal_reason => result.text('./payment:refusalReason')
+            }
+          end
+        end
+      end
+    end
+
+    class RecurringService < SimpleSOAPClient
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
+
+      # TODO: rename to list_details and make shortcut method take the only necessary param
+      def list
+        call_webservice_action('listRecurringDetails', list_request_body) do |xml|
+          xml.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
+            {
+              :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
+              :details                  => result.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
+              :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
+              :shopper_reference        => result.text('./recurring:shopperReference')
+            }
+          end
+        end
+      end
+
+      def disable
+        call_webservice_action('disable', disable_request_body) do |xml|
+          { :response => xml.text('//recurring:disableResponse/recurring:result/recurring:response') }
+        end
+      end
+
+      private
+
+      def list_request_body
+        LIST_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
+      end
+
+      def disable_request_body
+        if reference = @params[:recurring_detail_reference]
+          reference = RECURRING_DETAIL_PARTIAL % reference
+        end
+        DISABLE_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], reference || '']
+      end
+
+      # @todo add support for elv
+      def parse_recurring_detail(node)
+        result = {
+          :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
+          :variant                    => node.text('./recurring:variant'),
+          :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
+        }
+
+        card = node.xpath('./recurring:card')
+        if card.children.empty?
+          result[:bank] = parse_bank_details(node.xpath('./recurring:bank'))
+        else
+          result[:card] = parse_card_details(card)
+        end
+
+        result
+      end
+
+      def parse_card_details(card)
+        {
+          :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
+          :holder_name => card.text('./payment:holderName'),
+          :number      => card.text('./payment:number')
+        }
+      end
+
+      def parse_bank_details(bank)
+        {
+          :bank_account_number => bank.text('./payment:bankAccountNumber'),
+          :bank_location_id    => bank.text('./payment:bankLocationId'),
+          :bank_name           => bank.text('./payment:bankName'),
+          :bic                 => bank.text('./payment:bic'),
+          :country_code        => bank.text('./payment:countryCode'),
+          :iban                => bank.text('./payment:iban'),
+          :owner_name          => bank.text('./payment:ownerName')
+        }
       end
     end
   end

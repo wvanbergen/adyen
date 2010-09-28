@@ -165,12 +165,18 @@ describe Adyen::API do
       http_response = Net::HTTPOK.new('1.1', '200', 'OK')
       http_response.add_field('Content-type', 'text/xml')
       http_response.stub!(:body).and_return(AUTHORISE_RESPONSE)
-      @response = Adyen::API::Response.new(http_response)
+      @response = Adyen::API::Response.new(http_response) do |xml_querier|
+        { :xml_querier => xml_querier }
+      end
     end
 
     it "returns a XMLQuerier instance with the response body" do
       @response.xml_querier.should be_instance_of(Adyen::API::XMLQuerier)
       @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
+    end
+
+    it "yields the xml_querier to the block, given to the constructor, to parse the response params" do
+      @response.params.should == { :xml_querier => @response.xml_querier }
     end
 
     describe "with a successful HTTP response" do
@@ -216,7 +222,9 @@ describe Adyen::API do
     describe "call_webservice_action" do
       before do
         stub_net_http(AUTHORISE_RESPONSE)
-        @response = @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>')
+        @response = @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>') do |xml_querier|
+          { :xml_querier => xml_querier }
+        end
         @request, @post = Net::HTTP.posted
       end
 
@@ -255,9 +263,10 @@ describe Adyen::API do
         }
       end
 
-      it "returns an Adyen::API::Response instance" do
+      it "returns an Adyen::API::Response instance with the params parse block" do
         @response.should be_instance_of(Adyen::API::Response)
         @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
+        @response.params.should == { :xml_querier => @response.xml_querier }
       end
     end
   end
@@ -365,7 +374,7 @@ describe Adyen::API do
 
         for_each_xml_backend do
           it "returns a hash with parsed response details" do
-            @payment.authorise_payment.should == {
+            @payment.authorise_payment.params.should == {
               :psp_reference => '9876543210987654',
               :result_code => 'Authorised',
               :auth_code => '1234',
@@ -425,7 +434,7 @@ describe Adyen::API do
 
         for_each_xml_backend do
           it "returns a hash with parsed response details" do
-            @payment.authorise_recurring_payment.should == {
+            @payment.authorise_recurring_payment.params.should == {
               :psp_reference => '9876543210987654',
               :result_code => 'Authorised',
               :auth_code => '1234',
@@ -494,7 +503,7 @@ describe Adyen::API do
 
       for_each_xml_backend do
         it "returns a hash with parsed response details" do
-          @recurring.list.should == {
+          @recurring.list.params.should == {
             :creation_date => DateTime.parse('2009-10-27T11:26:22.203+01:00'),
             :last_known_shopper_email => 's.hopper@example.com',
             :shopper_reference => 'user-id',
@@ -575,7 +584,7 @@ describe Adyen::API do
 
         for_each_xml_backend do
           it "returns a hash with parsed response details" do
-            @recurring.disable.should == { :response => '[detail-successfully-disabled]' }
+            @recurring.disable.params.should == { :response => '[detail-successfully-disabled]' }
           end
         end
       end
