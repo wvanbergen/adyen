@@ -160,6 +160,39 @@ describe Adyen::API do
     Adyen::API.password = 'secret'
   end
 
+  describe Adyen::API::Response do
+    before do
+      http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+      http_response.add_field('Content-type', 'text/xml')
+      http_response.stub!(:body).and_return(AUTHORISE_RESPONSE)
+      @response = Adyen::API::Response.new(http_response)
+    end
+
+    it "returns a XMLQuerier instance with the response body" do
+      @response.xml_querier.should be_instance_of(Adyen::API::XMLQuerier)
+      @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
+    end
+
+    describe "with a successful HTTP response" do
+      it "returns that the (HTTP) request was a success" do
+        @response.should_not be_a_http_failure
+        @response.should be_a_success
+      end
+    end
+
+    describe "with a failed HTTP response" do
+      before do
+        http_response = Net::HTTPBadRequest.new('1.1', '400', 'Bad request')
+        @response = Adyen::API::Response.new(http_response)
+      end
+
+      it "returns that the (HTTP) request was not a success" do
+        @response.should be_a_http_failure
+        @response.should_not be_a_success
+      end
+    end
+  end
+
   describe Adyen::API::SimpleSOAPClient do
     before do
       @client = APISpecHelper::SOAPClient.new(:reference => 'order-id')
@@ -183,7 +216,7 @@ describe Adyen::API do
     describe "call_webservice_action" do
       before do
         stub_net_http(AUTHORISE_RESPONSE)
-        @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>')
+        @response = @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>')
         @request, @post = Net::HTTP.posted
       end
 
@@ -221,38 +254,10 @@ describe Adyen::API do
           'soapaction'   => ['Action']
         }
       end
-    end
-  end
 
-  describe Adyen::API::Response do
-    before do
-      http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-      http_response.add_field('Content-type', 'text/xml')
-      http_response.stub!(:body).and_return(AUTHORISE_RESPONSE)
-      @response = Adyen::API::Response.new(http_response)
-    end
-
-    it "returns a XMLQuerier instance with the response body" do
-      @response.xml_querier.should be_instance_of(Adyen::API::XMLQuerier)
-      @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
-    end
-
-    describe "with a successful HTTP response" do
-      it "returns that the (HTTP) request was a success" do
-        @response.should_not be_a_http_failure
-        @response.should be_a_success
-      end
-    end
-
-    describe "with a failed HTTP response" do
-      before do
-        http_response = Net::HTTPBadRequest.new('1.1', '400', 'Bad request')
-        @response = Adyen::API::Response.new(http_response)
-      end
-
-      it "returns that the (HTTP) request was not a success" do
-        @response.should be_a_http_failure
-        @response.should_not be_a_success
+      it "returns an Adyen::API::Response instance" do
+        @response.should be_instance_of(Adyen::API::Response)
+        @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
       end
     end
   end

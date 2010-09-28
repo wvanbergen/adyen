@@ -70,8 +70,9 @@ module Adyen
           response = http.request(post)
           # TODO: handle not 2xx responses
           #p response
-          raise "#{response.inspect}\n#{response.body}" unless response.is_a?(Net::HTTPSuccess)
-          XMLQuerier.new(response.body)
+          #raise "#{response.inspect}\n#{response.body}" unless response.is_a?(Net::HTTPSuccess)
+          #XMLQuerier.new(response.body)
+          Response.new(response)
         end
       end
     end
@@ -90,7 +91,7 @@ module Adyen
       private
 
       def make_payment_request(data)
-        response = call_webservice_action('authorise', data)
+        response = call_webservice_action('authorise', data).xml_querier
         response.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
           {
             :psp_reference  => result.text('./payment:pspReference'),
@@ -138,7 +139,7 @@ module Adyen
 
       # TODO: rename to list_details and make shortcut method take the only necessary param
       def list
-        response = call_webservice_action('listRecurringDetails', list_request_body)
+        response = call_webservice_action('listRecurringDetails', list_request_body).xml_querier
         response.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
           {
             :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
@@ -150,7 +151,7 @@ module Adyen
       end
 
       def disable
-        response = call_webservice_action('disable', disable_request_body)
+        response = call_webservice_action('disable', disable_request_body).xml_querier
         { :response => response.text('//recurring:disableResponse/recurring:result/recurring:response') }
       end
 
