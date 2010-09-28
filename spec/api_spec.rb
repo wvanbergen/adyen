@@ -105,6 +105,14 @@ module APISpecHelper
         end
       end
     end
+
+    def it_should_have_shortcut_methods_for_params_on_the_response
+      it "provides shortcut methods, on the response object, for all entries in the #params hash" do
+        @response.params.each do |key, value|
+          @response.send(key).should == value
+        end
+      end
+    end
   end
 
   class SOAPClient < Adyen::API::SimpleSOAPClient
@@ -383,11 +391,7 @@ describe Adyen::API do
           end
         end
 
-        it "provides shortcut methods for all entries in the #params hash" do
-          @response.params.each do |key, value|
-            @response.send(key).should == value
-          end
-        end
+        it_should_have_shortcut_methods_for_params_on_the_response
 
         describe "with a authorized response" do
           it "returns that the request was authorised" do
@@ -441,7 +445,7 @@ describe Adyen::API do
       describe "authorise_recurring_payment" do
         before do
           stub_net_http(AUTHORISE_RESPONSE)
-          @payment.authorise_recurring_payment
+          @response = @payment.authorise_recurring_payment
           @request, @post = Net::HTTP.posted
         end
 
@@ -467,6 +471,8 @@ describe Adyen::API do
             }
           end
         end
+
+        it_should_have_shortcut_methods_for_params_on_the_response
       end
     end
 
