@@ -77,7 +77,7 @@ module Adyen
       end
     end
 
-        class Response
+    class Response
       attr_reader :http_response
 
       def initialize(http_response, &block)
