@@ -220,6 +220,14 @@ module Adyen
       class AuthorizationResponse < Response
         AUTHORISED = 'Authorised'
 
+        def self.response_attrs(*attrs)
+          attrs.each do |attr|
+            define_method(attr) { params[attr] }
+          end
+        end
+
+        response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
+
         def success?
           super && params[:result_code] == AUTHORISED
         end

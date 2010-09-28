@@ -372,21 +372,27 @@ describe Adyen::API do
           @post.soap_action.should == 'authorise'
         end
 
+        for_each_xml_backend do
+          it "returns a hash with parsed response details" do
+            @payment.authorise_payment.params.should == {
+              :psp_reference => '9876543210987654',
+              :result_code => 'Authorised',
+              :auth_code => '1234',
+              :refusal_reason => ''
+            }
+          end
+        end
+
+        it "provides shortcut methods for all entries in the #params hash" do
+          @response.params.each do |key, value|
+            @response.send(key).should == value
+          end
+        end
+
         describe "with a authorized response" do
           it "returns that the request was authorised" do
             @response.should be_success
             @response.should be_authorized
-          end
-
-          for_each_xml_backend do
-            it "returns a hash with parsed response details" do
-              @payment.authorise_payment.params.should == {
-                :psp_reference => '9876543210987654',
-                :result_code => 'Authorised',
-                :auth_code => '1234',
-                :refusal_reason => ''
-              }
-            end
           end
         end
 
