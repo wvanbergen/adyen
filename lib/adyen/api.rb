@@ -218,6 +218,14 @@ module Adyen
       end
 
       class AuthorizationResponse < Response
+        AUTHORISED = 'Authorised'
+
+        def success?
+          super && params[:result_code] == AUTHORISED
+        end
+
+        alias authorized? success?
+
         def params
           @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
             {

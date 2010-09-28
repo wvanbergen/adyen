@@ -356,7 +356,7 @@ describe Adyen::API do
       describe "authorise_payment" do
         before do
           stub_net_http(AUTHORISE_RESPONSE)
-          @payment.authorise_payment
+          @response = @payment.authorise_payment
           @request, @post = Net::HTTP.posted
         end
 
@@ -372,14 +372,33 @@ describe Adyen::API do
           @post.soap_action.should == 'authorise'
         end
 
-        for_each_xml_backend do
-          it "returns a hash with parsed response details" do
-            @payment.authorise_payment.params.should == {
-              :psp_reference => '9876543210987654',
-              :result_code => 'Authorised',
-              :auth_code => '1234',
-              :refusal_reason => ''
-            }
+        describe "with a authorized response" do
+          it "returns that the request was authorised" do
+            @response.should be_success
+            @response.should be_authorized
+          end
+
+          for_each_xml_backend do
+            it "returns a hash with parsed response details" do
+              @payment.authorise_payment.params.should == {
+                :psp_reference => '9876543210987654',
+                :result_code => 'Authorised',
+                :auth_code => '1234',
+                :refusal_reason => ''
+              }
+            end
+          end
+        end
+
+        describe "with a declined response" do
+          before do
+            stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
+            @response = @payment.authorise_payment
+          end
+
+          it "returns that the request was not authorised" do
+            @response.should_not be_success
+            @response.should_not be_authorized
           end
         end
       end
@@ -609,6 +628,29 @@ AUTHORISE_RESPONSE = <<EOS
         <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
         <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
         <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+AUTHORISATION_DECLINED_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+        <refusalReason xmlns="http://payment.services.adyen.com">You need to actually own money.</refusalReason>
+        <resultCode xmlns="http://payment.services.adyen.com">Refused</resultCode>
       </ns1:paymentResult>
     </ns1:authoriseResponse>
   </soap:Body>
