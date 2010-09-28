@@ -664,6 +664,17 @@ AUTHORISATION_DECLINED_RESPONSE = <<EOS
 </soap:Envelope>
 EOS
 
+AUTHORISE_REQUEST_INVALID_RESPONSE = <<EOS
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>validation 101 Invalid card number</faultstring>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
 LIST_RESPONSE = <<EOS
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

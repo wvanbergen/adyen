@@ -8,3 +8,7 @@
   * adyen-soap
   * adyen-railtie
   * adyen-activemerchant
+
+= API
+
+* Add Response#errors which returns validation errors from the SOAP API
