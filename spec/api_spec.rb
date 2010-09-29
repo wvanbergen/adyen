@@ -346,9 +346,9 @@ describe Adyen::API do
         end
 
         it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
-          xpath('./recurring:recurring/payment:contract').should be_empty
+          xpath('./payment:recurring/payment:contract').should be_empty
           @payment.params[:recurring] = true
-          text('./recurring:recurring/payment:contract').should == 'RECURRING'
+          text('./payment:recurring/payment:contract').should == 'RECURRING'
         end
       end
 

@@ -402,9 +402,9 @@ EOS
 EOS
 
       RECURRING_PARTIAL = <<EOS
-        <recurring:recurring>
+        <payment:recurring>
           <payment:contract>RECURRING</payment:contract>
-        </recurring:recurring>
+        </payment:recurring>
 EOS
 
       RECURRING_PAYMENT_BODY_PARTIAL = <<EOS
