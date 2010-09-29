@@ -294,166 +294,164 @@ describe Adyen::API do
   end
 
   describe Adyen::API::PaymentService do
-    describe "for a normal payment request" do
-      before do
-        @params = {
-          :reference => 'order-id',
-          :amount => {
-            :currency => 'EUR',
-            :value => '1234',
-          },
-          :shopper => {
-            :email => 's.hopper@example.com',
-            :reference => 'user-id',
-            :ip => '61.294.12.12',
-          },
-          :card => {
-            :expiry_month => 12,
-            :expiry_year => 2012,
-            :holder_name => 'Simon わくわく Hopper',
-            :number => '4444333322221111',
-            :cvc => '737',
-            # Maestro UK/Solo only
-            #:issue_number => ,
-            #:start_month => ,
-            #:start_year => ,
-          }
+    before do
+      @params = {
+        :reference => 'order-id',
+        :amount => {
+          :currency => 'EUR',
+          :value => '1234',
+        },
+        :shopper => {
+          :email => 's.hopper@example.com',
+          :reference => 'user-id',
+          :ip => '61.294.12.12',
+        },
+        :card => {
+          :expiry_month => 12,
+          :expiry_year => 2012,
+          :holder_name => 'Simon わくわく Hopper',
+          :number => '4444333322221111',
+          :cvc => '737',
+          # Maestro UK/Solo only
+          #:issue_number => ,
+          #:start_month => ,
+          #:start_year => ,
         }
-        @payment = Adyen::API::PaymentService.new(@params)
+      }
+      @payment = Adyen::API::PaymentService.new(@params)
+    end
+
+    describe "authorise_payment_request_body" do
+      before :all do
+        @method = :authorise_payment_request_body
       end
 
-      describe "authorise_payment_request_body" do
-        before :all do
-          @method = :authorise_payment_request_body
-        end
+      it_should_behave_like "payment requests"
 
-        it_should_behave_like "payment requests"
-
-        it "includes the creditcard details" do
-          xpath('./payment:card') do |card|
-            # there's no reason why Nokogiri should escape these characters, but as long as they're correct
-            card.text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
-            card.text('./payment:number').should == '4444333322221111'
-            card.text('./payment:cvc').should == '737'
-            card.text('./payment:expiryMonth').should == '12'
-            card.text('./payment:expiryYear').should == '2012'
-          end
-        end
-
-        it "formats the creditcard’s expiry month as a two digit number" do
-          @payment.params[:card][:expiry_month] = 6
-          text('./payment:card/payment:expiryMonth').should == '06'
-        end
-
-        it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
-          xpath('./payment:recurring/payment:contract').should be_empty
-          @payment.params[:recurring] = true
-          text('./payment:recurring/payment:contract').should == 'RECURRING'
+      it "includes the creditcard details" do
+        xpath('./payment:card') do |card|
+          # there's no reason why Nokogiri should escape these characters, but as long as they're correct
+          card.text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
+          card.text('./payment:number').should == '4444333322221111'
+          card.text('./payment:cvc').should == '737'
+          card.text('./payment:expiryMonth').should == '12'
+          card.text('./payment:expiryYear').should == '2012'
         end
       end
 
-      describe "authorise_payment" do
+      it "formats the creditcard’s expiry month as a two digit number" do
+        @payment.params[:card][:expiry_month] = 6
+        text('./payment:card/payment:expiryMonth').should == '06'
+      end
+
+      it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
+        xpath('./payment:recurring/payment:contract').should be_empty
+        @payment.params[:recurring] = true
+        text('./payment:recurring/payment:contract').should == 'RECURRING'
+      end
+    end
+
+    describe "authorise_payment" do
+      before do
+        stub_net_http(AUTHORISE_RESPONSE)
+        @response = @payment.authorise_payment
+        @request, @post = Net::HTTP.posted
+      end
+
+      after do
+        Net::HTTP.stubbing_enabled = false
+      end
+
+      it "posts the body generated for the given parameters" do
+        @post.body.should == @payment.authorise_payment_request_body
+      end
+
+      it "posts to the correct SOAP action" do
+        @post.soap_action.should == 'authorise'
+      end
+
+      for_each_xml_backend do
+        it "returns a hash with parsed response details" do
+          @payment.authorise_payment.params.should == {
+            :psp_reference => '9876543210987654',
+            :result_code => 'Authorised',
+            :auth_code => '1234',
+            :refusal_reason => ''
+          }
+        end
+      end
+
+      it_should_have_shortcut_methods_for_params_on_the_response
+
+      describe "with a authorized response" do
+        it "returns that the request was authorised" do
+          @response.should be_success
+          @response.should be_authorized
+        end
+      end
+
+      describe "with a `declined' response" do
         before do
-          stub_net_http(AUTHORISE_RESPONSE)
+          stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
           @response = @payment.authorise_payment
-          @request, @post = Net::HTTP.posted
         end
 
-        after do
-          Net::HTTP.stubbing_enabled = false
+        it "returns that the request was not authorised" do
+          @response.should_not be_success
+          @response.should_not be_authorized
+        end
+      end
+
+      describe "with a `invalid' response" do
+        before do
+          stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % 'validation 101 Invalid card number')
+          @response = @payment.authorise_payment
         end
 
-        it "posts the body generated for the given parameters" do
-          @post.body.should == @payment.authorise_payment_request_body
+        it "returns that the request was not authorised" do
+          @response.should_not be_success
+          @response.should_not be_authorized
         end
 
-        it "posts to the correct SOAP action" do
-          @post.soap_action.should == 'authorise'
+        it "it returns that the request was invalid" do
+          @response.should be_invalid_request
         end
 
-        for_each_xml_backend do
-          it "returns a hash with parsed response details" do
-            @payment.authorise_payment.params.should == {
-              :psp_reference => '9876543210987654',
-              :result_code => 'Authorised',
-              :auth_code => '1234',
-              :refusal_reason => ''
-            }
-          end
-        end
-
-        it_should_have_shortcut_methods_for_params_on_the_response
-
-        describe "with a authorized response" do
-          it "returns that the request was authorised" do
-            @response.should be_success
-            @response.should be_authorized
-          end
-        end
-
-        describe "with a `declined' response" do
-          before do
-            stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
-            @response = @payment.authorise_payment
-          end
-
-          it "returns that the request was not authorised" do
-            @response.should_not be_success
-            @response.should_not be_authorized
+        it "returns creditcard validation errors" do
+          [
+            ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
+            ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
+            ["validation 128 Card Holder Missing",                           [:holder_name,  'can’t be blank']],
+            ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
+            ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
+          ].each do |message, error|
+            response_with_fault_message(message).error.should == error
           end
         end
 
-        describe "with a `invalid' response" do
-          before do
-            stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % 'validation 101 Invalid card number')
-            @response = @payment.authorise_payment
-          end
+        it "returns any other fault messages on `base'" do
+          message = "validation 130 Reference Missing"
+          response_with_fault_message(message).error.should == [:base, message]
+        end
 
-          it "returns that the request was not authorised" do
-            @response.should_not be_success
-            @response.should_not be_authorized
+        it "returns the original message corresponding to the given attribute and message" do
+          [
+            ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
+            ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
+            ["validation 128 Card Holder Missing",                           [:holder_name,  'can’t be blank']],
+            ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
+            ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
+            ["validation 130 Reference Missing",                             [:base,         'validation 130 Reference Missing']],
+          ].each do |expected, attr_and_message|
+            Adyen::API::PaymentService::AuthorizationResponse.original_fault_message_for(*attr_and_message).should == expected
           end
+        end
 
-          it "it returns that the request was invalid" do
-            @response.should be_invalid_request
-          end
+        private
 
-          it "returns creditcard validation errors" do
-            [
-              ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
-              ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
-              ["validation 128 Card Holder Missing",                           [:holder_name,  'can’t be blank']],
-              ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
-              ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
-            ].each do |message, error|
-              response_with_fault_message(message).error.should == error
-            end
-          end
-
-          it "returns any other fault messages on `base'" do
-            message = "validation 130 Reference Missing"
-            response_with_fault_message(message).error.should == [:base, message]
-          end
-
-          it "returns the original message corresponding to the given attribute and message" do
-            [
-              ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
-              ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
-              ["validation 128 Card Holder Missing",                           [:holder_name,  'can’t be blank']],
-              ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
-              ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
-              ["validation 130 Reference Missing",                             [:base,         'validation 130 Reference Missing']],
-            ].each do |expected, attr_and_message|
-              Adyen::API::PaymentService::AuthorizationResponse.original_fault_message_for(*attr_and_message).should == expected
-            end
-          end
-
-          private
-
-          def response_with_fault_message(message)
-            stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % message)
-            @response = @payment.authorise_payment
-          end
+        def response_with_fault_message(message)
+          stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % message)
+          @response = @payment.authorise_payment
         end
       end
 
@@ -517,6 +515,40 @@ describe Adyen::API do
         end
 
         it_should_have_shortcut_methods_for_params_on_the_response
+      end
+    end
+
+    describe "test helpers that stub responses" do
+      after do
+        Net::HTTP.stubbing_enabled = false
+      end
+
+      it "returns an `authorized' response" do
+        stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
+        Adyen::API::PaymentService.stub_success!
+        @payment.authorise_payment.should be_authorized
+
+        @payment.authorise_payment.should_not be_authorized
+      end
+
+      it "returns a `refused' response" do
+        stub_net_http(AUTHORISE_RESPONSE)
+        Adyen::API::PaymentService.stub_refused!
+        response = @payment.authorise_payment
+        response.should_not be_authorized
+        response.should_not be_invalid_request
+
+        @payment.authorise_payment.should be_authorized
+      end
+
+      it "returns a `invalid request' response" do
+        stub_net_http(AUTHORISE_RESPONSE)
+        Adyen::API::PaymentService.stub_invalid!
+        response = @payment.authorise_payment
+        response.should_not be_authorized
+        response.should be_invalid_request
+
+        @payment.authorise_payment.should be_authorized
       end
     end
 

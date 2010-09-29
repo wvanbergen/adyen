@@ -44,8 +44,12 @@ module Adyen
       # from http://curl.haxx.se/ca/cacert.pem
       CACERT = File.expand_path('../../../support/cacert.pem', __FILE__)
 
-      def self.endpoint
-        @endpoint ||= URI.parse(const_get('ENDPOINT_URI') % Adyen.environment)
+      class << self
+        attr_accessor :stubbed_response
+
+        def endpoint
+          @endpoint ||= URI.parse(const_get('ENDPOINT_URI') % Adyen.environment)
+        end
       end
 
       attr_reader :params
@@ -55,19 +59,24 @@ module Adyen
       end
 
       def call_webservice_action(action, data, response_class)
-        endpoint = self.class.endpoint
+        if response = self.class.stubbed_response
+          self.class.stubbed_response = nil
+          response
+        else
+          endpoint = self.class.endpoint
 
-        post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
-        post.basic_auth(API.username, API.password)
-        post.body = data
+          post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
+          post.basic_auth(API.username, API.password)
+          post.body = data
 
-        request = Net::HTTP.new(endpoint.host, endpoint.port)
-        request.use_ssl = true
-        request.ca_file = CACERT
-        request.verify_mode = OpenSSL::SSL::VERIFY_PEER
+          request = Net::HTTP.new(endpoint.host, endpoint.port)
+          request.use_ssl = true
+          request.ca_file = CACERT
+          request.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
-        request.start do |http|
-          response_class.new(http.request(post))
+          request.start do |http|
+            response_class.new(http.request(post))
+          end
         end
       end
     end
@@ -179,6 +188,24 @@ module Adyen
     class PaymentService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
+      def self.stub_success!
+        http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+        def http_response.body; AUTHORISE_RESPONSE; end
+        @stubbed_response = AuthorizationResponse.new(http_response)
+      end
+
+      def self.stub_refused!
+        http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+        def http_response.body; AUTHORISATION_REFUSED_RESPONSE; end
+        @stubbed_response = AuthorizationResponse.new(http_response)
+      end
+
+      def self.stub_invalid!
+        http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+        def http_response.body; AUTHORISATION_REQUEST_INVALID_RESPONSE; end
+        @stubbed_response = AuthorizationResponse.new(http_response)
+      end
+
       def authorise_payment
         make_payment_request(authorise_payment_request_body)
       end
@@ -273,7 +300,10 @@ module Adyen
         private
 
         def fault_message
-          @fault_message ||= xml_querier.text('//soap:Fault/faultstring')
+          @fault_message ||= begin
+            message = xml_querier.text('//soap:Fault/faultstring')
+            message unless message.empty?
+          end
         end
       end
     end
@@ -429,6 +459,65 @@ EOS
         :email     => '        <payment:shopperEmail>%s</payment:shopperEmail>',
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
       }
+
+      # Test responses
+
+      AUTHORISE_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+        <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+      AUTHORISATION_REFUSED_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+        <refusalReason xmlns="http://payment.services.adyen.com">You need to actually own money.</refusalReason>
+        <resultCode xmlns="http://payment.services.adyen.com">Refused</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+      AUTHORISATION_REQUEST_INVALID_RESPONSE = <<EOS
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>validation 101 Invalid card number</faultstring>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>
+EOS
     end
 
     class RecurringService
