@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
-  s.name    = 'adyen'
-  s.version = "0.3.8"
-  s.date    = "2010-09-23"
+  s.name    = 'fingertips-adyen'
+  s.version = "0.3.8.20100929"
+  s.date    = "2010-09-29"
 
   s.summary = "Integrate Adyen payment services in your Ruby on Rails application."
   s.description = <<-EOS
@@ -22,15 +22,13 @@ Gem::Specification.new do |s|
   
   # Drop or make runtime dependency.
   s.add_development_dependency('activerecord')
-  s.add_development_dependency('handsoap')
   s.add_development_dependency('nokogiri')
 
-  s.requirements << 'Handsoap is required for accessing the SOAP services. See http://github.com/troelskn/handsoap.'
   s.requirements << 'ActiveRecord is required for storing the notifications in your database.'
 
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   s.extra_rdoc_files = ['README.rdoc']
 
-  s.files = %w(spec/spec_helper.rb spec/adyen_spec.rb lib/adyen/form.rb .gitignore spec/notification_spec.rb lib/adyen/soap.rb LICENSE spec/soap_spec.rb init.rb adyen.gemspec Rakefile spec/form_spec.rb README.rdoc lib/adyen/notification.rb lib/adyen/formatter.rb tasks/github-gem.rake lib/adyen/encoding.rb TODO lib/adyen/matchers.rb lib/adyen.rb)
-  s.test_files = %w(spec/adyen_spec.rb spec/notification_spec.rb spec/soap_spec.rb spec/form_spec.rb)
+  s.files = %w(spec/spec_helper.rb spec/adyen_spec.rb lib/adyen/form.rb .gitignore spec/notification_spec.rb lib/adyen/api.rb LICENSE spec/api_spec.rb init.rb adyen.gemspec Rakefile spec/form_spec.rb README.rdoc lib/adyen/notification.rb lib/adyen/formatter.rb tasks/github-gem.rake lib/adyen/encoding.rb TODO lib/adyen/matchers.rb lib/adyen.rb)
+  s.test_files = %w(spec/adyen_spec.rb spec/notification_spec.rb spec/api_spec.rb spec/form_spec.rb)
 end
