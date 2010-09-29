@@ -10,25 +10,25 @@ if File.exist?(API_SPEC_INITIALIZER)
   describe Adyen::API do
     before :all do
       require API_SPEC_INITIALIZER
+      @order_id = @user_id = Time.now.to_i
     end
 
     it "performs a payment request" do
       response = Adyen::API.authorise_payment({
-        :reference => 'order-id',
+        :reference => @order_id,
         :recurring => true,
         :amount => {
           :currency => 'EUR',
           :value => '1234',
         },
         :shopper => {
-          :email => 's.hopper@example.com',
-          :reference => 'user-id',
-          :ip => '61.294.12.12',
+          :email => "#{@user_id}@example.com",
+          :reference => @user_id
         },
         :card => {
           :expiry_month => 12,
           :expiry_year => 2012,
-          :holder_name => 'Simon わくわく Hopper',
+          :holder_name => "Simon #{@user_id} Hopper",
           :number => '4444333322221111',
           :cvc => '737',
           # Maestro UK/Solo only
@@ -37,26 +37,25 @@ if File.exist?(API_SPEC_INITIALIZER)
           #:start_year => ,
         }
       })
-      response[:result_code].should == 'Authorised'
-      response[:psp_reference].should_not be_empty
+      response.should be_authorized
+      response.psp_reference.should_not be_empty
     end
 
-    #it "performs a recurring payment request" do
-      #response = Adyen::API.authorise_recurring_payment({
-        #:reference => 'order-id',
-        #:amount => {
-          #:currency => 'EUR',
-          #:value => '1234',
-        #},
-        #:shopper => {
-          #:email => 's.hopper@example.com',
-          #:reference => 'user-id',
-          #:ip => '61.294.12.12',
-        #}
-      #})
-      #response[:result_code].should == 'Authorised'
-      #response[:psp_reference].should_not be_empty
-    #end
+    it "performs a recurring payment request" do
+      response = Adyen::API.authorise_recurring_payment({
+        :reference => @order_id,
+        :amount => {
+          :currency => 'EUR',
+          :value => '1234',
+        },
+        :shopper => {
+          :email => "#{@user_id}@example.com",
+          :reference => @user_id
+        }
+      })
+      response.should be_authorized
+      response.psp_reference.should_not be_empty
+    end
   end
 
 else
