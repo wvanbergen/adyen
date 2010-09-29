@@ -225,9 +225,25 @@ module Adyen
       end
 
       class AuthorizationResponse < Response
-        response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
+        ERRORS = {
+          "validation 101 Invalid card number"                           => [:number,       'is not a valid creditcard number'],
+          "validation 103 CVC is not the right length"                   => [:cvc,          'is not the right length'],
+          "validation 128 Card Holder Missing"                           => [:holder_name,  'can’t be blank'],
+          "validation Couldn't parse expiry year"                        => [:expiry_year,  'could not be recognized'],
+          "validation Expiry month should be between 1 and 12 inclusive" => [:expiry_month, 'could not be recognized'],
+        }
 
         AUTHORISED = 'Authorised'
+
+        def self.original_fault_message_for(attribute, message)
+          if error = ERRORS.find { |_, (a, m)| a == attribute && m == message }
+            error.first
+          else
+            message
+          end
+        end
+
+        response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
 
         def success?
           super && params[:result_code] == AUTHORISED
@@ -239,15 +255,8 @@ module Adyen
           !fault_message.nil?
         end
 
-        ERRORS = {
-          'validation 101' => [:number, 'is not a valid creditcard number']
-        }
-
-        def errors
-          errors = {}
-          key, message = ERRORS[fault_message[0,14]]
-          errors[key] = message
-          errors
+        def error
+          ERRORS[fault_message] || [:base, fault_message]
         end
 
         def params

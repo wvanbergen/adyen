@@ -405,7 +405,7 @@ describe Adyen::API do
 
         describe "with a `invalid' response" do
           before do
-            stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE)
+            stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % 'validation 101 Invalid card number')
             @response = @payment.authorise_payment
           end
 
@@ -419,7 +419,40 @@ describe Adyen::API do
           end
 
           it "returns creditcard validation errors" do
-            @response.errors.should == { :number => 'is not a valid creditcard number' }
+            [
+              ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
+              ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
+              ["validation 128 Card Holder Missing",                           [:holder_name,  'can’t be blank']],
+              ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
+              ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
+            ].each do |message, error|
+              response_with_fault_message(message).error.should == error
+            end
+          end
+
+          it "returns any other fault messages on `base'" do
+            message = "validation 130 Reference Missing"
+            response_with_fault_message(message).error.should == [:base, message]
+          end
+
+          it "returns the original message corresponding to the given attribute and message" do
+            [
+              ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
+              ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
+              ["validation 128 Card Holder Missing",                           [:holder_name,  'can’t be blank']],
+              ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
+              ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
+              ["validation 130 Reference Missing",                             [:base,         'validation 130 Reference Missing']],
+            ].each do |expected, attr_and_message|
+              Adyen::API::PaymentService::AuthorizationResponse.original_fault_message_for(*attr_and_message).should == expected
+            end
+          end
+
+          private
+
+          def response_with_fault_message(message)
+            stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % message)
+            @response = @payment.authorise_payment
           end
         end
       end
@@ -689,7 +722,7 @@ AUTHORISE_REQUEST_INVALID_RESPONSE = <<EOS
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>validation 101 Invalid card number</faultstring>
+      <faultstring>%s</faultstring>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>
