@@ -4,9 +4,7 @@ $:.unshift File.expand_path('../lib', __FILE__)
 require 'adyen'
 require 'adyen/api'
 
-Adyen::API.default_params[:merchant_account] = 'FngtpsCOM'
-Adyen::API.username = 'ws@Company.Fngtps'
-Adyen::API.password = 'aT"gn!e;l35g'
+require 'spec/functional/initializer.rb'
 
 payment = Adyen::API::PaymentService.new({
   #:reference => '666',
