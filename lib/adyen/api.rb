@@ -352,7 +352,15 @@ module Adyen
       end
 
       class DisableResponse < Response
+        DISABLED = %w{ [detail-successfully-disabled] [all-details-successfully-disabled] }
+
         response_attrs :response
+
+        def success?
+          super && DISABLED.include?(params[:response])
+        end
+
+        alias disabled? success?
 
         def params
           @params ||= { :response => xml_querier.text('//recurring:disableResponse/recurring:result/recurring:response') }

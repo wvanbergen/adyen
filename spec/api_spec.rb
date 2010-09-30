@@ -683,7 +683,7 @@ describe Adyen::API do
 
       describe "disable" do
         before do
-          stub_net_http(DISABLE_RESPONSE)
+          stub_net_http(DISABLE_RESPONSE % '[detail-successfully-disabled]')
           @response = @recurring.disable
           @request, @post = Net::HTTP.posted
         end
@@ -698,6 +698,13 @@ describe Adyen::API do
 
         it "posts to the correct SOAP action" do
           @post.soap_action.should == 'disable'
+        end
+
+        it "returns whether or not it was disabled" do
+          stub_net_http(DISABLE_RESPONSE % '[all-details-successfully-disabled]')
+          @response = @recurring.disable
+          @response.should be_success
+          @response.should be_disabled
         end
 
         for_each_xml_backend do
@@ -828,7 +835,7 @@ DISABLE_RESPONSE = <<EOS
     <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
       <ns1:result>
         <response xmlns="http://recurring.services.adyen.com">
-          [detail-successfully-disabled]
+          %s
         </response>
       </ns1:result>
     </ns1:disableResponse>
