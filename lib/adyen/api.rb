@@ -296,8 +296,12 @@ module Adyen
           !fault_message.nil?
         end
 
-        def error
-          ERRORS[fault_message] || [:base, fault_message]
+        def error(prefix = nil)
+          if error = ERRORS[fault_message]
+            prefix ? ["#{prefix}_#{error[0]}".to_sym, error[1]] : error
+          else
+            [:base, fault_message]
+          end
         end
 
         def params

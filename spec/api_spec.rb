@@ -434,6 +434,15 @@ describe Adyen::API do
           response_with_fault_message(message).error.should == [:base, message]
         end
 
+        it "prepends the error attribute with the given prefix, except for :base" do
+          [
+            ["validation 101 Invalid card number", [:card_number, 'is not a valid creditcard number']],
+            ["validation 130 Reference Missing",   [:base,        "validation 130 Reference Missing"]],
+          ].each do |message, error|
+            response_with_fault_message(message).error(:card).should == error
+          end
+        end
+
         it "returns the original message corresponding to the given attribute and message" do
           [
             ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
