@@ -44,6 +44,16 @@ module Adyen
     #
 
     class SimpleSOAPClient
+      class ClientError < StandardError
+        def initialize(response, action, endpoint)
+          @response, @action, @endpoint = response, action, endpoint
+        end
+
+        def message
+          "[#{@response.code} #{@response.message}] A client error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'."
+        end
+      end
+
       # from http://curl.haxx.se/ca/cacert.pem
       CACERT = File.expand_path('../../../support/cacert.pem', __FILE__)
 
@@ -78,7 +88,9 @@ module Adyen
           request.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
           request.start do |http|
-            response_class.new(http.request(post))
+            http_response = http.request(post)
+            raise ClientError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPClientError)
+            response_class.new(http_response)
           end
         end
       end

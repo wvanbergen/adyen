@@ -267,6 +267,18 @@ describe Adyen::API do
         @response.should be_instance_of(Adyen::API::Response)
         @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
       end
+
+      it "raises when the HTTP response is a subclass of Net::HTTPClientError" do
+        Net::HTTP.stubbed_response = Net::HTTPBadRequest.new('1.1', '401', 'Bad request')
+        exception = nil
+        begin
+          @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
+        rescue Adyen::API::SimpleSOAPClient::ClientError => e
+          exception = e
+        end
+        msg = "[401 Bad request] A client error occurred while calling SOAP action `Action' on endpoint `https://test.example.com/soap/Action'."
+        exception.message.should == msg
+      end
     end
   end
 
