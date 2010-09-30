@@ -701,6 +701,9 @@ describe Adyen::API do
         end
 
         it "returns whether or not it was disabled" do
+          @response.should be_success
+          @response.should be_disabled
+
           stub_net_http(DISABLE_RESPONSE % '[all-details-successfully-disabled]')
           @response = @recurring.disable
           @response.should be_success
@@ -714,6 +717,19 @@ describe Adyen::API do
         end
 
         it_should_have_shortcut_methods_for_params_on_the_response
+      end
+    end
+
+    describe "test helpers that stub responses" do
+      after do
+        Net::HTTP.stubbing_enabled = false
+      end
+
+      it "returns a `disabled' response" do
+        stub_net_http(DISABLE_RESPONSE % 'nope')
+        Adyen::API::RecurringService.stub_disabled!
+        @recurring.disable.should be_disabled
+        @recurring.disable.should_not be_disabled
       end
     end
   end

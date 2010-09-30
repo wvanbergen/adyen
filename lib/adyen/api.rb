@@ -329,6 +329,18 @@ module Adyen
     class RecurringService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
+      class << self
+        def disabled_stub
+          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+          def http_response.body; DISABLE_RESPONSE % DisableResponse::DISABLED_RESPONSES.first; end
+          DisableResponse.new(http_response)
+        end
+
+        def stub_disabled!
+          @stubbed_response = disabled_stub
+        end
+      end
+
       # TODO: rename to list_details and make shortcut method take the only necessary param
       def list
         call_webservice_action('listRecurringDetails', list_request_body, ListResponse)
@@ -352,12 +364,12 @@ module Adyen
       end
 
       class DisableResponse < Response
-        DISABLED = %w{ [detail-successfully-disabled] [all-details-successfully-disabled] }
+        DISABLED_RESPONSES = %w{ [detail-successfully-disabled] [all-details-successfully-disabled] }
 
         response_attrs :response
 
         def success?
-          super && DISABLED.include?(params[:response])
+          super && DISABLED_RESPONSES.include?(params[:response])
         end
 
         alias disabled? success?
@@ -581,6 +593,23 @@ EOS
 
       RECURRING_DETAIL_PARTIAL = <<EOS
         <recurring:recurringDetailReference>%s</recurring:recurringDetailReference>
+EOS
+    
+    # Test responses
+
+      DISABLE_RESPONSE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:result>
+        <response xmlns="http://recurring.services.adyen.com">
+          %s
+        </response>
+      </ns1:result>
+    </ns1:disableResponse>
+  </soap:Body>
+</soap:Envelope>
 EOS
     end
   end
