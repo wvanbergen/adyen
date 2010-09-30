@@ -22,16 +22,19 @@ module Adyen
     # Shortcut methods
     #
 
-    def self.authorise_payment(params = {})
+    def self.authorise_payment(params)
       PaymentService.new(params).authorise_payment
     end
 
-    def self.authorise_recurring_payment(params = {})
+    def self.authorise_recurring_payment(params)
       PaymentService.new(params).authorise_recurring_payment
     end
 
-    def self.disable_recurring_contract(params = {})
-      RecurringService.new(params).disable
+    def self.disable_recurring_contract(shopper_reference, recurring_detail_reference = nil)
+      RecurringService.new({
+        :shopper => { :reference => shopper_reference },
+        :recurring_detail_reference => recurring_detail_reference
+      }).disable
     end
 
     # TODO: the rest

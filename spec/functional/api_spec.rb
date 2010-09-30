@@ -58,7 +58,7 @@ if File.exist?(API_SPEC_INITIALIZER)
     end
 
     it "disables a recurring contract" do
-      response = Adyen::API.disable_recurring_contract(:shopper => { :reference => @user_id })
+      response = Adyen::API.disable_recurring_contract(@user_id)
       response.should be_success
       response.should be_disabled
     end
