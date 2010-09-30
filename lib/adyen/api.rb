@@ -188,22 +188,36 @@ module Adyen
     class PaymentService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
-      def self.stub_success!
-        http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-        def http_response.body; AUTHORISE_RESPONSE; end
-        @stubbed_response = AuthorizationResponse.new(http_response)
-      end
+      class << self
+        def success_stub
+          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+          def http_response.body; AUTHORISE_RESPONSE; end
+          AuthorizationResponse.new(http_response)
+        end
 
-      def self.stub_refused!
-        http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-        def http_response.body; AUTHORISATION_REFUSED_RESPONSE; end
-        @stubbed_response = AuthorizationResponse.new(http_response)
-      end
+        def refused_stub
+          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+          def http_response.body; AUTHORISATION_REFUSED_RESPONSE; end
+          AuthorizationResponse.new(http_response)
+        end
 
-      def self.stub_invalid!
-        http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-        def http_response.body; AUTHORISATION_REQUEST_INVALID_RESPONSE; end
-        @stubbed_response = AuthorizationResponse.new(http_response)
+        def invalid_stub
+          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+          def http_response.body; AUTHORISATION_REQUEST_INVALID_RESPONSE; end
+          AuthorizationResponse.new(http_response)
+        end
+
+        def stub_success!
+          @stubbed_response = success_stub
+        end
+
+        def stub_refused!
+          @stubbed_response = refused_stub
+        end
+
+        def stub_invalid!
+          @stubbed_response = invalid_stub
+        end
       end
 
       def authorise_payment
