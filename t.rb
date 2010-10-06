@@ -32,7 +32,7 @@ payment = Adyen::API::PaymentService.new({
   :shopper => {
     #:ip => '61.294.12.12',
     :email => 'kees@example.com',
-    :reference => '5',
+    :reference => '6',
   }
 })
 
@@ -41,9 +41,10 @@ payment = Adyen::API::PaymentService.new({
 #p response
 #puts response.http_response.body
 
-puts payment.send(:authorise_recurring_payment_request_body)
-response = payment.authorise_recurring_payment
-p response
-puts response.http_response.body
+#puts payment.send(:authorise_recurring_payment_request_body)
+#response = payment.authorise_recurring_payment
+#p response
+#puts response.http_response.body
 
-#p Adyen::API::RecurringService.new(:shopper => { :reference => '5' }).list.params
+#p Adyen::API.disable_recurring_contract('6')
+p Adyen::API::RecurringService.new(:shopper => { :reference => '6' }).list.http_response.body
