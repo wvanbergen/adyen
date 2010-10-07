@@ -325,7 +325,7 @@ module Adyen
               :psp_reference  => result.text('./payment:pspReference'),
               :result_code    => result.text('./payment:resultCode'),
               :auth_code      => result.text('./payment:authCode'),
-              :refusal_reason => result.text('./payment:refusalReason')
+              :refusal_reason => (invalid_request? ? fault_message : result.text('./payment:refusalReason'))
             }
           end
         end

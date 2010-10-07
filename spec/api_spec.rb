@@ -440,6 +440,11 @@ describe Adyen::API do
           @response.should be_invalid_request
         end
 
+        it "returns the fault message from #refusal_reason" do
+          @response.refusal_reason.should == 'validation 101 Invalid card number'
+          @response.params[:refusal_reason].should == 'validation 101 Invalid card number'
+        end
+
         it "returns creditcard validation errors" do
           [
             ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
