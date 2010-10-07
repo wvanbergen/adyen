@@ -10,6 +10,3 @@
   * adyen-activemerchant
 
 = API
-
-* Listing recurring details for a shopper that has none results in an error parsing the params.
-* Add Response#errors which returns validation errors from the SOAP API

@@ -681,6 +681,11 @@ describe Adyen::API do
         end
 
         it_should_have_shortcut_methods_for_params_on_the_response
+
+        it "returns an empty hash when there are no details" do
+          stub_net_http(LIST_EMPTY_RESPONSE)
+          @recurring.list.params.should == {}
+        end
       end
 
       describe "disable_request_body" do
@@ -866,6 +871,21 @@ LIST_RESPONSE = <<EOS
         </details>
         <ns1:lastKnownShopperEmail>s.hopper@example.com</ns1:lastKnownShopperEmail>
         <ns1:shopperReference>user-id</ns1:shopperReference>
+      </ns1:result>
+    </ns1:listRecurringDetailsResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+LIST_EMPTY_RESPONSE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:listRecurringDetailsResponse xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:result>
+        <details xmlns="http://recurring.services.adyen.com"/>
+        <lastKnownShopperEmail xmlns="http://recurring.services.adyen.com" xsi:nil="true"/>
+        <shopperReference xmlns="http://recurring.services.adyen.com" xsi:nil="true"/>
       </ns1:result>
     </ns1:listRecurringDetailsResponse>
   </soap:Body>

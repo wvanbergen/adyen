@@ -399,9 +399,10 @@ module Adyen
 
         def params
           @params ||= xml_querier.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
-            {
+            details = result.xpath('.//recurring:RecurringDetail')
+            details.empty? ? {} : {
               :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
-              :details                  => result.xpath('.//recurring:RecurringDetail').map { |node| parse_recurring_detail(node) },
+              :details                  => details.map { |node| parse_recurring_detail(node) },
               :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
               :shopper_reference        => result.text('./recurring:shopperReference')
             }

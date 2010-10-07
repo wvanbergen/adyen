@@ -47,4 +47,4 @@ payment = Adyen::API::PaymentService.new({
 #puts response.http_response.body
 
 #p Adyen::API.disable_recurring_contract('6')
-p Adyen::API::RecurringService.new(:shopper => { :reference => '6' }).list.http_response.body
+puts Adyen::API::RecurringService.new(:shopper => { :reference => '666' }).list.http_response.body
