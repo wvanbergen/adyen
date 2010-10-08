@@ -5,7 +5,7 @@ describe Adyen::API::RecurringService do
 
   before do
     @params = { :shopper => { :reference => 'user-id' } }
-    @recurring = Adyen::API::RecurringService.new(@params)
+    @recurring = @object = Adyen::API::RecurringService.new(@params)
   end
 
   describe "list_request_body" do
@@ -28,7 +28,7 @@ describe Adyen::API::RecurringService do
     private
 
     def node_for_current_method
-      super(@recurring).xpath('//recurring:listRecurringDetails/recurring:request')
+      node_for_current_object_and_method.xpath('//recurring:listRecurringDetails/recurring:request')
     end
   end
 
@@ -116,7 +116,7 @@ describe Adyen::API::RecurringService do
       private
 
       def node_for_current_method
-        super(@recurring).xpath('//recurring:disable/recurring:request')
+        node_for_current_object_and_method.xpath('//recurring:disable/recurring:request')
       end
     end
 
