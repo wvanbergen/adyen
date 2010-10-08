@@ -14,5 +14,4 @@
 * PaymentService:
   * directdebit
   * capture
-  * refund
   * cancel_or_refund
