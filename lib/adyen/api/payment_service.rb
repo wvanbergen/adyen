@@ -56,6 +56,10 @@ module Adyen
         make_payment_request(cancel_or_refund_body, CancelOrRefundResponse)
       end
 
+      def cancel
+        make_payment_request(cancel_body, CancelResponse)
+      end
+
       private
 
       def make_payment_request(data, response_class)
@@ -85,6 +89,10 @@ module Adyen
 
       def cancel_or_refund_body
         CANCEL_OR_REFUND_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
+      end
+
+      def cancel_body
+        CANCEL_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
       end
 
       def amount_partial
@@ -181,6 +189,11 @@ module Adyen
       class RefundResponse < CancelOrRefundResponse
         self.request_received_value = '[refund-received]'
         self.base_xpath = '//payment:refundResponse/payment:refundResult'
+      end
+
+      class CancelResponse < CancelOrRefundResponse
+        self.request_received_value = '[cancel-received]'
+        self.base_xpath = '//payment:cancelResponse/payment:cancelResult'
       end
     end
   end

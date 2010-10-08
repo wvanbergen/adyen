@@ -48,6 +48,19 @@ EOS
 </soap:Envelope>
 EOS
 
+      CANCEL_LAYOUT = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <payment:cancel xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+      <payment:modificationRequest>
+        <payment:merchantAccount>%s</payment:merchantAccount>
+        <payment:originalReference>%s</payment:originalReference>
+      </payment:modificationRequest>
+    </payment:cancel>
+  </soap:Body>
+</soap:Envelope>
+EOS
 
       AMOUNT_PARTIAL = <<EOS
         <payment:amount>

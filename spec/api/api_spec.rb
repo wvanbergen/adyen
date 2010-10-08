@@ -51,5 +51,12 @@ describe Adyen::API do
       payment.should_receive(:cancel_or_refund)
       Adyen::API.cancel_or_refund_payment('original-psp-reference')
     end
+
+    it "performs a `cancel payment' request" do
+      payment = mock('PaymentService')
+      Adyen::API::PaymentService.should_receive(:new).with(:psp_reference => 'original-psp-reference').and_return(payment)
+      payment.should_receive(:cancel)
+      Adyen::API.cancel_payment('original-psp-reference')
+    end
   end
 end

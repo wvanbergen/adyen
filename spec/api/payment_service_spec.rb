@@ -431,6 +431,78 @@ describe Adyen::API::PaymentService do
     end
   end
 
+  describe "cancel_body" do
+    before :all do
+      @method = :cancel_body
+    end
+
+    before do
+      @payment.params[:psp_reference] = 'original-psp-reference'
+    end
+
+    it "includes the merchant account" do
+      text('./payment:merchantAccount').should == 'SuperShopper'
+    end
+
+    it "includes the payment (PSP) reference of the payment to refund" do
+      text('./payment:originalReference').should == 'original-psp-reference'
+    end
+
+    private
+
+    def node_for_current_method
+      node_for_current_object_and_method.xpath('//payment:cancel/payment:modificationRequest')
+    end
+  end
+
+  describe "cancel" do
+    before do
+      stub_net_http(CANCEL_RESPONSE % '[cancel-received]')
+      @response = @payment.cancel
+      @request, @post = Net::HTTP.posted
+    end
+
+    after do
+      Net::HTTP.stubbing_enabled = false
+    end
+
+    it "posts the body generated for the given parameters" do
+      @post.body.should == @payment.cancel_body
+    end
+
+    it "posts to the correct SOAP action" do
+      @post.soap_action.should == 'authorise'
+    end
+
+    for_each_xml_backend do
+      it "returns a hash with parsed response details" do
+        @payment.cancel.params.should == {
+          :psp_reference => '8612865544848013',
+          :response => '[cancel-received]'
+        }
+      end
+    end
+
+    it_should_have_shortcut_methods_for_params_on_the_response
+
+    describe "with a successful response" do
+      it "returns that the request was received successfully" do
+        @response.should be_success
+      end
+    end
+
+    describe "with a failed response" do
+      before do
+        stub_net_http(CANCEL_RESPONSE % 'failed')
+        @response = @payment.cancel
+      end
+
+      it "returns that the request was not received successfully" do
+        @response.should_not be_success
+      end
+    end
+  end
+
   describe "test helpers that stub responses" do
     after do
       Net::HTTP.stubbing_enabled = false

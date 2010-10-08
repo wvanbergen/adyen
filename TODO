@@ -14,4 +14,3 @@
 * PaymentService:
   * directdebit
   * capture
-  * cancel

@@ -43,6 +43,10 @@ module Adyen
       PaymentService.new(:psp_reference => psp_reference).cancel_or_refund
     end
 
+    def self.cancel_payment(psp_reference)
+      PaymentService.new(:psp_reference => psp_reference).cancel
+    end
+
     def self.disable_recurring_contract(shopper_reference, recurring_detail_reference = nil)
       RecurringService.new({
         :shopper => { :reference => shopper_reference },

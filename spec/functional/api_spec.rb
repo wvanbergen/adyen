@@ -71,6 +71,11 @@ if File.exist?(API_SPEC_INITIALIZER)
       response.should be_success
     end
 
+    it "cancels a payment" do
+      response = Adyen::API.cancel_payment(@payment_response.psp_reference)
+      response.should be_success
+    end
+
     it "disables a recurring contract" do
       response = Adyen::API.disable_recurring_contract(@user_id)
       response.should be_success
