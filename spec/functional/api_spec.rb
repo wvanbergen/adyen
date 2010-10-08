@@ -63,7 +63,7 @@ if File.exist?(API_SPEC_INITIALIZER)
 
     it "refunds a payment" do
       response = Adyen::API.refund_payment(@payment_response.psp_reference, 'EUR', '1234')
-      response.should be_refunded
+      response.should be_success
     end
 
     it "disables a recurring contract" do

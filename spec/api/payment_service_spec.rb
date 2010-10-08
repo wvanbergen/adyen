@@ -342,9 +342,8 @@ describe Adyen::API::PaymentService do
     it_should_have_shortcut_methods_for_params_on_the_response
 
     describe "with a successful response" do
-      it "returns that the request was successful" do
+      it "returns that the request was received successfully" do
         @response.should be_success
-        @response.should be_refunded
       end
     end
 
@@ -354,9 +353,8 @@ describe Adyen::API::PaymentService do
         @response = @payment.refund
       end
 
-      it "returns that the request failed" do
+      it "returns that the request was not received successfully" do
         @response.should_not be_success
-        @response.should_not be_refunded
       end
     end
   end

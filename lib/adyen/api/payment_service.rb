@@ -46,7 +46,8 @@ module Adyen
         make_payment_request(authorise_recurring_payment_request_body, AuthorizationResponse)
       end
 
-      # Also returns success if the amount is not the same as the original payment, so beware!
+      # Also returns success if the amount is not the same as the original payment.
+      # You should check the status on the notification that will be send.
       def refund
         make_payment_request(refund_body, RefundResponse)
       end
@@ -144,15 +145,15 @@ module Adyen
       end
 
       class RefundResponse < Response
-        REFUNDED = '[refund-received]'
+        REQUEST_RECEIVED = '[refund-received]'
 
         response_attrs :psp_reference, :response
 
+        # This only means the request has been successfully received.
+        # Check the notification to see if it was actually refunded.
         def success?
-          super && params[:response] == REFUNDED
+          super && params[:response] == REQUEST_RECEIVED
         end
-
-        alias refunded? success?
 
         def params
           @params ||= xml_querier.xpath('//payment:refundResponse/payment:refundResult') do |result|
