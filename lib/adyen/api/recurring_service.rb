@@ -1,0 +1,116 @@
+require 'adyen/api/simple_soap_client'
+require 'adyen/api/templates/recurring_service'
+
+module Adyen
+  module API
+    class RecurringService < SimpleSOAPClient
+      ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
+
+      class << self
+        def disabled_stub
+          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
+          def http_response.body; DISABLE_RESPONSE % DisableResponse::DISABLED_RESPONSES.first; end
+          DisableResponse.new(http_response)
+        end
+
+        def stub_disabled!
+          @stubbed_response = disabled_stub
+        end
+      end
+
+      # TODO: rename to list_details and make shortcut method take the only necessary param
+      def list
+        call_webservice_action('listRecurringDetails', list_request_body, ListResponse)
+      end
+
+      def disable
+        call_webservice_action('disable', disable_request_body, DisableResponse)
+      end
+
+      private
+
+      def list_request_body
+        LIST_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
+      end
+
+      def disable_request_body
+        if reference = @params[:recurring_detail_reference]
+          reference = RECURRING_DETAIL_PARTIAL % reference
+        end
+        DISABLE_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], reference || '']
+      end
+
+      class DisableResponse < Response
+        DISABLED_RESPONSES = %w{ [detail-successfully-disabled] [all-details-successfully-disabled] }
+
+        response_attrs :response
+
+        def success?
+          super && DISABLED_RESPONSES.include?(params[:response])
+        end
+
+        alias disabled? success?
+
+        def params
+          @params ||= { :response => xml_querier.text('//recurring:disableResponse/recurring:result/recurring:response') }
+        end
+      end
+
+      class ListResponse < Response
+        response_attrs :details, :last_known_shopper_email, :shopper_reference, :creation_date
+
+        def params
+          @params ||= xml_querier.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
+            details = result.xpath('.//recurring:RecurringDetail')
+            details.empty? ? {} : {
+              :creation_date            => DateTime.parse(result.text('./recurring:creationDate')),
+              :details                  => details.map { |node| parse_recurring_detail(node) },
+              :last_known_shopper_email => result.text('./recurring:lastKnownShopperEmail'),
+              :shopper_reference        => result.text('./recurring:shopperReference')
+            }
+          end
+        end
+
+        private
+
+        # @todo add support for elv
+        def parse_recurring_detail(node)
+          result = {
+            :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
+            :variant                    => node.text('./recurring:variant'),
+            :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
+          }
+
+          card = node.xpath('./recurring:card')
+          if card.children.empty?
+            result[:bank] = parse_bank_details(node.xpath('./recurring:bank'))
+          else
+            result[:card] = parse_card_details(card)
+          end
+
+          result
+        end
+
+        def parse_card_details(card)
+          {
+            :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
+            :holder_name => card.text('./payment:holderName'),
+            :number      => card.text('./payment:number')
+          }
+        end
+
+        def parse_bank_details(bank)
+          {
+            :bank_account_number => bank.text('./payment:bankAccountNumber'),
+            :bank_location_id    => bank.text('./payment:bankLocationId'),
+            :bank_name           => bank.text('./payment:bankName'),
+            :bic                 => bank.text('./payment:bic'),
+            :country_code        => bank.text('./payment:countryCode'),
+            :iban                => bank.text('./payment:iban'),
+            :owner_name          => bank.text('./payment:ownerName')
+          }
+        end
+      end
+    end
+  end
+end
