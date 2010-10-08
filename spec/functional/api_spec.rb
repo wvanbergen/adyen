@@ -11,10 +11,11 @@ if File.exist?(API_SPEC_INITIALIZER)
     before :all do
       require API_SPEC_INITIALIZER
       @order_id = @user_id = Time.now.to_i
+      perform_payment_request
     end
 
-    it "performs a payment request" do
-      response = Adyen::API.authorise_payment({
+    def perform_payment_request
+      @payment_response = Adyen::API.authorise_payment({
         :reference => @order_id,
         :recurring => true,
         :amount => {
@@ -37,8 +38,11 @@ if File.exist?(API_SPEC_INITIALIZER)
           #:start_year => ,
         }
       })
-      response.should be_authorized
-      response.psp_reference.should_not be_empty
+    end
+
+    it "performs a payment request" do
+      @payment_response.should be_authorized
+      @payment_response.psp_reference.should_not be_empty
     end
 
     it "performs a recurring payment request" do
@@ -55,6 +59,11 @@ if File.exist?(API_SPEC_INITIALIZER)
       })
       response.should be_authorized
       response.psp_reference.should_not be_empty
+    end
+
+    it "refunds a payment" do
+      response = Adyen::API.refund_payment(@payment_response.psp_reference, 'EUR', '1234')
+      response.should be_refunded
     end
 
     it "disables a recurring contract" do

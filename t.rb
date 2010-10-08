@@ -7,10 +7,11 @@ require 'adyen/api'
 require 'spec/functional/initializer.rb'
 
 payment = Adyen::API::PaymentService.new({
-  :reference => '666',
+  #:reference => '666',
+  :psp_reference => '8812864654568311',
   :amount => {
     :currency => 'EUR',
-    :value => 2000,
+    :value => 9900,
   },
   #:recurring => true,
   #:card => {
@@ -47,4 +48,6 @@ payment = Adyen::API::PaymentService.new({
 #puts response.http_response.body
 
 #p Adyen::API.disable_recurring_contract('6')
-puts Adyen::API::RecurringService.new(:shopper => { :reference => '666' }).list.http_response.body
+#puts Adyen::API::RecurringService.new(:shopper => { :reference => '666' }).list.http_response.body
+
+puts payment.refund.body

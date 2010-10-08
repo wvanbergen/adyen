@@ -13,6 +13,10 @@ module Adyen
         @http_response = http_response
       end
 
+      def body
+        @http_response.body
+      end
+
       # @return [Boolean] Whether or not the request was successful.
       def success?
         !http_failure?
@@ -29,6 +33,13 @@ module Adyen
 
       def params
         raise "The Adyen::API::Response#params method should be overriden in a subclass."
+      end
+
+      def fault_message
+        @fault_message ||= begin
+          message = xml_querier.text('//soap:Fault/faultstring')
+          message unless message.empty?
+        end
       end
     end
   end

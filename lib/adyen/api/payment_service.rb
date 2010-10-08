@@ -39,17 +39,22 @@ module Adyen
       end
 
       def authorise_payment
-        make_payment_request(authorise_payment_request_body)
+        make_payment_request(authorise_payment_request_body, AuthorizationResponse)
       end
 
       def authorise_recurring_payment
-        make_payment_request(authorise_recurring_payment_request_body)
+        make_payment_request(authorise_recurring_payment_request_body, AuthorizationResponse)
+      end
+
+      # Also returns success if the amount is not the same as the original payment, so beware!
+      def refund
+        make_payment_request(refund_body, RefundResponse)
       end
 
       private
 
-      def make_payment_request(data)
-        call_webservice_action('authorise', data, AuthorizationResponse)
+      def make_payment_request(data, response_class)
+        call_webservice_action('authorise', data, response_class)
       end
 
       def authorise_payment_request_body
@@ -67,6 +72,10 @@ module Adyen
         content << amount_partial
         content << shopper_partial if @params[:shopper]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
+      end
+
+      def refund_body
+        REFUND_LAYOUT % [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
       end
 
       def amount_partial
@@ -132,13 +141,25 @@ module Adyen
             }
           end
         end
+      end
 
-        private
+      class RefundResponse < Response
+        REFUNDED = '[refund-received]'
 
-        def fault_message
-          @fault_message ||= begin
-            message = xml_querier.text('//soap:Fault/faultstring')
-            message unless message.empty?
+        response_attrs :psp_reference, :response
+
+        def success?
+          super && params[:response] == REFUNDED
+        end
+
+        alias refunded? success?
+
+        def params
+          @params ||= xml_querier.xpath('//payment:refundResponse/payment:refundResult') do |result|
+            {
+              :psp_reference  => result.text('./payment:pspReference'),
+              :response       => result.text('./payment:response')
+            }
           end
         end
       end

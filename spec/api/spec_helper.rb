@@ -67,7 +67,7 @@ end
 module Adyen
   module API
     class PaymentService
-      public :authorise_payment_request_body, :authorise_recurring_payment_request_body
+      public :authorise_payment_request_body, :authorise_recurring_payment_request_body, :refund_body
     end
 
     class RecurringService
@@ -77,8 +77,8 @@ module Adyen
 end
 
 module APISpecHelper
-  def node_for_current_method(object)
-    node = Adyen::API::XMLQuerier.new(object.send(@method))
+  def node_for_current_object_and_method
+    Adyen::API::XMLQuerier.new(@object.send(@method))
   end
 
   def xpath(query, &block)
@@ -256,6 +256,21 @@ DISABLE_RESPONSE = <<EOS
         </response>
       </ns1:result>
     </ns1:disableResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+REFUND_RESPONSE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:refundResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:refundResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">8512865475512126</pspReference>
+        <response xmlns="http://payment.services.adyen.com">%s</response>
+      </ns1:refundResult>
+    </ns1:refundResponse>
   </soap:Body>
 </soap:Envelope>
 EOS

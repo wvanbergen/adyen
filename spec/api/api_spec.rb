@@ -35,5 +35,14 @@ describe Adyen::API do
       recurring.should_receive(:disable)
       Adyen::API.disable_recurring_contract('user-id', 'detail-id')
     end
+
+    it "performs a `refund payment' request" do
+      payment = mock('PaymentService')
+      Adyen::API::PaymentService.should_receive(:new).
+        with(:psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' }).
+          and_return(payment)
+      payment.should_receive(:refund)
+      Adyen::API.refund_payment('original-psp-reference', 'EUR', '1234')
+    end
   end
 end

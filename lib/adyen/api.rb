@@ -32,6 +32,13 @@ module Adyen
       PaymentService.new(params).authorise_recurring_payment
     end
 
+    def self.refund_payment(psp_reference, currency, value)
+      PaymentService.new({
+        :psp_reference => psp_reference,
+        :amount => { :currency => currency, :value => value }
+      }).refund
+    end
+
     def self.disable_recurring_contract(shopper_reference, recurring_detail_reference = nil)
       RecurringService.new({
         :shopper => { :reference => shopper_reference },
