@@ -128,7 +128,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.authorise_payment_request_body
+      @post.body.should include(@payment.authorise_payment_request_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -263,7 +263,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.authorise_recurring_payment_request_body
+      @post.body.should include(@payment.authorise_recurring_payment_request_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -319,7 +319,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.authorise_one_click_payment_request_body
+      @post.body.should include(@payment.authorise_one_click_payment_request_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -414,7 +414,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.capture_body
+      @post.body.should include(@payment.capture_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -462,7 +462,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.refund_body
+      @post.body.should include(@payment.refund_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -534,7 +534,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.cancel_or_refund_body
+      @post.body.should include(@payment.cancel_or_refund_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -606,7 +606,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @payment.cancel_body
+      @post.body.should include(@payment.cancel_body)
     end
 
     it "posts to the correct SOAP action" do

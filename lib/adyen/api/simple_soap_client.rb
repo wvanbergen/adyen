@@ -6,6 +6,15 @@ require 'adyen/api/xml_querier'
 module Adyen
   module API
     class SimpleSOAPClient
+      ENVELOPE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    %s
+  </soap:Body>
+</soap:Envelope>
+EOS
+
       class ClientError < StandardError
         def initialize(response, action, endpoint)
           @response, @action, @endpoint = response, action, endpoint
@@ -42,7 +51,7 @@ module Adyen
 
           post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
           post.basic_auth(API.username, API.password)
-          post.body = data
+          post.body = ENVELOPE % data
 
           request = Net::HTTP.new(endpoint.host, endpoint.port)
           request.use_ssl = true

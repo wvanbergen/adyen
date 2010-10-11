@@ -44,7 +44,7 @@ describe Adyen::API::RecurringService do
     end
 
     it "posts the body generated for the given parameters" do
-      @post.body.should == @recurring.list_request_body
+      @post.body.should include(@recurring.list_request_body)
     end
 
     it "posts to the correct SOAP action" do
@@ -132,7 +132,7 @@ describe Adyen::API::RecurringService do
       end
 
       it "posts the body generated for the given parameters" do
-        @post.body.should == @recurring.disable_request_body
+        @post.body.should include(@recurring.disable_request_body)
       end
 
       it "posts to the correct SOAP action" do
