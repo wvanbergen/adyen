@@ -92,6 +92,24 @@ def describe_request_body_of(method, xpath = nil, &block)
   end
 end
 
+def describe_modification_request_body_of(method, camelized_method = nil, &block)
+  describe_request_body_of method, "//payment:#{camelized_method || method}/payment:modificationRequest" do
+    before do
+      @payment.params[:psp_reference] = 'original-psp-reference'
+    end
+
+    it "includes the merchant account" do
+      text('./payment:merchantAccount').should == 'SuperShopper'
+    end
+
+    it "includes the payment (PSP) reference of the payment to refund" do
+      text('./payment:originalReference').should == 'original-psp-reference'
+    end
+
+    instance_eval(&block) if block_given?
+  end
+end
+
 shared_examples_for "a response" do
   before do
     @response = @payment.send(@method)
@@ -311,24 +329,12 @@ describe Adyen::API::PaymentService do
     })
   end
 
-  describe_request_body_of :capture, '//payment:capture/payment:modificationRequest' do
-    before do
-      @payment.params[:psp_reference] = 'original-psp-reference'
-    end
-
-    it "includes the merchant account" do
-      text('./payment:merchantAccount').should == 'SuperShopper'
-    end
-
-    it "includes the amount to refund" do
+  describe_modification_request_body_of :capture do
+    it "includes the amount to capture" do
       xpath('./payment:modificationAmount') do |amount|
         amount.text('./common:currency').should == 'EUR'
         amount.text('./common:value').should == '1234'
       end
-    end
-
-    it "includes the payment (PSP) reference of the payment to refund" do
-      text('./payment:originalReference').should == 'original-psp-reference'
     end
   end
 
@@ -356,24 +362,12 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe_request_body_of :refund, '//payment:refund/payment:modificationRequest' do
-    before do
-      @payment.params[:psp_reference] = 'original-psp-reference'
-    end
-
-    it "includes the merchant account" do
-      text('./payment:merchantAccount').should == 'SuperShopper'
-    end
-
+  describe_modification_request_body_of :refund do
     it "includes the amount to refund" do
       xpath('./payment:modificationAmount') do |amount|
         amount.text('./common:currency').should == 'EUR'
         amount.text('./common:value').should == '1234'
       end
-    end
-
-    it "includes the payment (PSP) reference of the payment to refund" do
-      text('./payment:originalReference').should == 'original-psp-reference'
     end
   end
 
@@ -401,19 +395,7 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe_request_body_of :cancel_or_refund, '//payment:cancelOrRefund/payment:modificationRequest' do
-    before do
-      @payment.params[:psp_reference] = 'original-psp-reference'
-    end
-
-    it "includes the merchant account" do
-      text('./payment:merchantAccount').should == 'SuperShopper'
-    end
-
-    it "includes the payment (PSP) reference of the payment to refund" do
-      text('./payment:originalReference').should == 'original-psp-reference'
-    end
-  end
+  describe_modification_request_body_of :cancel_or_refund, 'cancelOrRefund'
 
   describe_response_from :cancel_or_refund, CANCEL_OR_REFUND_RESPONSE % '[cancelOrRefund-received]' do
     it_should_return_params_for_each_xml_backend({
@@ -439,19 +421,7 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe_request_body_of :cancel, '//payment:cancel/payment:modificationRequest' do
-    before do
-      @payment.params[:psp_reference] = 'original-psp-reference'
-    end
-
-    it "includes the merchant account" do
-      text('./payment:merchantAccount').should == 'SuperShopper'
-    end
-
-    it "includes the payment (PSP) reference of the payment to refund" do
-      text('./payment:originalReference').should == 'original-psp-reference'
-    end
-  end
+  describe_modification_request_body_of :cancel
 
   describe_response_from :cancel, CANCEL_RESPONSE % '[cancel-received]' do
     it_should_return_params_for_each_xml_backend({
