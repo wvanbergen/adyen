@@ -121,7 +121,7 @@ shared_examples_for "a response" do
   end
 
   it "posts the body generated for the given parameters" do
-    @post.body.should include(@payment.send("#{@method}_request_body"))
+    @post.body.should == Adyen::API::SimpleSOAPClient::ENVELOPE % @payment.send("#{@method}_request_body")
   end
 
   it "posts to the correct SOAP action" do

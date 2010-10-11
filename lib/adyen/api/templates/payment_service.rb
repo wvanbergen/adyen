@@ -1,6 +1,36 @@
 module Adyen
   module API
     class PaymentService < SimpleSOAPClient
+      class << self
+        private
+
+        def modification_request(method, body = nil)
+          return <<EOS
+    <payment:#{method} xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+      <payment:modificationRequest>
+        <payment:merchantAccount>%s</payment:merchantAccount>
+        <payment:originalReference>%s</payment:originalReference>
+        #{body}
+      </payment:modificationRequest>
+    </payment:#{method}>
+EOS
+        end
+
+        def modification_request_with_amount(method)
+          modification_request(method, <<EOS)
+        <payment:modificationAmount>
+          <common:currency>%s</common:currency>
+          <common:value>%s</common:value>
+        </payment:modificationAmount>
+EOS
+        end
+      end
+
+      CAPTURE_LAYOUT          = modification_request_with_amount(:capture)
+      REFUND_LAYOUT           = modification_request_with_amount(:refund)
+      CANCEL_LAYOUT           = modification_request(:cancel)
+      CANCEL_OR_REFUND_LAYOUT = modification_request(:cancelOrRefund)
+
       LAYOUT = <<EOS
     <payment:authorise xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
       <payment:paymentRequest>
@@ -9,50 +39,6 @@ module Adyen
 %s
       </payment:paymentRequest>
     </payment:authorise>
-EOS
-
-      CAPTURE_LAYOUT = <<EOS
-    <payment:capture xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
-      <payment:modificationRequest>
-        <payment:merchantAccount>%s</payment:merchantAccount>
-        <payment:originalReference>%s</payment:originalReference>
-        <payment:modificationAmount>
-          <common:currency>%s</common:currency>
-          <common:value>%s</common:value>
-        </payment:modificationAmount>
-      </payment:modificationRequest>
-    </payment:capture>
-EOS
-
-      REFUND_LAYOUT = <<EOS
-    <payment:refund xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
-      <payment:modificationRequest>
-        <payment:merchantAccount>%s</payment:merchantAccount>
-        <payment:originalReference>%s</payment:originalReference>
-        <payment:modificationAmount>
-          <common:currency>%s</common:currency>
-          <common:value>%s</common:value>
-        </payment:modificationAmount>
-      </payment:modificationRequest>
-    </payment:refund>
-EOS
-
-      CANCEL_OR_REFUND_LAYOUT = <<EOS
-    <payment:cancelOrRefund xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
-      <payment:modificationRequest>
-        <payment:merchantAccount>%s</payment:merchantAccount>
-        <payment:originalReference>%s</payment:originalReference>
-      </payment:modificationRequest>
-    </payment:cancelOrRefund>
-EOS
-
-      CANCEL_LAYOUT = <<EOS
-    <payment:cancel xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
-      <payment:modificationRequest>
-        <payment:merchantAccount>%s</payment:merchantAccount>
-        <payment:originalReference>%s</payment:originalReference>
-      </payment:modificationRequest>
-    </payment:cancel>
 EOS
 
       AMOUNT_PARTIAL = <<EOS
@@ -100,11 +86,7 @@ EOS
       }
 
       # Test responses
-
-      AUTHORISE_RESPONSE = <<EOS
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
+      AUTHORISE_RESPONSE = ENVELOPE % <<EOS
     <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentResult>
         <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
@@ -120,14 +102,9 @@ EOS
         <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
       </ns1:paymentResult>
     </ns1:authoriseResponse>
-  </soap:Body>
-</soap:Envelope>
 EOS
 
-      AUTHORISATION_REFUSED_RESPONSE = <<EOS
-<?xml version="1.0" encoding="UTF-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
+      AUTHORISATION_REFUSED_RESPONSE = ENVELOPE % <<EOS
     <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentResult>
         <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
@@ -143,19 +120,13 @@ EOS
         <resultCode xmlns="http://payment.services.adyen.com">Refused</resultCode>
       </ns1:paymentResult>
     </ns1:authoriseResponse>
-  </soap:Body>
-</soap:Envelope>
 EOS
 
-      AUTHORISATION_REQUEST_INVALID_RESPONSE = <<EOS
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
+      AUTHORISATION_REQUEST_INVALID_RESPONSE = ENVELOPE % <<EOS
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
       <faultstring>validation 101 Invalid card number</faultstring>
     </soap:Fault>
-  </soap:Body>
-</soap:Envelope>
 EOS
     end
   end
