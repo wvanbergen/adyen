@@ -61,6 +61,11 @@ if File.exist?(API_SPEC_INITIALIZER)
       response.psp_reference.should_not be_empty
     end
 
+    it "captures a payment" do
+      response = Adyen::API.capture_payment(@payment_response.psp_reference, 'EUR', '1234')
+      response.should be_success
+    end
+
     it "refunds a payment" do
       response = Adyen::API.refund_payment(@payment_response.psp_reference, 'EUR', '1234')
       response.should be_success

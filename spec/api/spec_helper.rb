@@ -67,7 +67,9 @@ end
 module Adyen
   module API
     class PaymentService
-      public :authorise_payment_request_body, :authorise_recurring_payment_request_body, :refund_body, :cancel_or_refund_body, :cancel_body
+      public :authorise_payment_request_body,
+             :authorise_recurring_payment_request_body,
+             :capture_body, :refund_body, :cancel_or_refund_body, :cancel_body
     end
 
     class RecurringService
@@ -301,6 +303,21 @@ CANCEL_RESPONSE = <<EOS
         <response xmlns="http://payment.services.adyen.com">%s</response>
       </ns1:cancelResult>
     </ns1:cancelResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+CAPTURE_RESPONSE = <<EOS
+<?xml version="1.0"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:captureResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:captureResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">8512867956198946</pspReference>
+        <response xmlns="http://payment.services.adyen.com">%s</response>
+      </ns1:captureResult>
+    </ns1:captureResponse>
   </soap:Body>
 </soap:Envelope>
 EOS

@@ -46,18 +46,22 @@ module Adyen
         make_payment_request(authorise_recurring_payment_request_body, AuthorizationResponse)
       end
 
+      def capture
+        make_payment_request(capture_body, CaptureResponse)
+      end
+
       # Also returns success if the amount is not the same as the original payment.
       # You should check the status on the notification that will be send.
       def refund
         make_payment_request(refund_body, RefundResponse)
       end
 
-      def cancel_or_refund
-        make_payment_request(cancel_or_refund_body, CancelOrRefundResponse)
-      end
-
       def cancel
         make_payment_request(cancel_body, CancelResponse)
+      end
+
+      def cancel_or_refund
+        make_payment_request(cancel_or_refund_body, CancelOrRefundResponse)
       end
 
       private
@@ -81,6 +85,10 @@ module Adyen
         content << amount_partial
         content << shopper_partial if @params[:shopper]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
+      end
+
+      def capture_body
+        CAPTURE_LAYOUT % [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
       end
 
       def refund_body
@@ -160,13 +168,11 @@ module Adyen
         end
       end
 
-      class CancelOrRefundResponse < Response
+      class ModificationResponse < Response
         class << self
           attr_accessor :request_received_value
           attr_accessor :base_xpath
         end
-        self.request_received_value = '[cancelOrRefund-received]'
-        self.base_xpath = '//payment:cancelOrRefundResponse/payment:cancelOrRefundResult'
 
         response_attrs :psp_reference, :response
 
@@ -186,14 +192,24 @@ module Adyen
         end
       end
 
-      class RefundResponse < CancelOrRefundResponse
+      class CaptureResponse < ModificationResponse
+        self.request_received_value = '[capture-received]'
+        self.base_xpath = '//payment:captureResponse/payment:captureResult'
+      end
+
+      class RefundResponse < ModificationResponse
         self.request_received_value = '[refund-received]'
         self.base_xpath = '//payment:refundResponse/payment:refundResult'
       end
 
-      class CancelResponse < CancelOrRefundResponse
+      class CancelResponse < ModificationResponse
         self.request_received_value = '[cancel-received]'
         self.base_xpath = '//payment:cancelResponse/payment:cancelResult'
+      end
+
+      class CancelOrRefundResponse < ModificationResponse
+        self.request_received_value = '[cancelOrRefund-received]'
+        self.base_xpath = '//payment:cancelOrRefundResponse/payment:cancelOrRefundResult'
       end
     end
   end

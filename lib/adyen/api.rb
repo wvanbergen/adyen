@@ -32,6 +32,13 @@ module Adyen
       PaymentService.new(params).authorise_recurring_payment
     end
 
+    def self.capture_payment(psp_reference, currency, value)
+      PaymentService.new({
+        :psp_reference => psp_reference,
+        :amount => { :currency => currency, :value => value }
+      }).capture
+    end
+
     def self.refund_payment(psp_reference, currency, value)
       PaymentService.new({
         :psp_reference => psp_reference,

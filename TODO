@@ -13,4 +13,4 @@
 
 * PaymentService:
   * directdebit
-  * capture, also add a capture! method to an authorisation response
+  * add a capture! method to an authorisation response
