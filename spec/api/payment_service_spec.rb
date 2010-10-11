@@ -56,6 +56,48 @@ shared_examples_for "recurring payment requests" do
   end
 end
 
+def describe_response_from(method, response, &block)
+  describe(method) do
+    before do
+      stub_net_http(response)
+      @method = method
+    end
+
+    it_should_behave_like "a response"
+
+    it_should_have_shortcut_methods_for_params_on_the_response
+
+    instance_eval(&block)
+  end
+end
+
+def it_should_return_params_for_each_xml_backend(params)
+  for_each_xml_backend do
+    it "returns a hash with parsed response details" do
+      @payment.send(@method).params.should == params
+    end
+  end
+end
+
+shared_examples_for "a response" do
+  before do
+    @response = @payment.send(@method)
+    @request, @post = Net::HTTP.posted
+  end
+
+  after do
+    Net::HTTP.stubbing_enabled = false
+  end
+
+  it "posts the body generated for the given parameters" do
+    @post.body.should include(@payment.send("#{@method}_request_body"))
+  end
+
+  it "posts to the correct SOAP action" do
+    @post.soap_action.should == 'authorise'
+  end
+end
+
 describe Adyen::API::PaymentService do
   include APISpecHelper
 
@@ -116,37 +158,13 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "authorise_payment" do
-    before do
-      stub_net_http(AUTHORISE_RESPONSE)
-      @response = @payment.authorise_payment
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.authorise_payment_request_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.authorise_payment.params.should == {
-          :psp_reference => '9876543210987654',
-          :result_code => 'Authorised',
-          :auth_code => '1234',
-          :refusal_reason => ''
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
+  describe_response_from :authorise_payment, AUTHORISE_RESPONSE do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '9876543210987654',
+      :result_code => 'Authorised',
+      :auth_code => '1234',
+      :refusal_reason => ''
+    })
 
     describe "with a authorized response" do
       it "returns that the request was authorised" do
@@ -251,37 +269,13 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "authorise_recurring_payment" do
-    before do
-      stub_net_http(AUTHORISE_RESPONSE)
-      @response = @payment.authorise_recurring_payment
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.authorise_recurring_payment_request_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.authorise_recurring_payment.params.should == {
-          :psp_reference => '9876543210987654',
-          :result_code => 'Authorised',
-          :auth_code => '1234',
-          :refusal_reason => ''
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
+  describe_response_from :authorise_recurring_payment, AUTHORISE_RESPONSE do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '9876543210987654',
+      :result_code => 'Authorised',
+      :auth_code => '1234',
+      :refusal_reason => ''
+    })
   end
 
   describe "authorise_one_click_payment_request_body" do
@@ -307,42 +301,18 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "authorise_one_click_payment" do
-    before do
-      stub_net_http(AUTHORISE_RESPONSE)
-      @response = @payment.authorise_one_click_payment
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.authorise_one_click_payment_request_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.authorise_one_click_payment.params.should == {
-          :psp_reference => '9876543210987654',
-          :result_code => 'Authorised',
-          :auth_code => '1234',
-          :refusal_reason => ''
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
+  describe_response_from :authorise_one_click_payment, AUTHORISE_RESPONSE do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '9876543210987654',
+      :result_code => 'Authorised',
+      :auth_code => '1234',
+      :refusal_reason => ''
+    })
   end
 
-  describe "capture_body" do
+  describe "capture_request_body" do
     before :all do
-      @method = :capture_body
+      @method = :capture_request_body
     end
 
     before do
@@ -371,9 +341,33 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "refund_body" do
+  describe_response_from :capture, CAPTURE_RESPONSE % '[capture-received]' do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '8512867956198946',
+      :response => '[capture-received]'
+    })
+
+    describe "with a successful response" do
+      it "returns that the request was received successfully" do
+        @response.should be_success
+      end
+    end
+
+    describe "with a failed response" do
+      before do
+        stub_net_http(CAPTURE_RESPONSE % 'failed')
+        @response = @payment.capture
+      end
+
+      it "returns that the request was not received successfully" do
+        @response.should_not be_success
+      end
+    end
+  end
+
+  describe "refund_request_body" do
     before :all do
-      @method = :refund_body
+      @method = :refund_request_body
     end
 
     before do
@@ -402,83 +396,11 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "capture" do
-    before do
-      stub_net_http(CAPTURE_RESPONSE % '[capture-received]')
-      @response = @payment.capture
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.capture_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.capture.params.should == {
-          :psp_reference => '8512867956198946',
-          :response => '[capture-received]'
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
-
-    describe "with a successful response" do
-      it "returns that the request was received successfully" do
-        @response.should be_success
-      end
-    end
-
-    describe "with a failed response" do
-      before do
-        stub_net_http(CAPTURE_RESPONSE % 'failed')
-        @response = @payment.capture
-      end
-
-      it "returns that the request was not received successfully" do
-        @response.should_not be_success
-      end
-    end
-  end
-
-  describe "refund" do
-    before do
-      stub_net_http(REFUND_RESPONSE % '[refund-received]')
-      @response = @payment.refund
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.refund_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.refund.params.should == {
-          :psp_reference => '8512865475512126',
-          :response => '[refund-received]'
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
+  describe_response_from :refund, REFUND_RESPONSE % '[refund-received]' do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '8512865475512126',
+      :response => '[refund-received]'
+    })
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do
@@ -498,9 +420,9 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "cancel_or_refund_body" do
+  describe "cancel_or_refund_request_body" do
     before :all do
-      @method = :cancel_or_refund_body
+      @method = :cancel_or_refund_request_body
     end
 
     before do
@@ -522,35 +444,11 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "cancel_or_refund" do
-    before do
-      stub_net_http(CANCEL_OR_REFUND_RESPONSE % '[cancelOrRefund-received]')
-      @response = @payment.cancel_or_refund
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.cancel_or_refund_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.cancel_or_refund.params.should == {
-          :psp_reference => '8512865521218306',
-          :response => '[cancelOrRefund-received]'
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
+  describe_response_from :cancel_or_refund, CANCEL_OR_REFUND_RESPONSE % '[cancelOrRefund-received]' do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '8512865521218306',
+      :response => '[cancelOrRefund-received]'
+    })
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do
@@ -570,9 +468,9 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "cancel_body" do
+  describe "cancel_request_body" do
     before :all do
-      @method = :cancel_body
+      @method = :cancel_request_body
     end
 
     before do
@@ -594,35 +492,11 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "cancel" do
-    before do
-      stub_net_http(CANCEL_RESPONSE % '[cancel-received]')
-      @response = @payment.cancel
-      @request, @post = Net::HTTP.posted
-    end
-
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "posts the body generated for the given parameters" do
-      @post.body.should include(@payment.cancel_body)
-    end
-
-    it "posts to the correct SOAP action" do
-      @post.soap_action.should == 'authorise'
-    end
-
-    for_each_xml_backend do
-      it "returns a hash with parsed response details" do
-        @payment.cancel.params.should == {
-          :psp_reference => '8612865544848013',
-          :response => '[cancel-received]'
-        }
-      end
-    end
-
-    it_should_have_shortcut_methods_for_params_on_the_response
+  describe_response_from :cancel, CANCEL_RESPONSE % '[cancel-received]' do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => '8612865544848013',
+      :response => '[cancel-received]'
+    })
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do

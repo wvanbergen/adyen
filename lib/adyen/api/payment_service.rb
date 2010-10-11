@@ -51,21 +51,21 @@ module Adyen
       end
 
       def capture
-        make_payment_request(capture_body, CaptureResponse)
+        make_payment_request(capture_request_body, CaptureResponse)
       end
 
       # Also returns success if the amount is not the same as the original payment.
       # You should check the status on the notification that will be send.
       def refund
-        make_payment_request(refund_body, RefundResponse)
+        make_payment_request(refund_request_body, RefundResponse)
       end
 
       def cancel
-        make_payment_request(cancel_body, CancelResponse)
+        make_payment_request(cancel_request_body, CancelResponse)
       end
 
       def cancel_or_refund
-        make_payment_request(cancel_or_refund_body, CancelOrRefundResponse)
+        make_payment_request(cancel_or_refund_request_body, CancelOrRefundResponse)
       end
 
       private
@@ -96,19 +96,19 @@ module Adyen
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
-      def capture_body
+      def capture_request_body
         CAPTURE_LAYOUT % [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
       end
 
-      def refund_body
+      def refund_request_body
         REFUND_LAYOUT % [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
       end
 
-      def cancel_or_refund_body
+      def cancel_or_refund_request_body
         CANCEL_OR_REFUND_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
       end
 
-      def cancel_body
+      def cancel_request_body
         CANCEL_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
       end
 
