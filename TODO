@@ -12,5 +12,7 @@
 = API
 
 * PaymentService:
+  * one-click payments does not work yet, probably wrong incantation of XML voodoo, waiting for reply from support
   * directdebit
+  * iDEAL
   * add a capture! method to an authorisation response

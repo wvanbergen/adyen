@@ -87,6 +87,12 @@ EOS
         </payment:amount>
 EOS
 
+      CARD_CVC_ONLY_PARTIAL = <<EOS
+        <payment:card>
+          <payment:cvc>%s</payment:cvc>
+        </payment:card>
+EOS
+
       CARD_PARTIAL = <<EOS
         <payment:card>
           <payment:holderName>%s</payment:holderName>
@@ -99,16 +105,17 @@ EOS
 
       RECURRING_PARTIAL = <<EOS
         <payment:recurring>
-          <payment:contract>RECURRING</payment:contract>
+          <payment:contract>RECURRING,ONECLICK</payment:contract>
         </payment:recurring>
 EOS
 
       RECURRING_PAYMENT_BODY_PARTIAL = <<EOS
         <payment:recurring>
-          <payment:contract>RECURRING</payment:contract>
+          <payment:contract>%s</payment:contract>
         </payment:recurring>
         <payment:selectedRecurringDetailReference>%s</payment:selectedRecurringDetailReference>
         <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
+        %s
 EOS
 
       SHOPPER_PARTIALS = {

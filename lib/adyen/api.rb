@@ -24,12 +24,18 @@ module Adyen
     # Shortcut methods
     #
 
+    # TODO: these payment methods should accept just the params they need, instead of a hash
+
     def self.authorise_payment(params)
       PaymentService.new(params).authorise_payment
     end
 
     def self.authorise_recurring_payment(params)
       PaymentService.new(params).authorise_recurring_payment
+    end
+
+    def self.authorise_one_click_payment(params)
+      PaymentService.new(params).authorise_one_click_payment
     end
 
     def self.capture_payment(psp_reference, currency, value)

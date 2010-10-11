@@ -69,6 +69,7 @@ module Adyen
     class PaymentService
       public :authorise_payment_request_body,
              :authorise_recurring_payment_request_body,
+             :authorise_one_click_payment_request_body,
              :capture_body, :refund_body, :cancel_or_refund_body, :cancel_body
     end
 

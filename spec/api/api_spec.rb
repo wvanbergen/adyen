@@ -18,6 +18,13 @@ describe Adyen::API do
       Adyen::API.authorise_recurring_payment(:reference => 'order-id')
     end
 
+    it "performs a `authorise one-click payment' request" do
+      payment = mock('PaymentService')
+      Adyen::API::PaymentService.should_receive(:new).with(:reference => 'order-id').and_return(payment)
+      payment.should_receive(:authorise_one_click_payment)
+      Adyen::API.authorise_one_click_payment(:reference => 'order-id')
+    end
+
     it "performs a `capture' request" do
       payment = mock('PaymentService')
       Adyen::API::PaymentService.should_receive(:new).

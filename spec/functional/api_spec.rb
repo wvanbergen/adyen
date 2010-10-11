@@ -61,6 +61,28 @@ if File.exist?(API_SPEC_INITIALIZER)
       response.psp_reference.should_not be_empty
     end
 
+    it "performs a one-click payment request" do
+      response = Adyen::API.authorise_one_click_payment({
+        :reference => @order_id,
+        :amount => {
+          :currency => 'EUR',
+          :value => '1234',
+        },
+        :shopper => {
+          :email => "#{@user_id}@example.com",
+          :reference => @user_id
+        },
+        :card => {
+          :expiry_month => 12,
+          :expiry_year => 2012,
+          :cvc => '737'
+        }
+      })
+      #puts response.body
+      response.should be_authorized
+      response.psp_reference.should_not be_empty
+    end
+
     it "captures a payment" do
       response = Adyen::API.capture_payment(@payment_response.psp_reference, 'EUR', '1234')
       response.should be_success

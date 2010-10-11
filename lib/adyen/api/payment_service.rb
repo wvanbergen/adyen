@@ -46,6 +46,10 @@ module Adyen
         make_payment_request(authorise_recurring_payment_request_body, AuthorizationResponse)
       end
 
+      def authorise_one_click_payment
+        make_payment_request(authorise_one_click_payment_request_body, AuthorizationResponse)
+      end
+
       def capture
         make_payment_request(capture_body, CaptureResponse)
       end
@@ -77,7 +81,12 @@ module Adyen
       end
 
       def authorise_recurring_payment_request_body
-        content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
+        content = RECURRING_PAYMENT_BODY_PARTIAL % ['RECURRING', (@params[:recurring_detail_reference] || 'LATEST'), '']
+        payment_request_body(content)
+      end
+
+      def authorise_one_click_payment_request_body
+        content = RECURRING_PAYMENT_BODY_PARTIAL % ['ONECLICK', (@params[:recurring_detail_reference] || 'LATEST'), CARD_CVC_ONLY_PARTIAL % @params[:card][:cvc]]
         payment_request_body(content)
       end
 

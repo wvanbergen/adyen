@@ -39,6 +39,23 @@ shared_examples_for "payment requests" do
   end
 end
 
+shared_examples_for "recurring payment requests" do
+  it_should_behave_like "payment requests"
+
+  it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
+    text('./payment:shopperInteraction').should == 'ContAuth'
+  end
+
+  it "uses the latest recurring detail reference, by default" do
+    text('./payment:selectedRecurringDetailReference').should == 'LATEST'
+  end
+
+  it "uses the given recurring detail reference" do
+    @payment.params[:recurring_detail_reference] = 'RecurringDetailReference1'
+    text('./payment:selectedRecurringDetailReference').should == 'RecurringDetailReference1'
+  end
+end
+
 describe Adyen::API::PaymentService do
   include APISpecHelper
 
@@ -92,10 +109,10 @@ describe Adyen::API::PaymentService do
       text('./payment:card/payment:expiryMonth').should == '06'
     end
 
-    it "includes the necessary recurring contract info if the `:recurring' param is truthful" do
+    it "includes the necessary recurring and one-click contract info if the `:recurring' param is truthful" do
       xpath('./payment:recurring/payment:contract').should be_empty
       @payment.params[:recurring] = true
-      text('./payment:recurring/payment:contract').should == 'RECURRING'
+      text('./payment:recurring/payment:contract').should == 'RECURRING,ONECLICK'
     end
   end
 
@@ -216,68 +233,111 @@ describe Adyen::API::PaymentService do
         @response = @payment.authorise_payment
       end
     end
+  end
 
-    describe "authorise_recurring_payment_request_body" do
-      before :all do
-        @method = :authorise_recurring_payment_request_body
-      end
+  describe "authorise_recurring_payment_request_body" do
+    before :all do
+      @method = :authorise_recurring_payment_request_body
+    end
 
-      it_should_behave_like "payment requests"
+    it_should_behave_like "recurring payment requests"
 
-      it "does not include any creditcard details" do
-        xpath('./payment:card').should be_empty
-      end
+    it "includes the contract type, which is `RECURRING'" do
+      text('./payment:recurring/payment:contract').should == 'RECURRING'
+    end
 
-      it "includes the contract type, which is always `RECURRING'" do
-        text('./payment:recurring/payment:contract').should == 'RECURRING'
-      end
+    it "does not include any creditcard details" do
+      xpath('./payment:card').should be_empty
+    end
+  end
 
-      it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
-        text('./payment:shopperInteraction').should == 'ContAuth'
-      end
+  describe "authorise_recurring_payment" do
+    before do
+      stub_net_http(AUTHORISE_RESPONSE)
+      @response = @payment.authorise_recurring_payment
+      @request, @post = Net::HTTP.posted
+    end
 
-      it "uses the latest recurring detail reference, by default" do
-        text('./payment:selectedRecurringDetailReference').should == 'LATEST'
-      end
+    after do
+      Net::HTTP.stubbing_enabled = false
+    end
 
-      it "uses the given recurring detail reference" do
-        @payment.params[:recurring_detail_reference] = 'RecurringDetailReference1'
-        text('./payment:selectedRecurringDetailReference').should == 'RecurringDetailReference1'
+    it "posts the body generated for the given parameters" do
+      @post.body.should == @payment.authorise_recurring_payment_request_body
+    end
+
+    it "posts to the correct SOAP action" do
+      @post.soap_action.should == 'authorise'
+    end
+
+    for_each_xml_backend do
+      it "returns a hash with parsed response details" do
+        @payment.authorise_recurring_payment.params.should == {
+          :psp_reference => '9876543210987654',
+          :result_code => 'Authorised',
+          :auth_code => '1234',
+          :refusal_reason => ''
+        }
       end
     end
 
-    describe "authorise_recurring_payment" do
-      before do
-        stub_net_http(AUTHORISE_RESPONSE)
-        @response = @payment.authorise_recurring_payment
-        @request, @post = Net::HTTP.posted
-      end
+    it_should_have_shortcut_methods_for_params_on_the_response
+  end
 
-      after do
-        Net::HTTP.stubbing_enabled = false
-      end
-
-      it "posts the body generated for the given parameters" do
-        @post.body.should == @payment.authorise_recurring_payment_request_body
-      end
-
-      it "posts to the correct SOAP action" do
-        @post.soap_action.should == 'authorise'
-      end
-
-      for_each_xml_backend do
-        it "returns a hash with parsed response details" do
-          @payment.authorise_recurring_payment.params.should == {
-            :psp_reference => '9876543210987654',
-            :result_code => 'Authorised',
-            :auth_code => '1234',
-            :refusal_reason => ''
-          }
-        end
-      end
-
-      it_should_have_shortcut_methods_for_params_on_the_response
+  describe "authorise_one_click_payment_request_body" do
+    before :all do
+      @method = :authorise_one_click_payment_request_body
     end
+
+    it_should_behave_like "recurring payment requests"
+
+    it "includes the contract type, which is `ONECLICK'" do
+      text('./payment:recurring/payment:contract').should == 'ONECLICK'
+    end
+
+    it "does includes only the creditcard's CVC code" do
+      xpath('./payment:card') do |card|
+        card.text('./payment:cvc').should == '737'
+
+        card.xpath('./payment:holderName').should be_empty
+        card.xpath('./payment:number').should be_empty
+        card.xpath('./payment:expiryMonth').should be_empty
+        card.xpath('./payment:expiryYear').should be_empty
+      end
+    end
+  end
+
+  describe "authorise_one_click_payment" do
+    before do
+      stub_net_http(AUTHORISE_RESPONSE)
+      @response = @payment.authorise_one_click_payment
+      @request, @post = Net::HTTP.posted
+    end
+
+    after do
+      Net::HTTP.stubbing_enabled = false
+    end
+
+    it "posts the body generated for the given parameters" do
+      @post.body.should == @payment.authorise_one_click_payment_request_body
+    end
+
+    it "posts to the correct SOAP action" do
+      @post.soap_action.should == 'authorise'
+    end
+
+    for_each_xml_backend do
+      it "returns a hash with parsed response details" do
+        @payment.authorise_one_click_payment.params.should == {
+          :psp_reference => '9876543210987654',
+          :result_code => 'Authorised',
+          :auth_code => '1234',
+          :refusal_reason => ''
+        }
+      end
+    end
+
+    it_should_have_shortcut_methods_for_params_on_the_response
   end
 
   describe "capture_body" do
