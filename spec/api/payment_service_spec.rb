@@ -79,6 +79,19 @@ def it_should_return_params_for_each_xml_backend(params)
   end
 end
 
+def describe_request_body_of(method, xpath = nil, &block)
+  method = "#{method}_request_body"
+  describe(method) do
+    before(:all) { @method = method }
+    if xpath
+      define_method(:node_for_current_method) do
+        node_for_current_object_and_method.xpath(xpath)
+      end
+    end
+    instance_eval(&block)
+  end
+end
+
 shared_examples_for "a response" do
   before do
     @response = @payment.send(@method)
@@ -128,11 +141,7 @@ describe Adyen::API::PaymentService do
     @payment = @object = Adyen::API::PaymentService.new(@params)
   end
 
-  describe "authorise_payment_request_body" do
-    before :all do
-      @method = :authorise_payment_request_body
-    end
-
+  describe_request_body_of :authorise_payment do
     it_should_behave_like "payment requests"
 
     it "includes the creditcard details" do
@@ -253,11 +262,7 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "authorise_recurring_payment_request_body" do
-    before :all do
-      @method = :authorise_recurring_payment_request_body
-    end
-
+  describe_request_body_of :authorise_recurring_payment do
     it_should_behave_like "recurring payment requests"
 
     it "includes the contract type, which is `RECURRING'" do
@@ -278,11 +283,7 @@ describe Adyen::API::PaymentService do
     })
   end
 
-  describe "authorise_one_click_payment_request_body" do
-    before :all do
-      @method = :authorise_one_click_payment_request_body
-    end
-
+  describe_request_body_of :authorise_one_click_payment do
     it_should_behave_like "recurring payment requests"
 
     it "includes the contract type, which is `ONECLICK'" do
@@ -310,11 +311,7 @@ describe Adyen::API::PaymentService do
     })
   end
 
-  describe "capture_request_body" do
-    before :all do
-      @method = :capture_request_body
-    end
-
+  describe_request_body_of :capture, '//payment:capture/payment:modificationRequest' do
     before do
       @payment.params[:psp_reference] = 'original-psp-reference'
     end
@@ -332,12 +329,6 @@ describe Adyen::API::PaymentService do
 
     it "includes the payment (PSP) reference of the payment to refund" do
       text('./payment:originalReference').should == 'original-psp-reference'
-    end
-
-    private
-
-    def node_for_current_method
-      node_for_current_object_and_method.xpath('//payment:capture/payment:modificationRequest')
     end
   end
 
@@ -365,11 +356,7 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "refund_request_body" do
-    before :all do
-      @method = :refund_request_body
-    end
-
+  describe_request_body_of :refund, '//payment:refund/payment:modificationRequest' do
     before do
       @payment.params[:psp_reference] = 'original-psp-reference'
     end
@@ -387,12 +374,6 @@ describe Adyen::API::PaymentService do
 
     it "includes the payment (PSP) reference of the payment to refund" do
       text('./payment:originalReference').should == 'original-psp-reference'
-    end
-
-    private
-
-    def node_for_current_method
-      node_for_current_object_and_method.xpath('//payment:refund/payment:modificationRequest')
     end
   end
 
@@ -420,11 +401,7 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "cancel_or_refund_request_body" do
-    before :all do
-      @method = :cancel_or_refund_request_body
-    end
-
+  describe_request_body_of :cancel_or_refund, '//payment:cancelOrRefund/payment:modificationRequest' do
     before do
       @payment.params[:psp_reference] = 'original-psp-reference'
     end
@@ -435,12 +412,6 @@ describe Adyen::API::PaymentService do
 
     it "includes the payment (PSP) reference of the payment to refund" do
       text('./payment:originalReference').should == 'original-psp-reference'
-    end
-
-    private
-
-    def node_for_current_method
-      node_for_current_object_and_method.xpath('//payment:cancelOrRefund/payment:modificationRequest')
     end
   end
 
@@ -468,11 +439,7 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "cancel_request_body" do
-    before :all do
-      @method = :cancel_request_body
-    end
-
+  describe_request_body_of :cancel, '//payment:cancel/payment:modificationRequest' do
     before do
       @payment.params[:psp_reference] = 'original-psp-reference'
     end
@@ -483,12 +450,6 @@ describe Adyen::API::PaymentService do
 
     it "includes the payment (PSP) reference of the payment to refund" do
       text('./payment:originalReference').should == 'original-psp-reference'
-    end
-
-    private
-
-    def node_for_current_method
-      node_for_current_object_and_method.xpath('//payment:cancel/payment:modificationRequest')
     end
   end
 
