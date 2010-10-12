@@ -32,7 +32,7 @@ module Adyen
       end
 
       def params
-        raise "The Adyen::API::Response#params method should be overriden in a subclass."
+        raise "The Adyen::API::Response#params method should be overridden in a subclass."
       end
 
       def fault_message

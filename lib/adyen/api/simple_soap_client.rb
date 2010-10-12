@@ -26,7 +26,7 @@ EOS
       end
 
       # from http://curl.haxx.se/ca/cacert.pem
-      CACERT = File.expand_path('../../../../support/cacert.pem', __FILE__)
+      CACERT = File.expand_path('../cacert.pem', __FILE__)
 
       class << self
         attr_accessor :stubbed_response

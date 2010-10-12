@@ -6,38 +6,6 @@ module Adyen
     class PaymentService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
-      class << self
-        def success_stub
-          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-          def http_response.body; AUTHORISE_RESPONSE; end
-          AuthorizationResponse.new(http_response)
-        end
-
-        def refused_stub
-          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-          def http_response.body; AUTHORISATION_REFUSED_RESPONSE; end
-          AuthorizationResponse.new(http_response)
-        end
-
-        def invalid_stub
-          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-          def http_response.body; AUTHORISATION_REQUEST_INVALID_RESPONSE; end
-          AuthorizationResponse.new(http_response)
-        end
-
-        def stub_success!
-          @stubbed_response = success_stub
-        end
-
-        def stub_refused!
-          @stubbed_response = refused_stub
-        end
-
-        def stub_invalid!
-          @stubbed_response = invalid_stub
-        end
-      end
-
       def authorise_payment
         make_payment_request(authorise_payment_request_body, AuthorizationResponse)
       end

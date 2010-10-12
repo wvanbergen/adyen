@@ -374,40 +374,6 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe "test helpers that stub responses" do
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "returns an `authorized' response" do
-      stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
-      Adyen::API::PaymentService.stub_success!
-      @payment.authorise_payment.should be_authorized
-
-      @payment.authorise_payment.should_not be_authorized
-    end
-
-    it "returns a `refused' response" do
-      stub_net_http(AUTHORISE_RESPONSE)
-      Adyen::API::PaymentService.stub_refused!
-      response = @payment.authorise_payment
-      response.should_not be_authorized
-      response.should_not be_invalid_request
-
-      @payment.authorise_payment.should be_authorized
-    end
-
-    it "returns a `invalid request' response" do
-      stub_net_http(AUTHORISE_RESPONSE)
-      Adyen::API::PaymentService.stub_invalid!
-      response = @payment.authorise_payment
-      response.should_not be_authorized
-      response.should be_invalid_request
-
-      @payment.authorise_payment.should be_authorized
-    end
-  end
-
   private
 
   def node_for_current_method

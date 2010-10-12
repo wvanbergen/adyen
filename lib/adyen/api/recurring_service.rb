@@ -6,18 +6,6 @@ module Adyen
     class RecurringService < SimpleSOAPClient
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
-      class << self
-        def disabled_stub
-          http_response = Net::HTTPOK.new('1.1', '200', 'OK')
-          def http_response.body; DISABLE_RESPONSE % DisableResponse::DISABLED_RESPONSES.first; end
-          DisableResponse.new(http_response)
-        end
-
-        def stub_disabled!
-          @stubbed_response = disabled_stub
-        end
-      end
-
       # TODO: rename to list_details and make shortcut method take the only necessary param
       def list
         call_webservice_action('listRecurringDetails', list_request_body, ListResponse)

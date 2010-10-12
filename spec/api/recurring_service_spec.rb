@@ -90,17 +90,4 @@ describe Adyen::API::RecurringService do
 
     it_should_return_params_for_each_xml_backend(:response => '[detail-successfully-disabled]')
   end
-
-  describe "test helpers that stub responses" do
-    after do
-      Net::HTTP.stubbing_enabled = false
-    end
-
-    it "returns a `disabled' response" do
-      stub_net_http(DISABLE_RESPONSE % 'nope')
-      Adyen::API::RecurringService.stub_disabled!
-      @recurring.disable.should be_disabled
-      @recurring.disable.should_not be_disabled
-    end
-  end
 end
