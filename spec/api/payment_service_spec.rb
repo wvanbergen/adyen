@@ -56,79 +56,6 @@ shared_examples_for "recurring payment requests" do
   end
 end
 
-def describe_response_from(method, response, &block)
-  describe(method) do
-    before do
-      stub_net_http(response)
-      @method = method
-    end
-
-    it_should_behave_like "a response"
-
-    it_should_have_shortcut_methods_for_params_on_the_response
-
-    instance_eval(&block)
-  end
-end
-
-def it_should_return_params_for_each_xml_backend(params)
-  for_each_xml_backend do
-    it "returns a hash with parsed response details" do
-      @payment.send(@method).params.should == params
-    end
-  end
-end
-
-def describe_request_body_of(method, xpath = nil, &block)
-  method = "#{method}_request_body"
-  describe(method) do
-    before(:all) { @method = method }
-    if xpath
-      define_method(:node_for_current_method) do
-        node_for_current_object_and_method.xpath(xpath)
-      end
-    end
-    instance_eval(&block)
-  end
-end
-
-def describe_modification_request_body_of(method, camelized_method = nil, &block)
-  describe_request_body_of method, "//payment:#{camelized_method || method}/payment:modificationRequest" do
-    before do
-      @payment.params[:psp_reference] = 'original-psp-reference'
-    end
-
-    it "includes the merchant account" do
-      text('./payment:merchantAccount').should == 'SuperShopper'
-    end
-
-    it "includes the payment (PSP) reference of the payment to refund" do
-      text('./payment:originalReference').should == 'original-psp-reference'
-    end
-
-    instance_eval(&block) if block_given?
-  end
-end
-
-shared_examples_for "a response" do
-  before do
-    @response = @payment.send(@method)
-    @request, @post = Net::HTTP.posted
-  end
-
-  after do
-    Net::HTTP.stubbing_enabled = false
-  end
-
-  it "posts the body generated for the given parameters" do
-    @post.body.should == Adyen::API::SimpleSOAPClient::ENVELOPE % @payment.send("#{@method}_request_body")
-  end
-
-  it "posts to the correct SOAP action" do
-    @post.soap_action.should == 'authorise'
-  end
-end
-
 describe Adyen::API::PaymentService do
   include APISpecHelper
 
@@ -487,3 +414,4 @@ describe Adyen::API::PaymentService do
     node_for_current_object_and_method.xpath('//payment:authorise/payment:paymentRequest')
   end
 end
+
