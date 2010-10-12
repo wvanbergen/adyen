@@ -11,6 +11,8 @@
 
 = API
 
+* Add more test helpers as people use and need them. I.e. patches people!
+
 * PaymentService:
   * one-click payments does not work yet, probably wrong incantation of XML voodoo, waiting for reply from support
   * directdebit

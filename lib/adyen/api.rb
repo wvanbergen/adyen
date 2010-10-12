@@ -24,8 +24,6 @@ module Adyen
     # Shortcut methods
     #
 
-    # TODO: these payment methods should accept just the params they need, instead of a hash
-
     def self.authorise_payment(params)
       PaymentService.new(params).authorise_payment
     end
@@ -60,13 +58,15 @@ module Adyen
       PaymentService.new(:psp_reference => psp_reference).cancel
     end
 
+    def self.list_recurring_details(shopper_reference)
+      RecurringService.new(:shopper => { :reference => shopper_reference }).list
+    end
+
     def self.disable_recurring_contract(shopper_reference, recurring_detail_reference = nil)
       RecurringService.new({
         :shopper => { :reference => shopper_reference },
         :recurring_detail_reference => recurring_detail_reference
       }).disable
     end
-
-    # TODO: the rest
   end
 end

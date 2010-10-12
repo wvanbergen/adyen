@@ -4,75 +4,76 @@ describe Adyen::API do
   include APISpecHelper
 
   describe "shortcut methods" do
-    it "performs a `authorise payment' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).with(:reference => 'order-id').and_return(payment)
-      payment.should_receive(:authorise_payment)
-      Adyen::API.authorise_payment(:reference => 'order-id')
+    describe "for the PaymentService" do
+      before do
+        @payment = mock('PaymentService')
+      end
+
+      def should_map_shortcut_to(method, params)
+        Adyen::API::PaymentService.should_receive(:new).with(params).and_return(@payment)
+        @payment.should_receive(method)
+      end
+
+      it "performs a `authorise payment' request" do
+        should_map_shortcut_to(:authorise_payment, :reference => 'order-id')
+        Adyen::API.authorise_payment(:reference => 'order-id')
+      end
+
+      it "performs a `authorise recurring payment' request" do
+        should_map_shortcut_to(:authorise_recurring_payment, :reference => 'order-id')
+        Adyen::API.authorise_recurring_payment(:reference => 'order-id')
+      end
+
+      it "performs a `authorise one-click payment' request" do
+        should_map_shortcut_to(:authorise_one_click_payment, :reference => 'order-id')
+        Adyen::API.authorise_one_click_payment(:reference => 'order-id')
+      end
+
+      it "performs a `capture' request" do
+        should_map_shortcut_to(:capture, :psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' })
+        Adyen::API.capture_payment('original-psp-reference', 'EUR', '1234')
+      end
+
+      it "performs a `refund payment' request" do
+        should_map_shortcut_to(:refund, :psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' })
+        Adyen::API.refund_payment('original-psp-reference', 'EUR', '1234')
+      end
+
+      it "performs a `cancel or refund payment' request" do
+        should_map_shortcut_to(:cancel_or_refund, :psp_reference => 'original-psp-reference')
+        Adyen::API.cancel_or_refund_payment('original-psp-reference')
+      end
+
+      it "performs a `cancel payment' request" do
+        should_map_shortcut_to(:cancel, :psp_reference => 'original-psp-reference')
+        Adyen::API.cancel_payment('original-psp-reference')
+      end
     end
 
-    it "performs a `authorise recurring payment' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).with(:reference => 'order-id').and_return(payment)
-      payment.should_receive(:authorise_recurring_payment)
-      Adyen::API.authorise_recurring_payment(:reference => 'order-id')
-    end
+    describe "for the RecurringService" do
+      before do
+        @recurring = mock('RecurringService')
+      end
 
-    it "performs a `authorise one-click payment' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).with(:reference => 'order-id').and_return(payment)
-      payment.should_receive(:authorise_one_click_payment)
-      Adyen::API.authorise_one_click_payment(:reference => 'order-id')
-    end
+      def should_map_shortcut_to(method, params)
+        Adyen::API::RecurringService.should_receive(:new).with(params).and_return(@recurring)
+        @recurring.should_receive(method)
+      end
 
-    it "performs a `capture' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).
-        with(:psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' }).
-          and_return(payment)
-      payment.should_receive(:capture)
-      Adyen::API.capture_payment('original-psp-reference', 'EUR', '1234')
-    end
+      it "preforms a `list recurring details' request" do
+        should_map_shortcut_to(:list, :shopper => { :reference => 'user-id' })
+        Adyen::API.list_recurring_details('user-id')
+      end
 
-    it "performs a `refund payment' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).
-        with(:psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' }).
-          and_return(payment)
-      payment.should_receive(:refund)
-      Adyen::API.refund_payment('original-psp-reference', 'EUR', '1234')
-    end
+      it "performs a `disable recurring contract' request for all details" do
+        should_map_shortcut_to(:disable, :shopper => { :reference => 'user-id' }, :recurring_detail_reference => nil)
+        Adyen::API.disable_recurring_contract('user-id')
+      end
 
-    it "performs a `cancel or refund payment' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).with(:psp_reference => 'original-psp-reference').and_return(payment)
-      payment.should_receive(:cancel_or_refund)
-      Adyen::API.cancel_or_refund_payment('original-psp-reference')
-    end
-
-    it "performs a `cancel payment' request" do
-      payment = mock('PaymentService')
-      Adyen::API::PaymentService.should_receive(:new).with(:psp_reference => 'original-psp-reference').and_return(payment)
-      payment.should_receive(:cancel)
-      Adyen::API.cancel_payment('original-psp-reference')
-    end
-
-    it "performs a `disable recurring contract' request for all details" do
-      recurring = mock('RecurringService')
-      Adyen::API::RecurringService.should_receive(:new).
-        with(:shopper => { :reference => 'user-id' }, :recurring_detail_reference => nil).
-          and_return(recurring)
-      recurring.should_receive(:disable)
-      Adyen::API.disable_recurring_contract('user-id')
-    end
-
-    it "performs a `disable recurring contract' request for a specific detail" do
-      recurring = mock('RecurringService')
-      Adyen::API::RecurringService.should_receive(:new).
-        with(:shopper => { :reference => 'user-id' }, :recurring_detail_reference => 'detail-id').
-          and_return(recurring)
-      recurring.should_receive(:disable)
-      Adyen::API.disable_recurring_contract('user-id', 'detail-id')
+      it "performs a `disable recurring contract' request for a specific detail" do
+        should_map_shortcut_to(:disable, :shopper => { :reference => 'user-id' }, :recurring_detail_reference => 'detail-id')
+        Adyen::API.disable_recurring_contract('user-id', 'detail-id')
+      end
     end
   end
 end

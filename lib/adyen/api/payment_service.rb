@@ -65,11 +65,11 @@ module Adyen
       end
 
       def capture_request_body
-        CAPTURE_LAYOUT % [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
+        CAPTURE_LAYOUT % capture_and_refund_params
       end
 
       def refund_request_body
-        REFUND_LAYOUT % [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
+        REFUND_LAYOUT % capture_and_refund_params
       end
 
       def cancel_or_refund_request_body
@@ -78,6 +78,10 @@ module Adyen
 
       def cancel_request_body
         CANCEL_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
+      end
+
+      def capture_and_refund_params
+        [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
       end
 
       def amount_partial
