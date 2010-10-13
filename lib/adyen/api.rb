@@ -19,7 +19,7 @@ module Adyen
   # * {RecurringService} - for handling recurring contract details.
   #
   # *However*, direct use of these classes is discouraged in favor of the
-  # shortcut methods defined on the API module.
+  # shortcut methods defined on the API module. These methods do expect that you set the :merchant_account as a :default_param.
   #
   # Note that you'll need an Adyen notification PSP reference for some of the
   # calls. Because of this, store all notifications that Adyen sends to you.
@@ -76,8 +76,6 @@ module Adyen
       # @param [Hash] params     The paramaters to use for this call. These will be merged with the
       #                          default parameters. Note that every option below is required.
       #
-      # @option params [String]  :merchant_account The merchant account you want to process this
-      #                                            payment with.
       # @option params [String]  :reference        Your reference (ID) for this payment.
       # @option params [String]  :currency         The ISO currency code (EUR, GBP, USD, etc).
       # @option params [Integer] :value            The value of the payment in discrete cents,
@@ -86,16 +84,32 @@ module Adyen
       #                                            +:email+, and optionally her <tt>:ip</tt>
       #                                            address. The latter is used in various risk
       #                                            checks, so it’s a good idea to supply it.
-      def authorise_payment(params)
-        PaymentService.new(params).authorise_payment
+      def authorise_payment(reference, amount, shopper, card)
+        PaymentService.new(
+          :reference => reference,
+          :amount    => amount,
+          :shopper   => shopper,
+          :card      => card
+        ).authorise_payment
       end
 
-      def authorise_recurring_payment(params)
-        PaymentService.new(params).authorise_recurring_payment
+      def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = nil)
+        PaymentService.new(
+          :reference => reference,
+          :amount    => amount,
+          :shopper   => shopper,
+          :recurring_detail_reference => recurring_detail_reference
+        ).authorise_recurring_payment
       end
 
-      def authorise_one_click_payment(params)
-        PaymentService.new(params).authorise_one_click_payment
+      def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference = nil)
+        PaymentService.new(
+          :reference => reference,
+          :amount    => amount,
+          :shopper   => shopper,
+          :card      => { :cvc => card_cvc },
+          :recurring_detail_reference => recurring_detail_reference
+        ).authorise_one_click_payment
       end
 
       # Capture an authorised payment.
@@ -111,11 +125,8 @@ module Adyen
       #                                the currency type has cents.
       #
       # @return [PaymentService::CaptureResponse] The response object.
-      def capture_payment(psp_reference, currency, value)
-        PaymentService.new({
-          :psp_reference => psp_reference,
-          :amount => { :currency => currency, :value => value }
-        }).capture
+      def capture_payment(psp_reference, amount)
+        PaymentService.new(:psp_reference => psp_reference, :amount => amount).capture
       end
 
       # Refund a payment.
@@ -131,11 +142,8 @@ module Adyen
       #                                the currency type has cents.
       #
       # @return [PaymentService::RefundResponse] The response object.
-      def refund_payment(psp_reference, currency, value)
-        PaymentService.new({
-          :psp_reference => psp_reference,
-          :amount => { :currency => currency, :value => value }
-        }).refund
+      def refund_payment(psp_reference, amount)
+        PaymentService.new(:psp_reference => psp_reference, :amount => amount).refund
       end
 
       # Cancel or refund a payment. Use this if you wnat to cancel or refund

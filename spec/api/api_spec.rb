@@ -15,28 +15,85 @@ describe Adyen::API do
       end
 
       it "performs a `authorise payment' request" do
-        should_map_shortcut_to(:authorise_payment, :reference => 'order-id')
-        Adyen::API.authorise_payment(:reference => 'order-id')
+        should_map_shortcut_to(:authorise_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+        )
+        Adyen::API.authorise_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+        )
       end
 
-      it "performs a `authorise recurring payment' request" do
-        should_map_shortcut_to(:authorise_recurring_payment, :reference => 'order-id')
-        Adyen::API.authorise_recurring_payment(:reference => 'order-id')
+      it "performs a `authorise recurring payment' request without specific detail" do
+        should_map_shortcut_to(:authorise_recurring_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :recurring_detail_reference => nil
+        )
+        Adyen::API.authorise_recurring_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' }
+        )
       end
 
-      it "performs a `authorise one-click payment' request" do
-        should_map_shortcut_to(:authorise_one_click_payment, :reference => 'order-id')
-        Adyen::API.authorise_one_click_payment(:reference => 'order-id')
+      it "performs a `authorise recurring payment' request with specific detail" do
+        should_map_shortcut_to(:authorise_recurring_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :recurring_detail_reference => 'recurring-detail-reference'
+        )
+        Adyen::API.authorise_recurring_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          'recurring-detail-reference'
+        )
+      end
+
+      it "performs a `authorise one-click payment' request without specific detail" do
+        should_map_shortcut_to(:authorise_one_click_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :card => { :cvc => '737' },
+          :recurring_detail_reference => nil
+        )
+        Adyen::API.authorise_one_click_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          '737'
+        )
+      end
+
+      it "performs a `authorise one-click payment' request with specific detail" do
+        should_map_shortcut_to(:authorise_one_click_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :card => { :cvc => '737' },
+          :recurring_detail_reference => 'recurring-detail-reference'
+        )
+        Adyen::API.authorise_one_click_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          '737',
+          'recurring-detail-reference'
+        )
       end
 
       it "performs a `capture' request" do
         should_map_shortcut_to(:capture, :psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' })
-        Adyen::API.capture_payment('original-psp-reference', 'EUR', '1234')
+        Adyen::API.capture_payment('original-psp-reference', { :currency => 'EUR', :value => '1234' })
       end
 
       it "performs a `refund payment' request" do
         should_map_shortcut_to(:refund, :psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' })
-        Adyen::API.refund_payment('original-psp-reference', 'EUR', '1234')
+        Adyen::API.refund_payment('original-psp-reference', { :currency => 'EUR', :value => '1234' })
       end
 
       it "performs a `cancel or refund payment' request" do
