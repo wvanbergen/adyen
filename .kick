@@ -1,6 +1,9 @@
 process do |files|
   if files.any? { |f| f =~ /lib\/.+\.rb$/ }
     execute "yardoc"
+    execute(%{osascript -e 'tell application "Safari"
+      do JavaScript "window.location.reload()" in first document
+    end tell'})
   end
 end
 

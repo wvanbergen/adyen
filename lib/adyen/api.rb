@@ -39,6 +39,7 @@ module Adyen
   #
   # @see http://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard
   # @see https://www.pcisecuritystandards.org/saq/instructions_dss.shtml
+  # @see http://usa.visa.com/merchants/risk_management/cisp_merchants.html
   module API
     class << self
       # The username that’s used to authenticate for the Adyen SOAP services.
@@ -62,6 +63,29 @@ module Adyen
       attr_accessor :default_params
       @default_params = {}
 
+      # Authorise a new initial payment.
+      #
+      # @example
+      #   response = Adyen::API.authorise_payment(
+      #     :merchant_account => 'MyAccount', :reference => invoice.id,
+      #     :shopper => { :reference => user.id, :email => user.email },
+      #     :amount => { :currency => 'EUR', :value => invoice.amount }
+      #   )
+      #   response.authorised? # => true
+      #
+      # @param [Hash] params     The paramaters to use for this call. These will be merged with the
+      #                          default parameters. Note that every option below is required.
+      #
+      # @option params [String]  :merchant_account The merchant account you want to process this
+      #                                            payment with.
+      # @option params [String]  :reference        Your reference (ID) for this payment.
+      # @option params [String]  :currency         The ISO currency code (EUR, GBP, USD, etc).
+      # @option params [Integer] :value            The value of the payment in discrete cents,
+      #                                            unless the currency does not have cents.
+      # @option params [Hash]    :shopper          A hash consisting of the shopper’s +:reference+,
+      #                                            +:email+, and optionally her <tt>:ip</tt>
+      #                                            address. The latter is used in various risk
+      #                                            checks, so it’s a good idea to supply it.
       def authorise_payment(params)
         PaymentService.new(params).authorise_payment
       end
@@ -74,6 +98,19 @@ module Adyen
         PaymentService.new(params).authorise_one_click_payment
       end
 
+      # Capture an authorised payment.
+      #
+      # Note that the response of this request will only indicate whether or
+      # not the request has been successfuly received. Check the notitification
+      # for the actual mutation status.
+      #
+      # @param [String] psp_reference  The PSP reference, from Adyen, of the
+      #                                previously authorised request.
+      # @param [String] currency       The ISO currency code. E.g. ‘EUR’.
+      # @param [Numeric, String] value The value of the payment in cents, if
+      #                                the currency type has cents.
+      #
+      # @return [PaymentService::CaptureResponse] The response object.
       def capture_payment(psp_reference, currency, value)
         PaymentService.new({
           :psp_reference => psp_reference,
@@ -81,6 +118,19 @@ module Adyen
         }).capture
       end
 
+      # Refund a payment.
+      #
+      # Note that the response of this request will only indicate whether or
+      # not the request has been successfuly received. Check the notitification
+      # for the actual mutation status.
+      #
+      # @param [String] psp_reference  The PSP reference, from Adyen, of the
+      #                                previously authorised request.
+      # @param [String] currency       The ISO currency code. E.g. ‘EUR’.
+      # @param [Numeric, String] value The value of the payment in cents, if
+      #                                the currency type has cents.
+      #
+      # @return [PaymentService::RefundResponse] The response object.
       def refund_payment(psp_reference, currency, value)
         PaymentService.new({
           :psp_reference => psp_reference,
@@ -88,22 +138,63 @@ module Adyen
         }).refund
       end
 
+      # Cancel or refund a payment. Use this if you wnat to cancel or refund
+      # the payment, but are unsure what the current status is.
+      #
+      # Note that the response of this request will only indicate whether or
+      # not the request has been successfuly received. Check the notitification
+      # for the actual mutation status.
+      #
+      # @param [String] psp_reference  The PSP reference, from Adyen, of the
+      #                                previously authorised request.
+      # @param [String] currency       The ISO currency code. E.g. ‘EUR’.
+      # @param [Numeric, String] value The value of the payment in cents, if
+      #                                the currency type has cents.
+      #
+      # @return [PaymentService::CancelOrRefundResponse] The response object.
       def cancel_or_refund_payment(psp_reference)
         PaymentService.new(:psp_reference => psp_reference).cancel_or_refund
       end
 
+      # Cancel an authorised payment.
+      #
+      # Note that the response of this request will only indicate whether or
+      # not the request has been successfuly received. Check the notitification
+      # for the actual mutation status.
+      #
+      # @param [String] psp_reference  The PSP reference, from Adyen, of the
+      #                                previously authorised request.
+      # @param [String] currency       The ISO currency code. E.g. ‘EUR’.
+      # @param [Numeric, String] value The value of the payment in cents, if
+      #                                the currency type has cents.
+      #
+      # @return [PaymentService::CancelResponse] The response object.
       def cancel_payment(psp_reference)
         PaymentService.new(:psp_reference => psp_reference).cancel
       end
 
+      # Retrieve the recurring contract details for a shopper.
+      #
+      # @param [String] shopper_reference The ID used to store payment details
+      #                                   for this shopper.
+      #
+      # @return [RecurringService::ListResponse] The response object.
       def list_recurring_details(shopper_reference)
         RecurringService.new(:shopper => { :reference => shopper_reference }).list
       end
 
-      def disable_recurring_contract(shopper_reference, recurring_detail_reference = nil)
+      # Disable the recurring contract details for a shopper.
+      #
+      # @param [String] shopper_reference     The ID used to store payment
+      #                                       details for this shopper.
+      # @param [String, nil] detail_reference The ID of a specific recurring
+      #                                       contract. Defaults to all.
+      #
+      # @return [RecurringService::DisableResponse] The response object.
+      def disable_recurring_contract(shopper_reference, detail_reference = nil)
         RecurringService.new({
           :shopper => { :reference => shopper_reference },
-          :recurring_detail_reference => recurring_detail_reference
+          :recurring_detail_reference => detail_reference
         }).disable
       end
     end

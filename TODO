@@ -11,6 +11,8 @@
 
 = API
 
+* ListRepsonse add accessor to get dlist of details directly
+
 * Add more test helpers as people use and need them. I.e. patches people!
 
 * PaymentService:
