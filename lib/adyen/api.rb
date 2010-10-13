@@ -52,44 +52,61 @@ module Adyen
       # @return [String]
       attr_accessor :password
 
-      # Default arguments that will be used for every API call. For instance:
+      # Default arguments that will be used for every API call. You can override these default
+      # values by passing a diffferent value to the service class’s constructor.
       #
+      # @example
       #   Adyen::API.default_arguments[:merchant_account] = 'MyMerchant'
-      #
-      # You can override these default values by passing a diffferent value for
-      # the named parameter to the service class constructor.
       #
       # @return [Hash]
       attr_accessor :default_params
       @default_params = {}
 
-      # Authorise a new initial payment.
+      # Authorise a new (regular) creditcard payment.
+      #
+      # Of all arguments, only the shopper’s IP address is optional. But since it’s used in
+      # various risk checks, it’s a good idea to supply it anyway.
       #
       # @example
       #   response = Adyen::API.authorise_payment(
-      #     :merchant_account => 'MyAccount', :reference => invoice.id,
-      #     :shopper => { :reference => user.id, :email => user.email },
-      #     :amount => { :currency => 'EUR', :value => invoice.amount }
+      #     invoice.id,
+      #     { :currency => 'EUR', :value => invoice.amount },
+      #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+      #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737', :expiry_month => 12, :expiry_year => 2012 }
       #   )
       #   response.authorised? # => true
       #
-      # @param [Hash] params     The paramaters to use for this call. These will be merged with the
-      #                          default parameters. Note that every option below is required.
+      # @param          [Numeric,String] reference      Your reference (ID) for this payment.
+      # @param          [Hash]           amount         A hash describing the money to charge.
+      # @param          [Hash]           shopper        A hash describing the shopper.
+      # @param          [Hash]           card           A hash describing the creditcard details.
       #
-      # @option params [String]  :reference        Your reference (ID) for this payment.
-      # @option params [String]  :currency         The ISO currency code (EUR, GBP, USD, etc).
-      # @option params [Integer] :value            The value of the payment in discrete cents,
-      #                                            unless the currency does not have cents.
-      # @option params [Hash]    :shopper          A hash consisting of the shopper’s +:reference+,
-      #                                            +:email+, and optionally her <tt>:ip</tt>
-      #                                            address. The latter is used in various risk
-      #                                            checks, so it’s a good idea to supply it.
-      def authorise_payment(reference, amount, shopper, card)
+      # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
+      # @option amount  [Integer]        :value         The value of the payment in discrete cents,
+      #                                                 unless the currency does not have cents.
+      #
+      # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
+      # @option shopper [String]         :email         The shopper’s email address.
+      # @option shopper [String]         :ip            The shopper’s IP address.
+      #
+      # @option card    [String]         :holder_name   The full name on the card.
+      # @option card    [String]         :number        The card number.
+      # @option card    [String]         :cvc           The card’s verification code.
+      # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
+      # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
+      #
+      # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
+      #                                                 future recurring or one-click payments.
+      #
+      # @return [PaymentService::AuthorizationResponse] The response object which holds the
+      #                                                 authorisation status.
+      def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false)
         PaymentService.new(
           :reference => reference,
           :amount    => amount,
           :shopper   => shopper,
-          :card      => card
+          :card      => card,
+          :recurring => enable_recurring_contract
         ).authorise_payment
       end
 

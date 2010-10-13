@@ -14,17 +14,34 @@ describe Adyen::API do
         @payment.should_receive(method)
       end
 
-      it "performs a `authorise payment' request" do
+      it "performs a `authorise payment' request without enabling :recurring" do
         should_map_shortcut_to(:authorise_payment,
           :reference => 'order-id',
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
+          :recurring => false
         )
         Adyen::API.authorise_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+        )
+      end
+
+      it "performs a `authorise payment' request with enabling :recurring" do
+        should_map_shortcut_to(:authorise_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
+          :recurring => true
+        )
+        Adyen::API.authorise_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
+          true
         )
       end
 
