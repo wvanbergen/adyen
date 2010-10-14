@@ -63,6 +63,10 @@ module Adyen
       class ListResponse < Response
         response_attrs :details, :last_known_shopper_email, :shopper_reference, :creation_date
 
+        def references
+          details.map { |d| d[:recurring_detail_reference] }
+        end
+
         def params
           @params ||= xml_querier.xpath('//recurring:listRecurringDetailsResponse/recurring:result') do |result|
             details = result.xpath('.//recurring:RecurringDetail')
