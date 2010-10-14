@@ -72,17 +72,17 @@ EOS
           PaymentService::AuthorisationResponse.new(http_response)
         end
 
-        # Assigns a {success_stub}, meaning the subsequent authoristaion request will be authorised.
+        # Assigns a {#success_stub}, meaning the subsequent authoristaion request will be authorised.
         def stub_success!
           @stubbed_response = success_stub
         end
 
-        # Assigns a {refused_stub}, meaning the subsequent authoristaion request will be refused.
+        # Assigns a {#refused_stub}, meaning the subsequent authoristaion request will be refused.
         def stub_refused!
           @stubbed_response = refused_stub
         end
 
-        # Assigns a {invalid_stub}, meaning the subsequent authoristaion request will be refused,
+        # Assigns a {#invalid_stub}, meaning the subsequent authoristaion request will be refused,
         # because the request was invalid.
         def stub_invalid!
           @stubbed_response = invalid_stub
@@ -115,7 +115,7 @@ EOS
           RecurringService::DisableResponse.new(http_response)
         end
 
-        # Assigns a {disabled_stub}, meaning the subsequent disable request will be successful.
+        # Assigns a {#disabled_stub}, meaning the subsequent disable request will be successful.
         def stub_disabled!
           @stubbed_response = disabled_stub
         end
