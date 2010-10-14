@@ -44,17 +44,17 @@ module Adyen
 
       def authorise_payment_request_body
         content = card_partial
-        content << RECURRING_PARTIAL if @params[:recurring]
+        content << ENABLE_RECURRING_CONTRACTS_PARTIAL if @params[:recurring]
         payment_request_body(content)
       end
 
       def authorise_recurring_payment_request_body
-        content = RECURRING_PAYMENT_BODY_PARTIAL % ['RECURRING', (@params[:recurring_detail_reference] || 'LATEST'), '']
+        content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
         payment_request_body(content)
       end
 
       def authorise_one_click_payment_request_body
-        content = RECURRING_PAYMENT_BODY_PARTIAL % ['ONECLICK', (@params[:recurring_detail_reference] || 'LATEST'), CARD_CVC_ONLY_PARTIAL % @params[:card][:cvc]]
+        content = ONE_CLICK_PAYMENT_BODY_PARTIAL % [@params[:recurring_detail_reference], @params[:card][:cvc]]
         payment_request_body(content)
       end
 

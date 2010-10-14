@@ -50,7 +50,7 @@ describe Adyen::API do
           :reference => 'order-id',
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :recurring_detail_reference => nil
+          :recurring_detail_reference => 'LATEST'
         )
         Adyen::API.authorise_recurring_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -69,21 +69,6 @@ describe Adyen::API do
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           'recurring-detail-reference'
-        )
-      end
-
-      it "performs a `authorise one-click payment' request without specific detail" do
-        should_map_shortcut_to(:authorise_one_click_payment,
-          :reference => 'order-id',
-          :amount => { :currency => 'EUR', :value => 1234 },
-          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :card => { :cvc => '737' },
-          :recurring_detail_reference => nil
-        )
-        Adyen::API.authorise_one_click_payment('order-id',
-          { :currency => 'EUR', :value => 1234 },
-          { :reference => 'user-id', :email => 's.hopper@example.com' },
-          '737'
         )
       end
 

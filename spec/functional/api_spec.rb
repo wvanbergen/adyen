@@ -15,29 +15,13 @@ if File.exist?(API_SPEC_INITIALIZER)
     end
 
     def perform_payment_request
-      @payment_response = Adyen::API.authorise_payment({
-        :reference => @order_id,
-        :recurring => true,
-        :amount => {
-          :currency => 'EUR',
-          :value => '1234',
-        },
-        :shopper => {
-          :email => "#{@user_id}@example.com",
-          :reference => @user_id
-        },
-        :card => {
-          :expiry_month => 12,
-          :expiry_year => 2012,
-          :holder_name => "Simon #{@user_id} Hopper",
-          :number => '4444333322221111',
-          :cvc => '737',
-          # Maestro UK/Solo only
-          #:issue_number => ,
-          #:start_month => ,
-          #:start_year => ,
-        }
-      })
+      @payment_response = Adyen::API.authorise_payment(
+        @order_id,
+        { :currency => 'EUR', :value => '1234' },
+        { :email => "#{@user_id}@example.com", :reference => @user_id },
+        { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon #{@user_id} Hopper", :number => '4444333322221111', :cvc => '737' },
+        true
+      )
     end
 
     it "performs a payment request" do
@@ -46,50 +30,37 @@ if File.exist?(API_SPEC_INITIALIZER)
     end
 
     it "performs a recurring payment request" do
-      response = Adyen::API.authorise_recurring_payment({
-        :reference => @order_id,
-        :amount => {
-          :currency => 'EUR',
-          :value => '1234',
-        },
-        :shopper => {
-          :email => "#{@user_id}@example.com",
-          :reference => @user_id
-        }
-      })
+      response = Adyen::API.authorise_recurring_payment(
+        @order_id,
+        { :currency => 'EUR', :value => '1234' },
+        { :email => "#{@user_id}@example.com", :reference => @user_id }
+      )
       response.should be_authorized
       response.psp_reference.should_not be_empty
     end
 
     it "performs a one-click payment request" do
-      response = Adyen::API.authorise_one_click_payment({
-        :reference => @order_id,
-        :amount => {
-          :currency => 'EUR',
-          :value => '1234',
-        },
-        :shopper => {
-          :email => "#{@user_id}@example.com",
-          :reference => @user_id
-        },
-        :card => {
-          :expiry_month => 12,
-          :expiry_year => 2012,
-          :cvc => '737'
-        }
-      })
-      #puts response.body
+      response = Adyen::API.list_recurring_details(@user_id)
+      detail   = response.details.first[:recurring_detail_reference]
+
+      response = Adyen::API.authorise_one_click_payment(
+        @order_id,
+        { :currency => 'EUR', :value => '1234' },
+        { :email => "#{@user_id}@example.com", :reference => @user_id },
+        '737',
+        detail
+      )
       response.should be_authorized
       response.psp_reference.should_not be_empty
     end
 
     it "captures a payment" do
-      response = Adyen::API.capture_payment(@payment_response.psp_reference, 'EUR', '1234')
+      response = Adyen::API.capture_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
       response.should be_success
     end
 
     it "refunds a payment" do
-      response = Adyen::API.refund_payment(@payment_response.psp_reference, 'EUR', '1234')
+      response = Adyen::API.refund_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
       response.should be_success
     end
 

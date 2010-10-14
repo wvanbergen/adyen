@@ -42,14 +42,6 @@ end
 shared_examples_for "recurring payment requests" do
   it_should_behave_like "payment requests"
 
-  it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
-    text('./payment:shopperInteraction').should == 'ContAuth'
-  end
-
-  it "uses the latest recurring detail reference, by default" do
-    text('./payment:selectedRecurringDetailReference').should == 'LATEST'
-  end
-
   it "uses the given recurring detail reference" do
     @payment.params[:recurring_detail_reference] = 'RecurringDetailReference1'
     text('./payment:selectedRecurringDetailReference').should == 'RecurringDetailReference1'
@@ -214,6 +206,14 @@ describe Adyen::API::PaymentService do
       text('./payment:recurring/payment:contract').should == 'RECURRING'
     end
 
+    it "uses the latest recurring detail reference, by default" do
+      text('./payment:selectedRecurringDetailReference').should == 'LATEST'
+    end
+
+    it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
+      text('./payment:shopperInteraction').should == 'ContAuth'
+    end
+
     it "does not include any creditcard details" do
       xpath('./payment:card').should be_empty
     end
@@ -233,6 +233,10 @@ describe Adyen::API::PaymentService do
 
     it "includes the contract type, which is `ONECLICK'" do
       text('./payment:recurring/payment:contract').should == 'ONECLICK'
+    end
+
+    it "does not include the self-‘describing’ nonsense parameters" do
+      xpath('./payment:shopperInteraction').should be_empty
     end
 
     it "does includes only the creditcard's CVC code" do

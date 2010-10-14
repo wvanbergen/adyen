@@ -148,7 +148,7 @@ module Adyen
         ).authorise_recurring_payment
       end
 
-      def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference = nil)
+      def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference)
         PaymentService.new(
           :reference => reference,
           :amount    => amount,
