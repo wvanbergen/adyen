@@ -26,11 +26,16 @@ EOS
         end
       end
 
+      # @private
       CAPTURE_LAYOUT          = modification_request_with_amount(:capture)
+      # @private
       REFUND_LAYOUT           = modification_request_with_amount(:refund)
+      # @private
       CANCEL_LAYOUT           = modification_request(:cancel)
+      # @private
       CANCEL_OR_REFUND_LAYOUT = modification_request(:cancelOrRefund)
 
+      # @private
       LAYOUT = <<EOS
     <payment:authorise xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
       <payment:paymentRequest>
@@ -41,6 +46,7 @@ EOS
     </payment:authorise>
 EOS
 
+      # @private
       AMOUNT_PARTIAL = <<EOS
         <payment:amount>
           <common:currency>%s</common:currency>
@@ -48,6 +54,7 @@ EOS
         </payment:amount>
 EOS
 
+      # @private
       CARD_PARTIAL = <<EOS
         <payment:card>
           <payment:holderName>%s</payment:holderName>
@@ -58,12 +65,14 @@ EOS
         </payment:card>
 EOS
 
+      # @private
       ENABLE_RECURRING_CONTRACTS_PARTIAL = <<EOS
         <payment:recurring>
           <payment:contract>RECURRING,ONECLICK</payment:contract>
         </payment:recurring>
 EOS
 
+      # @private
       RECURRING_PAYMENT_BODY_PARTIAL = <<EOS
         <payment:recurring>
           <payment:contract>RECURRING</payment:contract>
@@ -72,6 +81,7 @@ EOS
         <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
 EOS
 
+      # @private
       ONE_CLICK_PAYMENT_BODY_PARTIAL = <<EOS
         <payment:recurring>
           <payment:contract>ONECLICK</payment:contract>
@@ -82,55 +92,12 @@ EOS
         </payment:card>
 EOS
 
+      # @private
       SHOPPER_PARTIALS = {
         :reference => '        <payment:shopperReference>%s</payment:shopperReference>',
         :email     => '        <payment:shopperEmail>%s</payment:shopperEmail>',
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
       }
-
-      # Test responses
-      AUTHORISE_RESPONSE = ENVELOPE % <<EOS
-    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:paymentResult>
-        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
-        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
-      </ns1:paymentResult>
-    </ns1:authoriseResponse>
-EOS
-
-      AUTHORISATION_REFUSED_RESPONSE = ENVELOPE % <<EOS
-    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
-      <ns1:paymentResult>
-        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
-        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
-        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
-        <refusalReason xmlns="http://payment.services.adyen.com">You need to actually own money.</refusalReason>
-        <resultCode xmlns="http://payment.services.adyen.com">Refused</resultCode>
-      </ns1:paymentResult>
-    </ns1:authoriseResponse>
-EOS
-
-      AUTHORISATION_REQUEST_INVALID_RESPONSE = ENVELOPE % <<EOS
-    <soap:Fault>
-      <faultcode>soap:Server</faultcode>
-      <faultstring>validation 101 Invalid card number</faultstring>
-    </soap:Fault>
-EOS
     end
   end
 end

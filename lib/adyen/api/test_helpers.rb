@@ -8,6 +8,49 @@ module Adyen
       #
       # This module extends the {PaymentService} class and thus these methods are callable on it.
       module TestHelpers
+        AUTHORISE_RESPONSE = ENVELOPE % <<EOS
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+        <refusalReason xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <resultCode xmlns="http://payment.services.adyen.com">Authorised</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+EOS
+
+        AUTHORISATION_REFUSED_RESPONSE = ENVELOPE % <<EOS
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
+        <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <fraudResult xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <issuerUrl xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <md xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <paRequest xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <pspReference xmlns="http://payment.services.adyen.com">9876543210987654</pspReference>
+        <refusalReason xmlns="http://payment.services.adyen.com">You need to actually own money.</refusalReason>
+        <resultCode xmlns="http://payment.services.adyen.com">Refused</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+EOS
+
+        AUTHORISATION_REQUEST_INVALID_RESPONSE = ENVELOPE % <<EOS
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>validation 101 Invalid card number</faultstring>
+    </soap:Fault>
+EOS
+
         # @return [AuthorizationResponse] A authorisation succeeded response instance.
         def success_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
@@ -55,6 +98,16 @@ module Adyen
       #
       # This module extends the {RecurringService} class and thus these methods are callable on it.
       module TestHelpers
+        DISABLE_RESPONSE = <<EOS
+    <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
+      <ns1:result>
+        <response xmlns="http://recurring.services.adyen.com">
+          %s
+        </response>
+      </ns1:result>
+    </ns1:disableResponse>
+EOS
+
         # @return [DisableResponse] A ‘disable succeeded’ response instance.
         def disabled_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')

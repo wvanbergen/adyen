@@ -286,7 +286,7 @@ module Adyen
       #
       # @param         [String]       shopper_reference The ID used to store payment details for
       #                                                 this shopper.
-      # @param         [String, nil]  detail_reference  The ID of a specific recurring contract.
+      # @param [String,nil] recurring_detail_reference  The ID of a specific recurring contract.
       #                                                 Defaults to all.
       #
       # @return [RecurringService::DisableResponse] The response object.

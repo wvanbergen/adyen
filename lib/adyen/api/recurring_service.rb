@@ -3,14 +3,30 @@ require 'adyen/api/templates/recurring_service'
 
 module Adyen
   module API
+    # This is the class that maps actions to Adyen’s Recurring SOAP service.
+    #
+    # It’s encouraged to use the shortcut methods on the {API} module, which abstracts away the
+    # difference between this service and the {PaymentService}. Henceforth, for extensive
+    # documentation you should look at the {API} documentation.
+    #
+    # The most important difference is that you instantiate a {RecurringService} with the parameters
+    # that are needed for the call that you will eventually make.
+    #
+    # @example
+    #  recurring = Adyen::API::RecurringService.new(:shopper => { :reference => user.id })
+    #  response = recurring.disable
+    #  response.success? # => true
+    #
     class RecurringService < SimpleSOAPClient
+      # The Adyen Recurring SOAP service endpoint uri.
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
-      # TODO: rename to list_details and make shortcut method take the only necessary param
+      # @see API.list_recurring_details
       def list
         call_webservice_action('listRecurringDetails', list_request_body, ListResponse)
       end
 
+      # @see API.disable_recurring_contract
       def disable
         call_webservice_action('disable', disable_request_body, DisableResponse)
       end

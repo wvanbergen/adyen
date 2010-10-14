@@ -3,35 +3,73 @@ require 'adyen/api/templates/payment_service'
 
 module Adyen
   module API
+    # This is the class that maps actions to Adyen’s Payment SOAP service.
+    #
+    # It’s encouraged to use the shortcut methods on the {API} module, which abstracts away the
+    # difference between this service and the {RecurringService}. Henceforth, for extensive
+    # documentation you should look at the {API} documentation.
+    #
+    # The most important difference is that you instantiate a {PaymentService} with the parameters
+    # that are needed for the call that you will eventually make.
+    #
+    # @example
+    #  payment = Adyen::API::PaymentService.new({
+    #    :reference => invoice.id,
+    #    :amount => {
+    #      :currency => 'EUR',
+    #      :value => invoice.amount,
+    #    },
+    #    :shopper => {
+    #      :email => user.email,
+    #      :reference => user.id,
+    #      #:ip => request.,
+    #    },
+    #    :card => {
+    #      :expiry_month => 12,
+    #      :expiry_year => 2012,
+    #      :holder_name => 'Simon Hopper',
+    #      :number => '4444333322221111',
+    #      :cvc => '737'
+    #    }
+    #  })
+    #  response = payment.authorise_payment
+    #  response.authorised? # => true
+    #
     class PaymentService < SimpleSOAPClient
+      # The Adyen Payment SOAP service endpoint uri.
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
+      # @see API.authorise_payment
       def authorise_payment
         make_payment_request(authorise_payment_request_body, AuthorizationResponse)
       end
 
+      # @see API.authorise_recurring_payment
       def authorise_recurring_payment
         make_payment_request(authorise_recurring_payment_request_body, AuthorizationResponse)
       end
 
+      # @see API.authorise_one_click_payment
       def authorise_one_click_payment
         make_payment_request(authorise_one_click_payment_request_body, AuthorizationResponse)
       end
 
+      # @see API.capture_payment
       def capture
         make_payment_request(capture_request_body, CaptureResponse)
       end
 
-      # Also returns success if the amount is not the same as the original payment.
-      # You should check the status on the notification that will be send.
+      # @see API.refund_payment
       def refund
         make_payment_request(refund_request_body, RefundResponse)
       end
 
+      # @see API.cancel_payment
       def cancel
         make_payment_request(cancel_request_body, CancelResponse)
       end
 
+      # @see API.cancel_or_refund_payment
       def cancel_or_refund
         make_payment_request(cancel_or_refund_request_body, CancelOrRefundResponse)
       end
