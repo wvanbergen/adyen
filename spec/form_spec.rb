@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'adyen/form'
 
 describe Adyen::Form do
 

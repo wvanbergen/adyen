@@ -1,4 +1,4 @@
-require File.expand_path("../../spec_helper", __FILE__)
+require File.expand_path("../../api/spec_helper", __FILE__)
 
 require 'rubygems'
 require 'nokogiri'
@@ -7,11 +7,16 @@ API_SPEC_INITIALIZER = File.expand_path("../initializer.rb", __FILE__)
 
 if File.exist?(API_SPEC_INITIALIZER)
 
-  describe Adyen::API do
+  describe Adyen::API, "with an actual remote connection" do
     before :all do
       require API_SPEC_INITIALIZER
+      Net::HTTP.stubbing_enabled = false
       @order_id = @user_id = Time.now.to_i
       perform_payment_request
+    end
+
+    after :all do
+      Net::HTTP.stubbing_enabled = true
     end
 
     def perform_payment_request

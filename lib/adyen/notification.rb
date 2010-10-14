@@ -85,7 +85,7 @@ module Adyen
       # Make sure we convert the value to cents
       options[:value] = Adyen::Formatter::Price.in_cents(options[:value])
       raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
-      Adyen::SOAP::RecurringService.submit(options.merge(:recurring_reference => self.psp_reference))
+      Adyen::API::PaymentService.new(options.merge(:recurring_reference => self.psp_reference)).authorise_recurring_payment
     end
 
     # Deactivates the recurring contract that was initiated with this notification.
@@ -95,7 +95,7 @@ module Adyen
     # @see Adyen::SOAP::RecurringService#deactivate
     def deactivate_recurring_contract!(options)
       raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
-      Adyen::SOAP::RecurringService.deactivate(options.merge(:recurring_reference => self.psp_reference))
+      Adyen::API::RecurringService.new(options.merge(:recurring_reference => self.psp_reference)).disable
     end
 
     class HttpPost < Notification

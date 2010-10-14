@@ -21,7 +21,7 @@ module Net
         if Net::HTTP.stubbing_enabled
           @assigned_basic_auth = [username, password]
         else
-          old_basic_auth
+          old_basic_auth(username, password)
         end
       end
 
@@ -48,8 +48,8 @@ module Net
     end
 
     alias old_start start
-    def start
-      Net::HTTP.stubbing_enabled ? yield(self) : old_start
+    def start(&block)
+      Net::HTTP.stubbing_enabled ? yield(self) : old_start(&block)
     end
 
     alias old_request request

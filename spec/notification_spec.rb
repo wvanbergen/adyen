@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'adyen/notification'
 
 describe Adyen::Notification do
 

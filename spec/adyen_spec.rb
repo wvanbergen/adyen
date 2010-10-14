@@ -5,15 +5,19 @@ describe Adyen do
   describe '.load_config' do
     
     it "should set the environment correctly from the gonfiguration" do
-      Adyen.load_config(:environment => 'from_config')
-      Adyen.environment.should == 'from_config'
+      begin
+        Adyen.load_config(:environment => 'from_config')
+        Adyen.environment.should == 'from_config'
+      ensure
+        Adyen.environment = 'test'
+      end
     end
     
     it "should recursively set settings for submodules" do
-      Adyen.load_config(:SOAP => { :username => 'foo', :password => 'bar' },
+      Adyen.load_config(:API => { :username => 'SuperShopper', :password => 'secret' },
         :Form => { :default_parameters => { :merchant_account => 'us' }})
-      Adyen::SOAP.username.should == 'foo'
-      Adyen::SOAP.password.should == 'bar'
+      Adyen::API.username.should == 'SuperShopper'
+      Adyen::API.password.should == 'secret'
       Adyen::Form.default_parameters.should == { :merchant_account => 'us' }
     end
     
