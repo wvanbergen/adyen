@@ -200,9 +200,8 @@ module Adyen
 
       class ModificationResponse < Response
         class << self
-          private
-          attr_accessor :request_received_value
-          attr_accessor :base_xpath
+          # @private
+          attr_accessor :request_received_value, :base_xpath
         end
 
         response_attrs :psp_reference, :response
