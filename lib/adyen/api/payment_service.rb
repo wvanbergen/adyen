@@ -80,7 +80,28 @@ module Adyen
         call_webservice_action('authorise', data, response_class)
       end
 
+      def validate_parameter_value!(param, value)
+        if value.blank?
+          raise ArgumentError, "The required parameter `:#{param}' is missing."
+        end
+      end
+
+      def validate_parameters!(*params)
+        params.each do |param|
+          case param
+          when Symbol
+            validate_parameter_value!(param, @params[param])
+          when Hash
+            param.each do |name, attrs|
+              validate_parameter_value!(name, @params[name])
+              attrs.each { |attr| validate_parameter_value!("#{name} => :#{attr}", @params[name][attr]) }
+            end
+          end
+        end
+      end
+
       def authorise_payment_request_body
+        validate_parameters!(:merchant_account)
         content = card_partial
         content << ENABLE_RECURRING_CONTRACTS_PARTIAL if @params[:recurring]
         payment_request_body(content)
@@ -127,6 +148,7 @@ module Adyen
       end
 
       def card_partial
+        validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
         card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
         card << @params[:card][:expiry_month].to_i
         CARD_PARTIAL % card

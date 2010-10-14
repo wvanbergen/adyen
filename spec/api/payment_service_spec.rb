@@ -78,6 +78,33 @@ describe Adyen::API::PaymentService do
     @payment = @object = Adyen::API::PaymentService.new(@params)
   end
 
+  describe Adyen::API, "authorise_payment parameter validation" do
+    before :all do
+      Net::HTTP.stubbing_enabled = true
+    end
+
+    after :all do
+      Net::HTTP.stubbing_enabled = false
+    end
+
+    it "raises if the merchant account is missing" do
+      @payment.params[:merchant_account] = ''
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
+    it "raises if the card info is missing" do
+      @payment.params[:card] = nil
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
+    [:holder_name, :number, :cvc, :expiry_year, :expiry_month].each do |attr|
+      it "raises if the card #{attr} is missing" do
+        @payment.params[:card][attr] = ''
+        lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+      end
+    end
+  end
+
   describe_request_body_of :authorise_payment do
     it_should_behave_like "payment requests"
 
