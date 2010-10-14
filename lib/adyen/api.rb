@@ -10,45 +10,47 @@ module Adyen
   #     Adyen::API.username = 'ws@Company.MyAccount'
   #     Adyen::API.password = 'secret'
   #
-  # Furthermore, you can setup default parameters, that will be used by every
-  # API call, by using {Adyen::API.default_arguments}.
+  # Furthermore, you can setup default parameters, which will be used by every API call, by using
+  # {Adyen::API.default_arguments}.
   #
   # The following classes, which handle the SOAP services, are available:
   #
   # * {PaymentService}   - for authorisation of, and modification to, payments.
   # * {RecurringService} - for handling recurring contract details.
   #
-  # *However*, direct use of these classes is discouraged in favor of the
-  # shortcut methods defined on the API module. These methods do expect that you set the :merchant_account as a :default_param.
+  # *However*, direct use of these classes is discouraged in favor of the shortcut methods defined
+  # on the API module. These methods *expect* that you set the :merchant_account as a default
+  # parameter.
   #
-  # Note that you'll need an Adyen notification PSP reference for some of the
-  # calls. Because of this, store all notifications that Adyen sends to you.
-  # (e.g. using the {Adyen::Notification} ActiveRecord class). Moreover, these
-  # calls do *not* tell you whether or not the requested action was successful.
-  # For this you will have to check the notification that will be sent.
+  # Note that you'll need an Adyen notification PSP reference for some of the calls. Because of
+  # this, store all notifications that Adyen sends to you. (e.g. using the {Adyen::Notification}
+  # ActiveRecord class). Moreover, the responses to these calls do *not* tell you whether or not
+  # the requested action was successful. For this you will also have to check the notification.
   #
   # = Authorising payments
   #
-  # To authorise payments, not recurring ones, the customers payment details
-  # will have to pass through your application and infrastucture. Because of
-  # this you will have to contact Adyen and provide the necessary paperwork
-  # which says that you’re PCI DSS compliant.
+  # To authorise payments, not recurring ones, the customers payment details will have to pass
+  # through your application’s infrastucture. Because of this you will have to contact Adyen and
+  # provide the necessary paperwork which says that you’re PCI DSS compliant, before you are given
+  # access to Adyen’s API.
   #
-  # Unless you are going to process over twenty thousand payments anually, the
-  # PCI DSS Self-Assessment Questionnaire (SAQ) type A will probably suffice.
+  # Unless you are going to process over twenty thousand payments anually, the PCI DSS
+  # Self-Assessment Questionnaire (SAQ) type A will _probably_ suffice.
   #
   # @see http://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard
   # @see https://www.pcisecuritystandards.org/saq/instructions_dss.shtml
   # @see http://usa.visa.com/merchants/risk_management/cisp_merchants.html
   module API
     class << self
-      # The username that’s used to authenticate for the Adyen SOAP services.
-      # It should look something like +ws@Company.MyAccount+
+      # The username that’s used to authenticate for the Adyen SOAP services. It should look
+      # something like ‘+ws@AndyInc.SuperShop+’
+      #
       # @return [String]
       attr_accessor :username
 
-      # The password that’s used to authenticate for the Adyen SOAP services.
-      # You can configure it in the user management tool of the merchant area.
+      # The password that’s used to authenticate for the Adyen SOAP services. You can configure it
+      # in the user management tool of the merchant area.
+      #
       # @return [String]
       attr_accessor :password
 
@@ -56,13 +58,15 @@ module Adyen
       # values by passing a diffferent value to the service class’s constructor.
       #
       # @example
-      #   Adyen::API.default_arguments[:merchant_account] = 'MyMerchant'
+      #   Adyen::API.default_arguments[:merchant_account] = 'SuperShop'
       #
       # @return [Hash]
       attr_accessor :default_params
       @default_params = {}
 
-      # Authorise a regular creditcard payment.
+      # Authorise a payment.
+      #
+      # @see capture_payment
       #
       # Of all options, only the shopper’s IP address is optional. But since it’s used in various
       # risk checks, it’s a good idea to supply it anyway.
@@ -110,7 +114,10 @@ module Adyen
         ).authorise_payment
       end
 
-      # Authorise a recurring creditcard payment.
+      # Authorise a recurring payment. The contract detail will default to the ‘+latest+’, which
+      # is generally what you’d want.
+      #
+      # @see capture_payment
       #
       # Of all options, only the shopper’s IP address is optional. But since it’s used in various
       # risk checks, it’s a good idea to supply it anyway.
@@ -136,6 +143,7 @@ module Adyen
       # @option shopper [String]         :ip            The shopper’s IP address.
       #
       # @param [String] recurring_detail_reference      The recurring contract reference to use.
+      # @see list_recurring_details
       #
       # @return [PaymentService::AuthorizationResponse] The response object which holds the
       #                                                 authorisation status.
@@ -148,6 +156,42 @@ module Adyen
         ).authorise_recurring_payment
       end
 
+      # Authorise a ‘one-click’ payment. A specific contract detail *has* to be specified.
+      #
+      # @see capture_payment
+      #
+      # Of all options, only the shopper’s IP address is optional. But since it’s used in various
+      # risk checks, it’s a good idea to supply it anyway.
+      #
+      # @example
+      #   detail  = Adyen::API.list_recurring_details(user.id).details.last[:recurring_detail_reference]
+      #   payment = Adyen::API.authorise_one_click_payment(
+      #     invoice.id,
+      #     { :currency => 'EUR', :value => invoice.amount },
+      #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+      #     '737',
+      #     detail
+      #   )
+      #   payment.authorised? # => true
+      #
+      # @param          [Numeric,String] reference      Your reference (ID) for this payment.
+      # @param          [Hash]           amount         A hash describing the money to charge.
+      # @param          [Hash]           shopper        A hash describing the shopper.
+      # @param          [String]         card_cvc       The card’s verification code.
+      #
+      # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
+      # @option amount  [Integer]        :value         The value of the payment in discrete cents,
+      #                                                 unless the currency does not have cents.
+      #
+      # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
+      # @option shopper [String]         :email         The shopper’s email address.
+      # @option shopper [String]         :ip            The shopper’s IP address.
+      #
+      # @param [String] recurring_detail_reference      The recurring contract reference to use.
+      # @see list_recurring_details
+      #
+      # @return [PaymentService::AuthorizationResponse] The response object which holds the
+      #                                                 authorisation status.
       def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference)
         PaymentService.new(
           :reference => reference,
@@ -159,6 +203,11 @@ module Adyen
       end
 
       # Capture an authorised payment.
+      #
+      # You can also configure your merchant account to automatically capture authorised payments
+      # in the merchant account settings.
+      #
+      # @see https://ca-test.adyen.com/ca/ca/accounts/manageMerchantAccount.shtml
       #
       # Note that the response of this request will only indicate whether or
       # not the request has been successfuly received. Check the notitification
@@ -176,7 +225,7 @@ module Adyen
         PaymentService.new(:psp_reference => psp_reference, :amount => amount).capture
       end
 
-      # Refund a payment.
+      # Refund a captured payment.
       #
       # Note that the response of this request will only indicate whether or
       # not the request has been successfuly received. Check the notitification
@@ -194,7 +243,7 @@ module Adyen
         PaymentService.new(:psp_reference => psp_reference, :amount => amount).refund
       end
 
-      # Cancel or refund a payment. Use this if you wnat to cancel or refund
+      # Cancel or refund a payment. Use this if you want to cancel or refund
       # the payment, but are unsure what the current status is.
       #
       # Note that the response of this request will only indicate whether or

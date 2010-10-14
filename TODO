@@ -12,6 +12,7 @@
 = API
 
 * ListRepsonse add accessor to get dlist of details directly
+* rename AuthorizationResponse to AuthorisationResponse
 
 * Add more test helpers as people use and need them. I.e. patches people!
 
