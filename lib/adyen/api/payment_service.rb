@@ -41,17 +41,17 @@ module Adyen
 
       # @see API.authorise_payment
       def authorise_payment
-        make_payment_request(authorise_payment_request_body, AuthorizationResponse)
+        make_payment_request(authorise_payment_request_body, AuthorisationResponse)
       end
 
       # @see API.authorise_recurring_payment
       def authorise_recurring_payment
-        make_payment_request(authorise_recurring_payment_request_body, AuthorizationResponse)
+        make_payment_request(authorise_recurring_payment_request_body, AuthorisationResponse)
       end
 
       # @see API.authorise_one_click_payment
       def authorise_one_click_payment
-        make_payment_request(authorise_one_click_payment_request_body, AuthorizationResponse)
+        make_payment_request(authorise_one_click_payment_request_body, AuthorisationResponse)
       end
 
       # @see API.capture_payment
@@ -136,7 +136,7 @@ module Adyen
         @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
       end
 
-      class AuthorizationResponse < Response
+      class AuthorisationResponse < Response
         ERRORS = {
           "validation 101 Invalid card number"                           => [:number,       'is not a valid creditcard number'],
           "validation 103 CVC is not the right length"                   => [:cvc,          'is not the right length'],
@@ -163,10 +163,21 @@ module Adyen
 
         alias authorized? success?
 
+        # @return [Boolean] Returns whether or not the request was valid.
         def invalid_request?
           !fault_message.nil?
         end
 
+        # In the case of a validation error, or SOAP fault message, this method will return an
+        # array describing what attribute failed validation and the accompanying message. If the
+        # errors is not of the common user validation errors, then the attribute is +:base+ and the
+        # full original message is returned.
+        #
+        # An optional +prefix+ can be given so you can seamlessly integrate this in your
+        # ActiveRecord model and copy over errors.
+        #
+        # @param [String,Symbol] prefix A string that should be used to prefix the error key.
+        # @return [Array<Symbol, String>] A name-message pair of the attribute with an error.
         def error(prefix = nil)
           if error = ERRORS[fault_message]
             prefix ? ["#{prefix}_#{error[0]}".to_sym, error[1]] : error
@@ -189,14 +200,15 @@ module Adyen
 
       class ModificationResponse < Response
         class << self
+          private
           attr_accessor :request_received_value
           attr_accessor :base_xpath
         end
 
         response_attrs :psp_reference, :response
 
-        # This only means the request has been successfully received.
-        # Check the notification to see if it was actually refunded.
+        # This only returns whether or not the request has been successfully received. Check the
+        # subsequent notification to see if the payment was actually mutated.
         def success?
           super && params[:response] == self.class.request_received_value
         end

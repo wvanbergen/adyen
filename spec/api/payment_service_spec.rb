@@ -186,7 +186,7 @@ describe Adyen::API::PaymentService do
           ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
           ["validation 130 Reference Missing",                             [:base,         'validation 130 Reference Missing']],
         ].each do |expected, attr_and_message|
-          Adyen::API::PaymentService::AuthorizationResponse.original_fault_message_for(*attr_and_message).should == expected
+          Adyen::API::PaymentService::AuthorisationResponse.original_fault_message_for(*attr_and_message).should == expected
         end
       end
 

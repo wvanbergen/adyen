@@ -8,7 +8,7 @@ module Adyen
       #
       # This module extends the {PaymentService} class and thus these methods are callable on it.
       module TestHelpers
-        AUTHORISE_RESPONSE = ENVELOPE % <<EOS
+        AUTHORISE_RESPONSE = SimpleSOAPClient::ENVELOPE % <<EOS
     <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentResult>
         <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
@@ -26,7 +26,7 @@ module Adyen
     </ns1:authoriseResponse>
 EOS
 
-        AUTHORISATION_REFUSED_RESPONSE = ENVELOPE % <<EOS
+        AUTHORISATION_REFUSED_RESPONSE = SimpleSOAPClient::ENVELOPE % <<EOS
     <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentResult>
         <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
@@ -44,7 +44,7 @@ EOS
     </ns1:authoriseResponse>
 EOS
 
-        AUTHORISATION_REQUEST_INVALID_RESPONSE = ENVELOPE % <<EOS
+        AUTHORISATION_REQUEST_INVALID_RESPONSE = SimpleSOAPClient::ENVELOPE % <<EOS
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
       <faultstring>validation 101 Invalid card number</faultstring>
@@ -55,21 +55,21 @@ EOS
         def success_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; AUTHORISE_RESPONSE; end
-          AuthorizationResponse.new(http_response)
+          PaymentService::AuthorisationResponse.new(http_response)
         end
 
         # @return [AuthorizationResponse] An authorisation refused response instance.
         def refused_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; AUTHORISATION_REFUSED_RESPONSE; end
-          AuthorizationResponse.new(http_response)
+          PaymentService::AuthorisationResponse.new(http_response)
         end
 
         # @return [AuthorizationResponse] An ‘invalid request’ response instance.
         def invalid_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; AUTHORISATION_REQUEST_INVALID_RESPONSE; end
-          AuthorizationResponse.new(http_response)
+          PaymentService::AuthorisationResponse.new(http_response)
         end
 
         # Assigns a {success_stub}, meaning the subsequent authoristaion request will be authorised.
@@ -98,7 +98,7 @@ EOS
       #
       # This module extends the {RecurringService} class and thus these methods are callable on it.
       module TestHelpers
-        DISABLE_RESPONSE = <<EOS
+        DISABLE_RESPONSE = SimpleSOAPClient::ENVELOPE % <<EOS
     <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
       <ns1:result>
         <response xmlns="http://recurring.services.adyen.com">
@@ -112,7 +112,7 @@ EOS
         def disabled_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; DISABLE_RESPONSE % DisableResponse::DISABLED_RESPONSES.first; end
-          DisableResponse.new(http_response)
+          RecurringService::DisableResponse.new(http_response)
         end
 
         # Assigns a {disabled_stub}, meaning the subsequent disable request will be successful.
