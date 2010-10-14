@@ -4,9 +4,8 @@ class ResponseAttrHandler < YARD::Handlers::Ruby::Legacy::Base
 
   def process
     statement.tokens[1..-1].each do |token|
-      name = token.text.strip
-      next if name.empty? || name == ','
-      name = name[1..-1] if name[0,1] == ':'
+      next unless token.text =~ /^:?(\w+)/
+      name = $1
       object = YARD::CodeObjects::MethodObject.new(namespace, name)
       register(object)
       object.dynamic = true
