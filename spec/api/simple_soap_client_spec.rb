@@ -64,11 +64,11 @@ describe Adyen::API::SimpleSOAPClient do
     end
 
     it "sends the proper headers" do
-      @post.header.should == {
+      @post.header.should include(
         'accept'       => ['text/xml'],
         'content-type' => ['text/xml; charset=utf-8'],
         'soapaction'   => ['Action']
-      }
+      )
     end
 
     it "returns an Adyen::API::Response instance" do
