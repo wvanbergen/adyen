@@ -162,7 +162,7 @@ module Adyen
         ERRORS = {
           "validation 101 Invalid card number"                           => [:number,       'is not a valid creditcard number'],
           "validation 103 CVC is not the right length"                   => [:cvc,          'is not the right length'],
-          "validation 128 Card Holder Missing"                           => [:holder_name,  'can’t be blank'],
+          "validation 128 Card Holder Missing"                           => [:holder_name,  "can't be blank"],
           "validation Couldn't parse expiry year"                        => [:expiry_year,  'could not be recognized'],
           "validation Expiry month should be between 1 and 12 inclusive" => [:expiry_month, 'could not be recognized'],
         }
