@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'spec_helper'
+require 'date'
 
 describe Adyen::API::RecurringService do
   include APISpecHelper
