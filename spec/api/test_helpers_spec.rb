@@ -1,4 +1,6 @@
-require File.expand_path("../spec_helper", __FILE__)
+# encoding: UTF-8
+
+require 'spec_helper'
 require 'adyen/api/test_helpers'
 
 describe "Test helpers" do

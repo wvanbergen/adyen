@@ -1,4 +1,5 @@
-require File.expand_path("../spec_helper", __FILE__)
+# encoding: UTF-8
+require 'spec_helper'
 
 shared_examples_for "payment requests" do
   it "includes the merchant account handle" do

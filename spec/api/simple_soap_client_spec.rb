@@ -1,4 +1,5 @@
-require File.expand_path("../spec_helper", __FILE__)
+# encoding: UTF-8
+require 'spec_helper'
 
 module APISpecHelper
   class SOAPClient < Adyen::API::SimpleSOAPClient

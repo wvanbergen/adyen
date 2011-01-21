@@ -1,4 +1,5 @@
-require File.expand_path("../../api/spec_helper", __FILE__)
+# encoding: UTF-8
+require 'spec_helper'
 
 require 'rubygems'
 require 'nokogiri'
