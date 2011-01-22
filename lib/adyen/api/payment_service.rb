@@ -110,6 +110,7 @@ module Adyen
       end
 
       def authorise_recurring_payment_request_body
+        validate_parameters!(:shopper => [:email, :reference])
         content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
         payment_request_body(content)
       end

@@ -25,7 +25,7 @@ shared_examples_for "payment requests" do
 
   it "only includes shopper details for given parameters" do
     # TODO pretty lame, but for now it will do
-    unless @method == "authorise_one_click_payment_request_body"
+    unless @method == "authorise_one_click_payment_request_body" || "authorise_recurring_payment_request_body"
       @payment.params[:shopper].delete(:reference)
       xpath('./payment:shopperReference').should be_empty
       @payment.params[:shopper].delete(:email)
@@ -37,7 +37,7 @@ shared_examples_for "payment requests" do
 
   it "does not include any shopper details if none are given" do
     # TODO pretty lame, but for now it will do
-    unless @method == "authorise_one_click_payment_request_body"
+    unless @method == "authorise_one_click_payment_request_body" || "authorise_recurring_payment_request_body"
       @payment.params.delete(:shopper)
       xpath('./payment:shopperReference').should be_empty
       xpath('./payment:shopperEmail').should be_empty
@@ -227,6 +227,11 @@ describe Adyen::API::PaymentService do
   describe_request_body_of :authorise_recurring_payment do
     it_should_behave_like "recurring payment requests"
 
+    it_should_validate_request_parameters :merchant_account,
+                                          :reference,
+                                          :amount  => [:currency, :value],
+                                          :shopper => [:reference, :email]
+
     it "includes the contract type, which is `RECURRING'" do
       text('./payment:recurring/payment:contract').should == 'RECURRING'
     end
@@ -260,9 +265,9 @@ describe Adyen::API::PaymentService do
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
                                           :recurring_detail_reference,
-                                          :amount => [:currency, :value],
+                                          :amount  => [:currency, :value],
                                           :shopper => [:reference, :email],
-                                          :card => [:cvc]
+                                          :card    => [:cvc]
 
     it "includes the contract type, which is `ONECLICK'" do
       text('./payment:recurring/payment:contract').should == 'ONECLICK'
