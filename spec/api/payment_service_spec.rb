@@ -128,6 +128,20 @@ describe Adyen::API::PaymentService do
         lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
       end
     end
+
+    it "raises if the shopper details are missing and recurring is `true'" do
+      @payment.params[:recurring] = true
+      @payment.params[:shopper] = nil
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
+    [:reference, :email].each do |attr|
+      it "raises if the shopper #{attr} is missing and recurring is `true'" do
+        @payment.params[:recurring] = true
+        @payment.params[:shopper][attr] = ''
+        lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+      end
+    end
   end
 
   describe_request_body_of :authorise_payment do

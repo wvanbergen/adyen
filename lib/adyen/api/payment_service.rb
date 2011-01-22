@@ -102,7 +102,10 @@ module Adyen
 
       def authorise_payment_request_body
         content = card_partial
-        content << ENABLE_RECURRING_CONTRACTS_PARTIAL if @params[:recurring]
+        if @params[:recurring]
+          validate_parameters!(:shopper => [:email, :reference])
+          content << ENABLE_RECURRING_CONTRACTS_PARTIAL
+        end
         payment_request_body(content)
       end
 
