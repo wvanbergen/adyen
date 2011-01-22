@@ -81,7 +81,7 @@ module Adyen
 
       # @return [String] A string representation of this node.
       def to_s
-        @node.to_s
+        Array === @node ? @node.join("") : @node.to_s
       end
 
       # @yield [XMLQuerier] A member of this node set, ready to be queried.
