@@ -47,11 +47,11 @@ describe Adyen::Form do
     end
 
     it "should calculate the signature string correctly" do
-      Adyen::Form.redirect_signature_string(@params).should eql('AUTHORISED1211992213193029Internet Order 123454aD37dJA')
+      Adyen::Form.redirect_signature_string(@params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJA'
     end
 
     it "should calculate the signature correctly" do
-      Adyen::Form.redirect_signature(@params).should eql(@params[:merchantSig])
+      Adyen::Form.redirect_signature(@params).should == @params[:merchantSig]
     end
 
     it "should check the signature correctly with explicit shared signature" do
@@ -77,7 +77,7 @@ describe Adyen::Form do
     before(:each) do
       @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
         :merchant_reference => 'Internet Order 12345', :skin => :testing,
-        :session_validity => 1.hour.from_now }
+        :session_validity => Time.now + 3600 }
 
       @redirect_url = Adyen::Form.redirect_url(@attributes)
     end
@@ -104,7 +104,7 @@ describe Adyen::Form do
     before(:each) do
       @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
         :merchant_reference => 'Internet Order 12345', :skin => :testing,
-        :session_validity => 1.hour.from_now }
+        :session_validity => Time.now + 3600 }
     end
 
     it "should generate a valid payment form" do
@@ -128,12 +128,12 @@ describe Adyen::Form do
 
     it "should construct the signature string correctly" do
       signature_string = Adyen::Form.calculate_signature_string(@parameters)
-      signature_string.should eql("10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z")
+      signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z"
     end
     
     it "should calculate the signature correctly" do
       signature = Adyen::Form.calculate_signature(@parameters)
-      signature.should eql('x58ZcRVL1H6y+XSeBGrySJ9ACVo=')
+      signature.should == 'x58ZcRVL1H6y+XSeBGrySJ9ACVo='
     end
 
     it "should calculate the signature correctly for a recurring payment" do
@@ -141,7 +141,7 @@ describe Adyen::Form do
       @parameters.merge!(:recurring_contract => 'DEFAULT', :shopper_reference => 'grasshopper52', :shopper_email => 'gras.shopper@somewhere.org')
 
       signature_string = Adyen::Form.calculate_signature_string(@parameters)
-      signature_string.should eql("10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Zgras.shopper@somewhere.orggrasshopper52DEFAULT")
+      signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Zgras.shopper@somewhere.orggrasshopper52DEFAULT"
     end
 
     it "should calculate the signature correctly for a recurring payment" do
@@ -149,7 +149,7 @@ describe Adyen::Form do
       @parameters.merge!(:recurring_contract => 'DEFAULT', :shopper_reference => 'grasshopper52', :shopper_email => 'gras.shopper@somewhere.org')
 
       signature = Adyen::Form.calculate_signature(@parameters)
-      signature.should eql('F2BQEYbE+EUhiRGuPtcD16Gm7JY=')
+      signature.should == 'F2BQEYbE+EUhiRGuPtcD16Gm7JY='
     end
   end
 end
