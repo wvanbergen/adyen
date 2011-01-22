@@ -1,10 +1,14 @@
 1.0
 ===
 
+* Move Form default_params and skins to Configuration.
+
 * Screen documentation
 
 Possible/Later
 ==============
+
+* Make Form a framework agnostic mixin, there are only a few ActionView method calls right now.
 
 * Add a capture! method to an authorisation response from the PaymentService.
 
