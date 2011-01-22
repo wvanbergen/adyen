@@ -60,18 +60,10 @@ module Adyen
   def self.autodetect_environment
     (defined?(RAILS_ENV) && Adyen::LIVE_RAILS_ENVIRONMENTS.include?(RAILS_ENV.to_s.downcase)) ? 'live' : 'test'
   end
-
-  # Loads submodules on demand, so that dependencies are not required.
-  # @param [Symbol] sym The name of the submodule
-  # @return [Module] The actual loaded submodule.
-  # @raise [LoadError, NameError] If the submodule cannot be loaded
-  def self.const_missing(sym)
-    require "adyen/#{sym.to_s.downcase}"
-    return Adyen.const_get(sym)
-  rescue Exception
-    super(sym)
-  end
 end
 
 require 'adyen/encoding'
 require 'adyen/formatter'
+require 'adyen/form'
+require 'adyen/notification'
+

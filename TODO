@@ -1,7 +1,6 @@
 1.0
 ===
 
-* Use require/autoload instead of const_missing
 * Make sure Japansese yens work as expected (this is the only currency Adyen does not expect to be in cents)
 
 
