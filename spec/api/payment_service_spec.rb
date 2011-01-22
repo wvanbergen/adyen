@@ -372,7 +372,10 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe_modification_request_body_of :cancel_or_refund, 'cancelOrRefund'
+  describe_modification_request_body_of :cancel_or_refund, 'cancelOrRefund' do
+    it_should_validate_request_parameters :merchant_account,
+                                          :psp_reference
+  end
 
   describe_response_from :cancel_or_refund, CANCEL_OR_REFUND_RESPONSE % '[cancelOrRefund-received]' do
     it_should_return_params_for_each_xml_backend({

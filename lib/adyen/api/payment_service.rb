@@ -139,6 +139,7 @@ module Adyen
       end
 
       def cancel_or_refund_request_body
+        validate_parameters!(:merchant_account, :psp_reference)
         CANCEL_OR_REFUND_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
       end
 
