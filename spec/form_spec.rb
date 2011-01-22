@@ -88,7 +88,7 @@ describe Adyen::Form do
     
     it "should include all provided attributes" do
       params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
-      params.should include(*(@attributes.keys.map { |k| k.to_s.camelize(:lower) }))
+      params.should include(*(@attributes.keys.map { |k| Adyen::Form.camelize(k) }))
     end
     
     it "should include the merchant signature" do
@@ -99,8 +99,6 @@ describe Adyen::Form do
 
   describe 'hidden fields generation' do
 
-    include ActionView::Helpers::TagHelper
-
     before(:each) do
       @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
         :merchant_reference => 'Internet Order 12345', :skin => :testing,
@@ -108,8 +106,11 @@ describe Adyen::Form do
     end
 
     it "should generate a valid payment form" do
-      content_tag(:form, Adyen::Form.hidden_fields(@attributes),
-          :action => Adyen::Form.url, :method => :post).should have_adyen_payment_form
+      html_snippet = <<-HTML
+        <form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>
+      HTML
+      
+      html_snippet.should have_adyen_payment_form
     end
   end
 

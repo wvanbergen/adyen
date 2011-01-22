@@ -60,7 +60,7 @@ EOS
       end
 
       def validate_parameter_value!(param, value)
-        if value.blank?
+        if value.nil? || value =~ /^\s*$/
           raise ArgumentError, "The required parameter `:#{param}' is missing."
         end
       end

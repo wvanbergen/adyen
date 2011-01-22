@@ -1,4 +1,4 @@
-require 'action_view'
+require 'cgi'
 
 module Adyen
 
@@ -21,7 +21,6 @@ module Adyen
   # @see Adyen::Form.redirect_url
   # @see Adyen::Form.redirect_signature_check
   module Form
-    include ActionView::Helpers::TagHelper
     extend self
 
     ######################################################
@@ -204,7 +203,7 @@ module Adyen
     # @return [String] An absolute URL to redirect to the Adyen payment system.
     def redirect_url(parameters = {})
       url + '?' + payment_parameters(parameters).map { |(k, v)| 
-        "#{k.to_s.camelize(:lower)}=#{CGI.escape(v.to_s)}" }.join('&')
+        "#{camelize(k)}=#{CGI.escape(v.to_s)}" }.join('&')
     end
     
     # Returns a HTML snippet of hidden INPUT tags with the provided payment parameters. 
@@ -232,7 +231,7 @@ module Adyen
       
       # Generate a hidden input tag per parameter, join them by newlines.
       form_str = payment_parameters(parameters).map { |key, value|
-        tag(:input, :type => 'hidden', :name => key.to_s.camelize(:lower), :value => value)
+        "<input type=\"hidden\" name=\"#{CGI.escapeHTML(camelize(key))}\" value=\"#{CGI.escapeHTML(value.to_s)}\" />"
       }.join("\n")
       
       form_str.respond_to?(:html_safe) ? form_str.html_safe : form_str
@@ -332,5 +331,13 @@ module Adyen
     def redirect_signature_check(params, shared_secret = nil)
       params[:merchantSig] == redirect_signature(params, shared_secret)
     end
+    
+    # Returns the camelized version of a string.
+    # @param [:to_s] identifier The identifier to turn to camelcase
+    # @return [String] The camelcase version of the identifier provided.
+    def camelize(identifier)
+      identifier.to_s.gsub(/_(.)/) { $1.upcase }
+    end
+    
   end
 end

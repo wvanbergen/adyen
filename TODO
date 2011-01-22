@@ -8,8 +8,6 @@
 Possible/Later
 ==============
 
-* Make Form a framework agnostic mixin, there are only a few ActionView method calls right now.
-
 * Add a capture! method to an authorisation response from the PaymentService.
 
 * Add iDEAL API. To get started, see the `iDEAL' topic-branch which contains `ideal-scratchpad.rb' and a stub for a functional spec.
