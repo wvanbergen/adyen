@@ -1,5 +1,5 @@
 # @private
-class CreateAccountsTable < ActiveRecord::Migration
+class CreateAdyenNotifications < ActiveRecord::Migration
   
   def self.up
     create_table :adyen_notifications do |t|
