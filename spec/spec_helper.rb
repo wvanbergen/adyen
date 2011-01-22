@@ -3,13 +3,6 @@
 require 'rubygems'
 require 'rspec'
 
-gem "activesupport", ">= 3"
-require "active_support"
-gem "activerecord", ">= 3"
-require "active_record"
-gem "actionpack", ">= 3"
-require "action_view"
-
 $:.unshift File.expand_path('../../lib', __FILE__)
 
 require 'adyen'
