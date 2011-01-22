@@ -1,7 +1,7 @@
 1.0
 ===
 
-* Move Form default_params and skins to Configuration.
+* Raise ArgumentError in Form instead of RuntimeError.
 
 * Screen documentation
 
