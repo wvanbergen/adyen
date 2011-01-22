@@ -6,8 +6,8 @@
 # * {Adyen::Form} for generating payment form fields, generating redirect URLs 
 #   to the Adyen payment system, and generating and checking of signatures.
 # * {Adyen::Notification} for handling notifications sent by Adyen to your servers.
-# * {Adyen::SOAP} for communicating with the Adyen SOAP services for payment
-#   maintenance and issuing recurring payments.
+# * {Adyen::API} for communicating with the Adyen SOAP services for issuing
+#   (recurring) payments and recurring contract maintenance.
 module Adyen
 
   # Version constant for the Adyen plugin.
@@ -15,6 +15,7 @@ module Adyen
   # the gem:release rake task.
   VERSION = "0.3.8.20101007"
 
+  # @return [Configuration] The configuration singleton.
   def self.configuration
     @configuration ||= Adyen::Configuration.new
   end

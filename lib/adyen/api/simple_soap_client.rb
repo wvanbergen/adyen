@@ -54,7 +54,7 @@ EOS
       attr_reader :params
 
       # @param [Hash] params A hash of key-value pairs required for the action that is to be called.
-      #                      These are merged with the {API.default_params}.
+      #                      These are merged with the Adyen::API.default_params.
       def initialize(params = {})
         @params = Adyen.configuration.default_api_params.merge(params)
       end

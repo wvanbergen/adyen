@@ -16,8 +16,8 @@ class Adyen::Configuration
   # Returns the current Adyen environment, either test or live.
   #
   # It will return the +override+ value if set, it will return the value set
-  # using {Adyen.configuration.environment=} otherwise. If this value also isn't set, the
-  # environment is determined with {Adyen.autodetect_environment}.
+  # using Adyen.configuration.environment= otherwise. If this value also isn't set, the
+  # environment is determined with autodetect_environment.
   #
   # @param ['test', 'live'] override An environment to override the default with.
   # @return ['test', 'live'] The Adyen environment that is currently being used.
@@ -53,7 +53,7 @@ class Adyen::Configuration
   # values by passing a diffferent value to the service class’s constructor.
   #
   # @example
-  #   Adyen::API.default_soap_params[:merchant_account] = 'SuperShop'
+  #   Adyen::API.default_api_params[:merchant_account] = 'SuperShop'
   #
   # @return [Hash]
   attr_accessor :default_api_params
