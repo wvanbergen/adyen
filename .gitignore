@@ -6,4 +6,5 @@ adyen-*.gem
 *.swp
 *.swo
 .DS_Store
+t.rb
 spec/functional/initializer.rb
