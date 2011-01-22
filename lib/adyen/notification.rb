@@ -76,26 +76,6 @@ module Adyen
     
     alias :successful_authorization? :successful_authorisation?
 
-    # Collect a payment using the recurring contract that was initiated with
-    # this notification. The payment is collected using a SOAP call to the 
-    # Adyen SOAP service for recurring payments.
-    # @param [Hash] options The payment parameters.
-    # @see Adyen::SOAP::RecurringService#submit
-    def collect_payment_for_recurring_contract!(options)
-      raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
-      Adyen::API::PaymentService.new(options.merge(:recurring_reference => self.psp_reference)).authorise_recurring_payment
-    end
-
-    # Deactivates the recurring contract that was initiated with this notification.
-    # The contract is deactivated by sending a SOAP call to the Adyen SOAP service for
-    # recurring contracts.
-    # @param [Hash] options The recurring contract parameters.
-    # @see Adyen::SOAP::RecurringService#deactivate
-    def deactivate_recurring_contract!(options)
-      raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
-      Adyen::API::RecurringService.new(options.merge(:recurring_reference => self.psp_reference)).disable
-    end
-
     class HttpPost < Notification
 
       def self.log(request)
