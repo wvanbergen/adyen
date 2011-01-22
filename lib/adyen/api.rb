@@ -1,3 +1,4 @@
+require 'adyen'
 require 'adyen/api/simple_soap_client'
 require 'adyen/api/payment_service'
 require 'adyen/api/recurring_service'
@@ -62,8 +63,11 @@ module Adyen
       #
       # @return [Hash]
       attr_accessor :default_params
-      @default_params = {}
+    end
 
+    self.default_params = {}
+
+    class << self
       # Authorise a payment.
       #
       # @see capture_payment
