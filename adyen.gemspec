@@ -1,5 +1,5 @@
 Gem::Specification.new do |s|
-  s.name    = 'fingertips-adyen'
+  s.name    = 'adyen'
   s.version = "0.3.8.20100929"
   s.date    = "2010-09-29"
 
@@ -15,14 +15,14 @@ Gem::Specification.new do |s|
   s.email    = ['willem@vanbergen.org', 'cicaboo@gmail.com', 'mail@sborsje.nl', 'eloy.de.enige@gmail.com']
   s.homepage = 'http://github.com/wvanbergen/adyen/wiki'
 
+
+  s.add_runtime_dependency('activerecord')
+
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2.0')
-  
-  # Drop or make runtime dependency.
-  s.add_development_dependency('activerecord')
   s.add_development_dependency('nokogiri')
-
-  s.requirements << 'ActiveRecord is required for storing the notifications in your database.'
+  
+  s.requirements << 'Having Nokogiri installed will speed up XML handling when using the SOAP API.'
 
   s.rdoc_options << '--title' << s.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   s.extra_rdoc_files = ['README.rdoc']
