@@ -24,9 +24,9 @@ module Adyen
   # parameter.
   #
   # Note that you'll need an Adyen notification PSP reference for some of the calls. Because of
-  # this, store all notifications that Adyen sends to you. (e.g. using the {Adyen::Notification}
-  # ActiveRecord class). Moreover, the responses to these calls do *not* tell you whether or not
-  # the requested action was successful. For this you will also have to check the notification.
+  # this, store all notifications that Adyen sends to you. Moreover, the responses to these calls 
+  # do *not* tell you whether or not the requested action was successful. For this you will also 
+  # have to check the notification.
   #
   # = Authorising payments
   #

@@ -15,12 +15,10 @@ Gem::Specification.new do |s|
   s.email    = ['willem@vanbergen.org', 'cicaboo@gmail.com', 'mail@sborsje.nl', 'eloy.de.enige@gmail.com']
   s.homepage = 'http://github.com/wvanbergen/adyen/wiki'
 
-
-  s.add_runtime_dependency('activerecord')
-
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2.0')
   s.add_development_dependency('nokogiri')
+  s.add_development_dependency('rails', '>= 2.3')
   
   s.requirements << 'Having Nokogiri installed will speed up XML handling when using the SOAP API.'
 

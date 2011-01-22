@@ -5,7 +5,6 @@
 # The most important submodules are:
 # * {Adyen::Form} for generating payment form fields, generating redirect URLs 
 #   to the Adyen payment system, and generating and checking of signatures.
-# * {Adyen::Notification} for handling notifications sent by Adyen to your servers.
 # * {Adyen::API} for communicating with the Adyen SOAP services for issuing
 #   (recurring) payments and recurring contract maintenance.
 module Adyen
@@ -25,6 +24,5 @@ require 'adyen/configuration'
 require 'adyen/encoding'
 require 'adyen/formatter'
 require 'adyen/form'
-require 'adyen/notification'
 
 require 'adyen/railtie' if defined?(::Rails) && ::Rails::VERSION::MAJOR >= 3

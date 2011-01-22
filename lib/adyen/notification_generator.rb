@@ -1,7 +1,7 @@
 require 'rails/generators'
 require 'rails/generators/migration'
  
-class Adyen::MigrationGenerator < Rails::Generators::Base
+class Adyen::NotificationGenerator < Rails::Generators::Base
   include Rails::Generators::Migration
 
   def self.source_root
@@ -20,6 +20,10 @@ class Adyen::MigrationGenerator < Rails::Generators::Base
 
   # Create a migration file for the adyen_notifications table
   def create_migration_file
-    migration_template 'migration.rb', 'db/migrate/create_adyen_notifications_table.rb'
+    migration_template 'notification_migration.rb', 'db/migrate/create_adyen_notifications.rb'
+  end
+  
+  def create_model_file
+    template 'notification_model.rb', 'app/models/adyen_notification.rb'
   end
 end
