@@ -118,7 +118,7 @@ module Adyen
     # @see Adyen::Form.environment
     # @see Adyen::Form.redirect_url
     def url(environment = nil)
-      environment ||= Adyen.environment
+      environment ||= Adyen.configuration.environment
       Adyen::Form::ACTION_URL % environment.to_s
     end
 

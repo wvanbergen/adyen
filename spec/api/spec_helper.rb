@@ -7,9 +7,9 @@ require 'rubygems'
 require 'nokogiri'
 require 'rexml/document'
 
-Adyen::API.default_params = { :merchant_account => 'SuperShopper' }
-Adyen::API.username = 'SuperShopper'
-Adyen::API.password = 'secret'
+Adyen.configuration.default_api_params = { :merchant_account => 'SuperShopper' }
+Adyen.configuration.api_username = 'SuperShopper'
+Adyen.configuration.api_password = 'secret'
 
 module Net
   class HTTP

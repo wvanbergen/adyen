@@ -3,45 +3,7 @@
 require 'spec_helper'
 
 describe Adyen do
-  
-  describe '.load_config' do
-    
-    it "should set the environment correctly from the gonfiguration" do
-      begin
-        Adyen.load_config(:environment => 'from_config')
-        Adyen.environment.should == 'from_config'
-      ensure
-        Adyen.environment = 'test'
-      end
-    end
-    
-    it "should recursively set settings for submodules" do
-      Adyen.load_config(:API => { :username => 'SuperShopper', :password => 'secret' },
-        :Form => { :default_parameters => { :merchant_account => 'us' }})
-      Adyen::API.username.should == 'SuperShopper'
-      Adyen::API.password.should == 'secret'
-      Adyen::Form.default_parameters.should == { :merchant_account => 'us' }
-    end
-    
-    it "should raise an error when using a non-existing module" do
-      lambda { Adyen.load_config(:Unknown => { :a => 'b' }) }.should raise_error
-    end
-    
-    it "should raise an error when using a non-existing setting" do
-      lambda { Adyen.load_config(:blah => 1234) }.should raise_error
-    end
-    
-    it "should set skins from a hash configuration" do
-      Adyen.load_config(:Form => {:skins => {
-              :first  => { :skin_code => '1234', :shared_secret => 'abcd' }, 
-              :second => { :skin_code => '5678', :shared_secret => 'efgh' }}})
-              
-      Adyen::Form.skins.should == {
-          :first  => {:skin_code => "1234", :name => :first,  :shared_secret => "abcd" }, 
-          :second => {:skin_code => "5678", :name => :second, :shared_secret => "efgh" }}
-    end
-  end
-  
+
   describe Adyen::Encoding do
     it "should a hmac_base64 correcly" do
       encoded_str = Adyen::Encoding.hmac_base64('bla', 'bla')

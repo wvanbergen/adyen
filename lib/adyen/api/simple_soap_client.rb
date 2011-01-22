@@ -46,7 +46,7 @@ EOS
         # @return [URI]      A URI based on the ENDPOINT_URI constant defined on subclasses, where
         #                    the environment type has been interpolated. E.g. Test environment.
         def endpoint
-          @endpoint ||= URI.parse(const_get('ENDPOINT_URI') % Adyen.environment)
+          @endpoint ||= URI.parse(const_get('ENDPOINT_URI') % Adyen.configuration.environment)
         end
       end
 
@@ -56,7 +56,7 @@ EOS
       # @param [Hash] params A hash of key-value pairs required for the action that is to be called.
       #                      These are merged with the {API.default_params}.
       def initialize(params = {})
-        @params = API.default_params.merge(params)
+        @params = Adyen.configuration.default_api_params.merge(params)
       end
 
       # This method wraps the given XML +data+ in a SOAP envelope and posts it to +action+ on the
@@ -78,7 +78,7 @@ EOS
           endpoint = self.class.endpoint
 
           post = Net::HTTP::Post.new(endpoint.path, 'Accept' => 'text/xml', 'Content-Type' => 'text/xml; charset=utf-8', 'SOAPAction' => action)
-          post.basic_auth(API.username, API.password)
+          post.basic_auth(Adyen.configuration.api_username, Adyen.configuration.api_password)
           post.body = ENVELOPE % data
 
           request = Net::HTTP.new(endpoint.host, endpoint.port)
