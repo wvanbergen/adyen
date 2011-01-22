@@ -11,13 +11,15 @@ API
 * Check the Notification methods that use Adyen::API
 
 * PaymentService:
-  * directdebit
-  * iDEAL
   * add a capture! method to an authorisation response
 
 
 Possible/Later
 ==============
+
+* Add iDEAL API. To get started, see the `iDEAL' topic-branch which contains `ideal-scratchpad.rb' and a stub for a functional spec.
+
+* Add the DirectDebit API.
 
 * Add ActiveMerchant integration
 
