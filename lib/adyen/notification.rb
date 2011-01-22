@@ -76,6 +76,7 @@ module Adyen
     
     alias :successful_authorization? :successful_authorisation?
 
+    # Class that handles creating notifications from HTTP Post requests
     class HttpPost < Notification
 
       def self.log(request)
@@ -88,37 +89,6 @@ module Adyen
 
       def success=(value)
         super([true, 1, '1', 'true'].include?(value))
-      end
-    end
-
-    # An ActiveRecord migration that can be used to create a suitable table  
-    # to store Adyen::Notification instances for your application.
-    class Migration < ActiveRecord::Migration
-
-      def self.up(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
-        create_table(table_name) do |t|
-          t.boolean  :live,                  :null => false, :default => false
-          t.string   :event_code,            :null => false
-          t.string   :psp_reference,         :null => false
-          t.string   :original_reference,    :null => true
-          t.string   :merchant_reference,    :null => false
-          t.string   :merchant_account_code, :null => false
-          t.datetime :event_date,            :null => false
-          t.boolean  :success,               :null => false, :default => false
-          t.string   :payment_method,        :null => true
-          t.string   :operations,            :null => true
-          t.text     :reason,                :null => true
-          t.string   :currency,              :null => true, :limit => 3
-          t.integer  :value,                 :null => true
-          t.boolean  :processed,             :null => false, :default => false
-          t.timestamps
-        end
-        add_index table_name, [:psp_reference, :event_code, :success], :unique => true, :name => 'adyen_notification_uniqueness'
-      end
-
-      def self.down(table_name = Adyen::Notification::DEFAULT_TABLE_NAME)
-        remove_index(table_name, :name => 'adyen_notification_uniqueness')
-        drop_table(table_name)
       end
     end
   end
