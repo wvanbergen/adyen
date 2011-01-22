@@ -43,8 +43,8 @@ describe Adyen::Notification do
         @notification.should be_authorisation
       end
 
-      it "should convert the amount to a bigdecimal" do
-        @notification.value.should eql(BigDecimal.new('25.00'))
+      it "should return the amount as integer in cents" do
+        @notification.value.should == 2500
       end
 
       it "should convert live to a boolean" do
