@@ -7,8 +7,8 @@ module Adyen
   # or a HTTP redirect (see {Adyen::Form.redirect_url}).
   #
   # Moreover, this module contains the method {Adyen::Form.redirect_signature_check} to
-  # check the request that is made to your website after the visitor has made his payment
-  # on the Adyen system for genuinity.
+  # check the request, that is made to your website after the visitor has made his payment
+  # on the Adyen system, for genuinity.
   #
   # You can use different skins in Adyen to define different payment environments. You can
   # register these skins under a custom name in the module. The other methods will automatically
@@ -134,8 +134,6 @@ module Adyen
     # @private
     # @param [Hash] parameters The payment parameters hash to transform
     def do_parameter_transformations!(parameters = {})
-      raise "YENs are not yet supported!" if parameters[:currency_code] == 'JPY' # TODO: fixme
-
       parameters.replace(default_parameters.merge(parameters))
       parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
       parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
