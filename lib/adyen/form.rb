@@ -79,18 +79,18 @@ module Adyen
     #    used is registered (see {Adyen::Configuration#register_form_skin}), or if the
     #    shared secret is provided as the +:shared_secret+ parameter.
     # @return [Hash] The payment parameters with the +:merchant_signature+ parameter set.
-    # @raise [StandardError] Thrown if some parameter health check fails.
+    # @raise [ArgumentError] Thrown if some parameter health check fails.
     def payment_parameters(parameters = {}, shared_secret = nil)
       do_parameter_transformations!(parameters)
       
-      raise "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
-      raise "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]
-      raise "Cannot generate form: :merchant_account attribute not found!"      unless parameters[:merchant_account]
-      raise "Cannot generate form: :skin_code attribute not found!"             unless parameters[:skin_code]
+      raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
+      raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]
+      raise ArgumentError, "Cannot generate form: :merchant_account attribute not found!"      unless parameters[:merchant_account]
+      raise ArgumentError, "Cannot generate form: :skin_code attribute not found!"             unless parameters[:skin_code]
 
       # Calculate the merchant signature using the shared secret.
       shared_secret ||= parameters.delete(:shared_secret)
-      raise "Cannot calculate payment request signature without shared secret!" unless shared_secret
+      raise ArgumentError, "Cannot calculate payment request signature without shared secret!" unless shared_secret
       parameters[:merchant_sig] = calculate_signature(parameters, shared_secret)
       
       return parameters

@@ -1,8 +1,6 @@
 1.0
 ===
 
-* Raise ArgumentError in Form instead of RuntimeError.
-
 * Screen documentation
 
 Possible/Later
