@@ -79,14 +79,4 @@ describe Adyen do
       lambda { Adyen::Formatter::DateTime.fmt_date('2009-1-1') }.should raise_error
     end
   end
-
-  describe Adyen::Formatter::Price do
-    it "should return a Fixnum with digits only when converting to cents" do
-      Adyen::Formatter::Price.in_cents(33.76).should be_kind_of(Fixnum)
-    end
-
-    it "should return a BigDecimal when converting from cents" do
-      Adyen::Formatter::Price.from_cents(1234).should be_kind_of(BigDecimal)
-    end
-  end
 end

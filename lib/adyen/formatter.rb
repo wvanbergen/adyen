@@ -23,15 +23,5 @@ module Adyen
         end
       end
     end
-
-    module Price
-      def self.in_cents(price)
-        ((price * 100).round).to_i
-      end
-
-      def self.from_cents(price)
-        BigDecimal.new(price.to_s) / 100
-      end
-    end
   end
 end

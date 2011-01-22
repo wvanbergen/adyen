@@ -82,8 +82,6 @@ module Adyen
     # @param [Hash] options The payment parameters.
     # @see Adyen::SOAP::RecurringService#submit
     def collect_payment_for_recurring_contract!(options)
-      # Make sure we convert the value to cents
-      options[:value] = Adyen::Formatter::Price.in_cents(options[:value])
       raise "This is not a recurring contract!" unless event_code == 'RECURRING_CONTRACT'
       Adyen::API::PaymentService.new(options.merge(:recurring_reference => self.psp_reference)).authorise_recurring_payment
     end
@@ -111,10 +109,6 @@ module Adyen
       def success=(value)
         super([true, 1, '1', 'true'].include?(value))
       end
-
-      def value=(value)
-        super(Adyen::Formatter::Price.from_cents(value)) unless value.blank?
-      end
     end
 
     # An ActiveRecord migration that can be used to create a suitable table  
@@ -133,9 +127,9 @@ module Adyen
           t.boolean  :success,               :null => false, :default => false
           t.string   :payment_method,        :null => true
           t.string   :operations,            :null => true
-          t.text     :reason
-          t.string   :currency,              :null => false, :limit => 3
-          t.decimal  :value,                 :null => true, :precision => 9, :scale => 2
+          t.text     :reason,                :null => true
+          t.string   :currency,              :null => true, :limit => 3
+          t.integer  :value,                 :null => true
           t.boolean  :processed,             :null => false, :default => false
           t.timestamps
         end
