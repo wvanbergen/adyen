@@ -1,7 +1,8 @@
 class Adyen::Configuration
 
   def initialize
-    self.default_api_params = {}
+    @default_api_params = {}
+    @default_form_params = {}
   end
 
   # The Rails environment for which to use to Adyen "live" environment.
@@ -53,8 +54,16 @@ class Adyen::Configuration
   # values by passing a diffferent value to the service class’s constructor.
   #
   # @example
-  #   Adyen::API.default_api_params[:merchant_account] = 'SuperShop'
+  #   Adyen.configuration.default_api_params[:merchant_account] = 'SuperShop'
   #
   # @return [Hash]
   attr_accessor :default_api_params
+
+  # Default arguments that will be used for in every HTML form.
+  #
+  # @example
+  #   Adyen.configuration.default_form_params[:shared_secret] = 'secret'
+  #
+  # @return [Hash]
+  attr_accessor :default_form_params
 end

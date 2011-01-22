@@ -83,24 +83,6 @@ module Adyen
     end
 
     ######################################################
-    # DEFAULT FORM / REDIRECT PARAMETERS
-    ######################################################
-
-    # Returns the default parameters to use, unless they are overridden.
-    # @see Adyen::Form.default_parameters
-    # @return [Hash] The hash of default parameters
-    def default_parameters
-      @default_arguments ||= {}
-    end
-    
-    # Sets the default parameters to use.
-    # @see Adyen::Form.default_parameters
-    # @param [Hash] hash The hash of default parameters
-    def default_parameters=(hash)
-      @default_arguments = hash
-    end
-
-    ######################################################
     # ADYEN FORM URL
     ######################################################
 
@@ -125,15 +107,15 @@ module Adyen
     # POSTING/REDIRECTING TO ADYEN
     ######################################################
 
-    # Transforms the payment parameters hash to be in the correct format.
-    # It will also include the default_parameters hash. Finally, switches 
-    # the +:skin+ parameter out for the +:skin_code+ and +:shared_secret+ 
-    # parameter using the list of registered skins. 
+    # Transforms the payment parameters hash to be in the correct format. It will also
+    # include the Adyen.configuration.default_form_params hash. Finally, switches the
+    # +:skin+ parameter out for the +:skin_code+ and +:shared_secret+  parameter using
+    # the list of registered skins.
     #
     # @private
     # @param [Hash] parameters The payment parameters hash to transform
     def do_parameter_transformations!(parameters = {})
-      parameters.replace(default_parameters.merge(parameters))
+      parameters.replace(Adyen.configuration.default_form_params.merge(parameters))
       parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
       parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
       parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
@@ -150,7 +132,7 @@ module Adyen
     # signature parameter. It also does some basic health checks on the parameters hash.
     #
     # @param [Hash] parameters The payment parameters. The parameters set in the 
-    #    {Adyen::Form.default_parameters} hash will be included automatically.
+    #    {Adyen.configuration.default_form_params} hash will be included automatically.
     # @param [String] shared_secret The shared secret that should be used to calculate
     #    the payment request signature. This parameter can be left if the skin that is
     #    used is registered (see {Adyen::Form.register_skin}), or if the shared secret 
@@ -177,8 +159,8 @@ module Adyen
     # as GET parameters in the URL. The URL also depends on the current Adyen enviroment.
     #
     # The payment parameters that are provided to this method will be merged with the 
-    # {Adyen::Form.default_parameters} hash. The default parameter values will be overrided
-    # if another value is provided to this method.
+    # {Adyen.configuration.default_form_params} hash. The default parameter values will be
+    # overrided if another value is provided to this method.
     #
     # You do not have to provide the +:merchant_sig+ parameter: it will be calculated automatically
     # if you provide either a registered skin name as the +:skin+ parameter or provide both the
@@ -210,8 +192,8 @@ module Adyen
     # The snippet can be included in a payment form that POSTs to the Adyen payment system.
     #
     # The payment parameters that are provided to this method will be merged with the 
-    # {Adyen::Form.default_parameters} hash. The default parameter values will be overrided
-    # if another value is provided to this method.
+    # {Adyen.configuration.default_form_params} hash. The default parameter values will be
+    # overrided if another value is provided to this method.
     #
     # You do not have to provide the +:merchant_sig+ parameter: it will be calculated automatically
     # if you provide either a registered skin name as the +:skin+ parameter or provide both the
