@@ -125,6 +125,37 @@ module APISpecHelper
       end
     end
 
+    def it_should_return_params_for_each_xml_backend(params)
+      for_each_xml_backend do
+        it "returns a hash with parsed response details" do
+          @object.send(@method).params.should == params
+        end
+      end
+    end
+
+    def it_should_validate_request_parameters(*params)
+      params.each do |param|
+        case param
+        when Symbol
+          it_should_validate_request_param(param) { @object.params[param] = '' }
+        when Hash
+          param.each do |name, attrs|
+            it_should_validate_request_param(name) { @object.params[name] = nil }
+            attrs.each do |attr|
+              it_should_validate_request_param("#{name} => :#{attr}") { @object.params[name][attr] = nil }
+            end
+          end
+        end
+      end
+    end
+
+    def it_should_validate_request_param(name, &block)
+      it "validates the `#{name}' request parameter" do
+        instance_eval &block
+        lambda { @object.send(@method) }.should raise_error(ArgumentError)
+      end
+    end
+
     def describe_response_from(method, response, soap_action = 'authorise', &block)
       describe(method) do
         before do
@@ -149,14 +180,6 @@ module APISpecHelper
         it_should_have_shortcut_methods_for_params_on_the_response
 
         instance_eval(&block)
-      end
-    end
-
-    def it_should_return_params_for_each_xml_backend(params)
-      for_each_xml_backend do
-        it "returns a hash with parsed response details" do
-          @object.send(@method).params.should == params
-        end
       end
     end
 
