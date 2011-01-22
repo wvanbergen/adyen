@@ -25,7 +25,7 @@ shared_examples_for "payment requests" do
 
   it "only includes shopper details for given parameters" do
     # TODO pretty lame, but for now it will do
-    unless @method == "authorise_one_click_payment_request_body" || "authorise_recurring_payment_request_body"
+    unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
       @payment.params[:shopper].delete(:reference)
       xpath('./payment:shopperReference').should be_empty
       @payment.params[:shopper].delete(:email)
@@ -37,7 +37,7 @@ shared_examples_for "payment requests" do
 
   it "does not include any shopper details if none are given" do
     # TODO pretty lame, but for now it will do
-    unless @method == "authorise_one_click_payment_request_body" || "authorise_recurring_payment_request_body"
+    unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
       @payment.params.delete(:shopper)
       xpath('./payment:shopperReference').should be_empty
       xpath('./payment:shopperEmail').should be_empty
@@ -299,6 +299,10 @@ describe Adyen::API::PaymentService do
   end
 
   describe_modification_request_body_of :capture do
+    it_should_validate_request_parameters :merchant_account,
+                                          :psp_reference,
+                                          :amount => [:currency, :value]
+
     it "includes the amount to capture" do
       xpath('./payment:modificationAmount') do |amount|
         amount.text('./common:currency').should == 'EUR'
@@ -332,6 +336,10 @@ describe Adyen::API::PaymentService do
   end
 
   describe_modification_request_body_of :refund do
+    it_should_validate_request_parameters :merchant_account,
+                                          :psp_reference,
+                                          :amount => [:currency, :value]
+
     it "includes the amount to refund" do
       xpath('./payment:modificationAmount') do |amount|
         amount.text('./common:currency').should == 'EUR'

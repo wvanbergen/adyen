@@ -147,6 +147,7 @@ module Adyen
       end
 
       def capture_and_refund_params
+        validate_parameters!(:merchant_account, :psp_reference, :amount => [:currency, :value])
         [@params[:merchant_account], @params[:psp_reference], *@params[:amount].values_at(:currency, :value)]
       end
 

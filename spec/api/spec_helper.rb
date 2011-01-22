@@ -161,6 +161,7 @@ module APISpecHelper
         before do
           stub_net_http(response)
           @method = method
+          @object.params.merge!(:psp_reference => '9876543210987654')
           @response = @object.send(@method)
           @request, @post = Net::HTTP.posted
         end
