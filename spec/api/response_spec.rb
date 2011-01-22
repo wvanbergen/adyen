@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'spec_helper'
+require 'api/spec_helper'
 
 describe Adyen::API::Response do
   before do

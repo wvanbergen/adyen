@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-require 'spec_helper'
+require 'api/spec_helper'
 require 'adyen/api/test_helpers'
 
 describe "Test helpers" do

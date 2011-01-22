@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'spec_helper'
+require 'api/spec_helper'
 
 shared_examples_for "payment requests" do
   it "includes the merchant account handle" do

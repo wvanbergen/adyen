@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'spec_helper'
+require 'api/spec_helper'
 
 module APISpecHelper
   class SOAPClient < Adyen::API::SimpleSOAPClient
