@@ -51,21 +51,21 @@ EOS
     </soap:Fault>
 EOS
 
-        # @return [AuthorizationResponse] A authorisation succeeded response instance.
+        # @return [AuthorisationResponse] A authorisation succeeded response instance.
         def success_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; AUTHORISE_RESPONSE; end
           PaymentService::AuthorisationResponse.new(http_response)
         end
 
-        # @return [AuthorizationResponse] An authorisation refused response instance.
+        # @return [AuthorisationResponse] An authorisation refused response instance.
         def refused_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; AUTHORISATION_REFUSED_RESPONSE; end
           PaymentService::AuthorisationResponse.new(http_response)
         end
 
-        # @return [AuthorizationResponse] An ‘invalid request’ response instance.
+        # @return [AuthorisationResponse] An ‘invalid request’ response instance.
         def invalid_stub
           http_response = Net::HTTPOK.new('1.1', '200', 'OK')
           def http_response.body; AUTHORISATION_REQUEST_INVALID_RESPONSE; end
@@ -73,17 +73,23 @@ EOS
         end
 
         # Assigns a {#success_stub}, meaning the subsequent authoristaion request will be authorised.
+        #
+        # @return [AuthorisationResponse] A authorisation succeeded response instance.
         def stub_success!
           @stubbed_response = success_stub
         end
 
         # Assigns a {#refused_stub}, meaning the subsequent authoristaion request will be refused.
+        #
+        # @return [AuthorisationResponse] An authorisation refused response instance.
         def stub_refused!
           @stubbed_response = refused_stub
         end
 
         # Assigns a {#invalid_stub}, meaning the subsequent authoristaion request will be refused,
         # because the request was invalid.
+        #
+        # @return [AuthorisationResponse] An ‘invalid request’ response instance.
         def stub_invalid!
           @stubbed_response = invalid_stub
         end

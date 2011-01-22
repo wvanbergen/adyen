@@ -48,8 +48,9 @@ module Adyen
     #
     # @see capture_payment
     #
-    # Of all options, only the shopper’s IP address is optional. But since it’s used in various
-    # risk checks, it’s a good idea to supply it anyway.
+    # Of all options, only the details are optional. But since the IP is’s used in various risk
+    # checks, and the email and reference are needed to enable recurring contract, it’s a good
+    # idea to supply it anyway.
     #
     # @example
     #   response = Adyen::API.authorise_payment(
@@ -82,7 +83,7 @@ module Adyen
     # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
     #                                                 future recurring or one-click payments.
     #
-    # @return [PaymentService::AuthorizationResponse] The response object which holds the
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
     def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false)
       PaymentService.new(
@@ -125,7 +126,7 @@ module Adyen
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
     #
-    # @return [PaymentService::AuthorizationResponse] The response object which holds the
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
     def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST')
       PaymentService.new(
@@ -170,7 +171,7 @@ module Adyen
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
     #
-    # @return [PaymentService::AuthorizationResponse] The response object which holds the
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
     def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference)
       PaymentService.new(
