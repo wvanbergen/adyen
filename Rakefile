@@ -6,7 +6,9 @@ begin
   require 'rubygems'
   require 'yard'
   require File.expand_path('../yard_extensions', __FILE__)
-  YARD::Rake::YardocTask.new
+  YARD::Rake::YardocTask.new do |y|
+    y.options << '--no-private'
+  end
 rescue LoadError
 end
 

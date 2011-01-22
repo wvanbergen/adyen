@@ -24,11 +24,15 @@ to make the Adyen functionality available in your Rails project:
 
   config.gem 'adyen'
 
-You can also install it as a Rails plugin (*deprecated*):
+The Adyen gem will happily use REXML for communication with Adyen’s SOAP API, however, if
+you have the Nokogiri gem installed and required the gem will use that for performance.
 
-  script/plugin install git://github.com/wvanbergen/adyen.git
-  
-Depending on your use case, you may also need the following gems: activerecord, handsoap and nokogiri.
+== Generators
+
+The gem ships with a generator for Rails 3. To create an ActiveRecord migration, mode, and
+ActionController for the notifications send by Adyen, run the following:
+
+  $ rails generate adyen:notification
 
 == Usage
 

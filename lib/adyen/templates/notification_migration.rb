@@ -1,3 +1,4 @@
+# @private
 class CreateAccountsTable < ActiveRecord::Migration
   
   def self.up

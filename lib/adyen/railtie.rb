@@ -1,5 +1,6 @@
 require 'rails'
 
+# @private
 class Adyen::Railtie < ::Rails::Railtie
   
   generators do

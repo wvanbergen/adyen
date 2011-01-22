@@ -1,6 +1,7 @@
 require 'rails/generators'
 require 'rails/generators/migration'
- 
+
+# @private
 class Adyen::NotificationGenerator < Rails::Generators::Base
   include Rails::Generators::Migration
 
