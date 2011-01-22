@@ -59,6 +59,26 @@ EOS
         @params = Adyen.configuration.default_api_params.merge(params)
       end
 
+      def validate_parameter_value!(param, value)
+        if value.blank?
+          raise ArgumentError, "The required parameter `:#{param}' is missing."
+        end
+      end
+
+      def validate_parameters!(*params)
+        params.each do |param|
+          case param
+          when Symbol
+            validate_parameter_value!(param, @params[param])
+          when Hash
+            param.each do |name, attrs|
+              validate_parameter_value!(name, @params[name])
+              attrs.each { |attr| validate_parameter_value!("#{name} => :#{attr}", @params[name][attr]) }
+            end
+          end
+        end
+      end
+
       # This method wraps the given XML +data+ in a SOAP envelope and posts it to +action+ on the
       # +endpoint+ defined for the subclass.
       #

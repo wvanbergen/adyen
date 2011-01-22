@@ -401,7 +401,10 @@ describe Adyen::API::PaymentService do
     end
   end
 
-  describe_modification_request_body_of :cancel
+  describe_modification_request_body_of :cancel do
+    it_should_validate_request_parameters :merchant_account,
+                                          :psp_reference
+  end
 
   describe_response_from :cancel, CANCEL_RESPONSE % '[cancel-received]' do
     it_should_return_params_for_each_xml_backend({

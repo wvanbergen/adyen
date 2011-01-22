@@ -11,6 +11,9 @@ describe Adyen::API::RecurringService do
   end
 
   describe_request_body_of :list, '//recurring:listRecurringDetails/recurring:request' do
+    it_should_validate_request_parameters :merchant_account,
+                                          :shopper => [:reference]
+
     it "includes the merchant account handle" do
       text('./recurring:merchantAccount').should == 'SuperShopper'
     end
@@ -68,6 +71,9 @@ describe Adyen::API::RecurringService do
   end
 
   describe_request_body_of :disable, '//recurring:disable/recurring:request' do
+    it_should_validate_request_parameters :merchant_account,
+                                          :shopper => [:reference]
+
     it "includes the merchant account handle" do
       text('./recurring:merchantAccount').should == 'SuperShopper'
     end

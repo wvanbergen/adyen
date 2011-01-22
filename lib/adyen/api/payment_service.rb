@@ -80,26 +80,6 @@ module Adyen
         call_webservice_action('authorise', data, response_class)
       end
 
-      def validate_parameter_value!(param, value)
-        if value.blank?
-          raise ArgumentError, "The required parameter `:#{param}' is missing."
-        end
-      end
-
-      def validate_parameters!(*params)
-        params.each do |param|
-          case param
-          when Symbol
-            validate_parameter_value!(param, @params[param])
-          when Hash
-            param.each do |name, attrs|
-              validate_parameter_value!(name, @params[name])
-              attrs.each { |attr| validate_parameter_value!("#{name} => :#{attr}", @params[name][attr]) }
-            end
-          end
-        end
-      end
-
       def authorise_payment_request_body
         content = card_partial
         if @params[:recurring]
@@ -144,6 +124,7 @@ module Adyen
       end
 
       def cancel_request_body
+        validate_parameters!(:merchant_account, :psp_reference)
         CANCEL_LAYOUT % [@params[:merchant_account], @params[:psp_reference]]
       end
 

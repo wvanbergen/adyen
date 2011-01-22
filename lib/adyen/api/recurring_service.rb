@@ -34,10 +34,12 @@ module Adyen
       private
 
       def list_request_body
+        validate_parameters!(:merchant_account, :shopper => [:reference])
         LIST_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference]]
       end
 
       def disable_request_body
+        validate_parameters!(:merchant_account, :shopper => [:reference])
         if reference = @params[:recurring_detail_reference]
           reference = RECURRING_DETAIL_PARTIAL % reference
         end
