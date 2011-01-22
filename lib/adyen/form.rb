@@ -14,73 +14,14 @@ module Adyen
   # register these skins under a custom name in the module. The other methods will automatically
   # use this information (i.e. the skin code and the shared secret) if it is available. 
   # Otherwise, you have to provide it yourself for every method call you make. See
-  # {Adyen::Form.register_skin} for more information.
+  # {Adyen::Configuration#register_form_skin} for more information.
   #
-  # @see Adyen::Form.register_skin
+  # @see Adyen::Configuration#register_form_skin
   # @see Adyen::Form.hidden_fields
   # @see Adyen::Form.redirect_url
   # @see Adyen::Form.redirect_signature_check
   module Form
     extend self
-
-    ######################################################
-    # SKINS
-    ######################################################
-
-    # Returns all registered skins and their accompanying skin code and shared secret.
-    # @return [Hash] The hash of registered skins.
-    def skins
-      @skins ||= {}
-    end
-    
-    # Sets the registered skins.
-    # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash 
-    #    (which should include +:skin_code+ and +:shared_secret+) as value.
-    # @see Adyen::Form.register_skin
-    def skins=(hash)
-      @skins = hash.inject({}) do |skins, (name, skin)|
-        skins[name.to_sym] = skin.merge(:name => name.to_sym)
-        skins
-      end
-    end
-
-    # Registers a skin for later use.
-    #
-    # You can store a skin using a self defined symbol. Once the skin is registered,
-    # you can refer to it using this symbol instead of the hard-to-remember skin code.
-    # Moreover, the skin's shared_secret will be looked up automatically for calculting
-    # signatures.
-    #
-    # @example
-    #   Adyen::Form.register_skin(:my_skin, 'dsfH67PO', 'Dfs*7uUln9')
-    # @param [Symbol] name The name of the skin.
-    # @param [String] skin_code The skin code for this skin, as defined by Adyen.
-    # @param [String] shared_secret The shared secret used for signature calculation.
-    # @see Adyen.load_config
-    def register_skin(name, skin_code, shared_secret)
-      skins[name.to_sym] = {:name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
-    end
-
-    # Returns skin information given a skin name.
-    # @param [Symbol] skin_name The name of the skin
-    # @return [Hash, nil] A hash with the skin information, or nil if not found.
-    def skin_by_name(skin_name)
-      skins[skin_name.to_sym]
-    end
-
-    # Returns skin information given a skin code.
-    # @param [String] skin_code The skin code of the skin
-    # @return [Hash, nil] A hash with the skin information, or nil if not found.
-    def skin_by_code(skin_code)
-      skins.detect { |(name, skin)| skin[:skin_code] == skin_code }.last rescue nil
-    end
-
-    # Returns the shared secret belonging to a skin code.
-    # @param [String] skin_code The skin code of the skin
-    # @return [String, nil] The shared secret for the skin, or nil if not found. 
-    def lookup_shared_secret(skin_code)
-      skin = skin_by_code(skin_code)[:shared_secret] rescue nil
-    end
 
     ######################################################
     # ADYEN FORM URL
@@ -108,7 +49,7 @@ module Adyen
     ######################################################
 
     # Transforms the payment parameters hash to be in the correct format. It will also
-    # include the Adyen.configuration.default_form_params hash. Finally, switches the
+    # include the Adyen::Configuration#default_form_params hash. Finally, switches the
     # +:skin+ parameter out for the +:skin_code+ and +:shared_secret+  parameter using
     # the list of registered skins.
     #
@@ -122,7 +63,7 @@ module Adyen
       parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
       
       if parameters[:skin]
-        skin = Adyen::Form.skin_by_name(parameters.delete(:skin))
+        skin = Adyen.configuration.form_skin_by_name(parameters.delete(:skin))
         parameters[:skin_code]     ||= skin[:skin_code]
         parameters[:shared_secret] ||= skin[:shared_secret]
       end
@@ -132,11 +73,11 @@ module Adyen
     # signature parameter. It also does some basic health checks on the parameters hash.
     #
     # @param [Hash] parameters The payment parameters. The parameters set in the 
-    #    {Adyen.configuration.default_form_params} hash will be included automatically.
+    #    {Adyen::Configuration#default_form_params} hash will be included automatically.
     # @param [String] shared_secret The shared secret that should be used to calculate
     #    the payment request signature. This parameter can be left if the skin that is
-    #    used is registered (see {Adyen::Form.register_skin}), or if the shared secret 
-    #    is provided as the +:shared_secret+ parameter.
+    #    used is registered (see {Adyen::Configuration#register_form_skin}), or if the
+    #    shared secret is provided as the +:shared_secret+ parameter.
     # @return [Hash] The payment parameters with the +:merchant_signature+ parameter set.
     # @raise [StandardError] Thrown if some parameter health check fails.
     def payment_parameters(parameters = {}, shared_secret = nil)
@@ -159,7 +100,7 @@ module Adyen
     # as GET parameters in the URL. The URL also depends on the current Adyen enviroment.
     #
     # The payment parameters that are provided to this method will be merged with the 
-    # {Adyen.configuration.default_form_params} hash. The default parameter values will be
+    # {Adyen::Configuration#default_form_params} hash. The default parameter values will be
     # overrided if another value is provided to this method.
     #
     # You do not have to provide the +:merchant_sig+ parameter: it will be calculated automatically
@@ -192,7 +133,7 @@ module Adyen
     # The snippet can be included in a payment form that POSTs to the Adyen payment system.
     #
     # The payment parameters that are provided to this method will be merged with the 
-    # {Adyen.configuration.default_form_params} hash. The default parameter values will be
+    # {Adyen::Configuration#default_form_params} hash. The default parameter values will be
     # overrided if another value is provided to this method.
     #
     # You do not have to provide the +:merchant_sig+ parameter: it will be calculated automatically
@@ -276,7 +217,7 @@ module Adyen
     #     using the {Adyen::Form.register_skin} method.
     # @return [String] The redirect signature
     def redirect_signature(params, shared_secret = nil)
-      shared_secret ||= lookup_shared_secret(params[:skinCode])
+      shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params[:skinCode])
       Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
     end
 
@@ -308,7 +249,7 @@ module Adyen
     #      should include the +:merchantSig+ parameter, which contains the signature.
     # @param [String] shared_secret The shared secret for the Adyen skin that was used for
     #     the original payment form. You can leave this out of the skin is registered 
-    #     using the {Adyen::Form.register_skin} method.
+    #     using the {Adyen::Configuration#register_form_skin} method.
     # @return [true, false] Returns true only if the signature in the parameters is correct.
     def redirect_signature_check(params, shared_secret = nil)
       params[:merchantSig] == redirect_signature(params, shared_secret)

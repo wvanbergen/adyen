@@ -6,7 +6,7 @@ require 'adyen/form'
 describe Adyen::Form do
 
   before(:all) do
-    Adyen::Form.register_skin(:testing, '4aD37dJA', 'Kah942*$7sdp0)')
+    Adyen.configuration.register_form_skin(:testing, '4aD37dJA', 'Kah942*$7sdp0)')
     Adyen.configuration.default_form_params[:merchant_account] = 'TestMerchant'
   end
 

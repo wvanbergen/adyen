@@ -1,8 +1,9 @@
 class Adyen::Configuration
 
   def initialize
-    @default_api_params = {}
+    @default_api_params  = {}
     @default_form_params = {}
+    @form_skins          = {}
   end
 
   # The Rails environment for which to use to Adyen "live" environment.
@@ -66,4 +67,73 @@ class Adyen::Configuration
   #
   # @return [Hash]
   attr_accessor :default_form_params
+
+  ######################################################
+  # SKINS
+  ######################################################
+
+  # Returns all registered skins and their accompanying skin code and shared secret.
+  #
+  # @return [Hash] The hash of registered skins.
+  attr_reader :form_skins
+  
+  # Sets the registered skins.
+  #
+  # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash 
+  #    (which should include +:skin_code+ and +:shared_secret+) as value.
+  #
+  # @see Adyen::Configuration.register_form_skin
+  def form_skins=(hash)
+    @form_skins = hash.inject({}) do |skins, (name, skin)|
+      skins[name.to_sym] = skin.merge(:name => name.to_sym)
+      skins
+    end
+  end
+
+  # Registers a skin for later use.
+  #
+  # You can store a skin using a self defined symbol. Once the skin is registered,
+  # you can refer to it using this symbol instead of the hard-to-remember skin code.
+  # Moreover, the skin's shared_secret will be looked up automatically for calculting
+  # signatures.
+  #
+  # @example
+  #   Adyen::Configuration.register_form_skin(:my_skin, 'dsfH67PO', 'Dfs*7uUln9')
+  #
+  # @param [Symbol] name The name of the skin.
+  # @param [String] skin_code The skin code for this skin, as defined by Adyen.
+  # @param [String] shared_secret The shared secret used for signature calculation.
+  def register_form_skin(name, skin_code, shared_secret)
+    @form_skins[name.to_sym] = { :name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
+  end
+
+  # Returns a skin information by name.
+  #
+  # @param [Symbol] skin_name The name of the skin
+  # @return [Hash, nil] A hash with the skin information, or nil if not found.
+  def form_skin_by_name(skin_name)
+    @form_skins[skin_name.to_sym]
+  end
+
+  # Returns skin information by code code.
+  #
+  # @param [String] skin_code The code of the skin.
+  #
+  # @return [Hash, nil] A hash with the skin information, or nil if not found.
+  def form_skin_by_code(skin_code)
+    if skin = @form_skins.detect { |(name, skin)| skin[:skin_code] == skin_code }
+      skin.last
+    end
+  end
+
+  # Returns the shared secret belonging to a skin.
+  #
+  # @param [String] skin_code The skin code of the skin
+  #
+  # @return [String, nil] The shared secret for the skin, or nil if not found.
+  def form_skin_shared_secret_by_code(skin_code)
+    if skin = form_skin_by_code(skin_code)
+      skin[:shared_secret]
+    end
+  end
 end
