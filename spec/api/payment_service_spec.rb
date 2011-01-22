@@ -24,19 +24,25 @@ shared_examples_for "payment requests" do
   end
 
   it "only includes shopper details for given parameters" do
-    @payment.params[:shopper].delete(:reference)
-    xpath('./payment:shopperReference').should be_empty
-    @payment.params[:shopper].delete(:email)
-    xpath('./payment:shopperEmail').should be_empty
-    @payment.params[:shopper].delete(:ip)
-    xpath('./payment:shopperIP').should be_empty
+    # TODO pretty lame, but for now it will do
+    unless @method == "authorise_one_click_payment_request_body"
+      @payment.params[:shopper].delete(:reference)
+      xpath('./payment:shopperReference').should be_empty
+      @payment.params[:shopper].delete(:email)
+      xpath('./payment:shopperEmail').should be_empty
+      @payment.params[:shopper].delete(:ip)
+      xpath('./payment:shopperIP').should be_empty
+    end
   end
 
   it "does not include any shopper details if none are given" do
-    @payment.params.delete(:shopper)
-    xpath('./payment:shopperReference').should be_empty
-    xpath('./payment:shopperEmail').should be_empty
-    xpath('./payment:shopperIP').should be_empty
+    # TODO pretty lame, but for now it will do
+    unless @method == "authorise_one_click_payment_request_body"
+      @payment.params.delete(:shopper)
+      xpath('./payment:shopperReference').should be_empty
+      xpath('./payment:shopperEmail').should be_empty
+      xpath('./payment:shopperIP').should be_empty
+    end
   end
 end
 
@@ -74,7 +80,8 @@ describe Adyen::API::PaymentService do
         #:issue_number => ,
         #:start_month => ,
         #:start_year => ,
-      }
+      },
+      :recurring_detail_reference => 'RecurringDetailReference1'
     }
     @payment = @object = Adyen::API::PaymentService.new(@params)
   end
@@ -93,6 +100,11 @@ describe Adyen::API::PaymentService do
       lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
     end
 
+    it "raises if the reference info is missing" do
+      @payment.params[:reference] = nil
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
     it "raises if the card info is missing" do
       @payment.params[:card] = nil
       lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
@@ -101,6 +113,18 @@ describe Adyen::API::PaymentService do
     [:holder_name, :number, :cvc, :expiry_year, :expiry_month].each do |attr|
       it "raises if the card #{attr} is missing" do
         @payment.params[:card][attr] = ''
+        lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+      end
+    end
+
+    it "raises if the amount info is missing" do
+      @payment.params[:amount] = nil
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
+    [:currency, :value].each do |attr|
+      it "raises if the amount #{attr} is missing" do
+        @payment.params[:amount][attr] = ''
         lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
       end
     end
@@ -235,6 +259,7 @@ describe Adyen::API::PaymentService do
     end
 
     it "uses the latest recurring detail reference, by default" do
+      @payment.params[:recurring_detail_reference] = nil
       text('./payment:selectedRecurringDetailReference').should == 'LATEST'
     end
 
@@ -267,7 +292,7 @@ describe Adyen::API::PaymentService do
       xpath('./payment:shopperInteraction').should be_empty
     end
 
-    it "does includes only the creditcard's CVC code" do
+    it "includes only the creditcard's CVC code" do
       xpath('./payment:card') do |card|
         card.text('./payment:cvc').should == '737'
 
@@ -275,6 +300,60 @@ describe Adyen::API::PaymentService do
         card.xpath('./payment:number').should be_empty
         card.xpath('./payment:expiryMonth').should be_empty
         card.xpath('./payment:expiryYear').should be_empty
+      end
+    end
+  end
+
+  describe Adyen::API, "authorise_one_click_payment parameter validation" do
+    before :all do
+      Net::HTTP.stubbing_enabled = true
+    end
+
+    after :all do
+      Net::HTTP.stubbing_enabled = false
+    end
+
+    it "raises if the merchant account is missing" do
+      @payment.params[:merchant_account] = ''
+      lambda { @payment.authorise_one_click_payment }.should raise_error(ArgumentError)
+    end
+
+    it "raises if the reference info is missing" do
+      @payment.params[:reference] = nil
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
+    it "raises if the card CVC info is missing" do
+      @payment.params[:card][:cvc] = nil
+      lambda { @payment.authorise_one_click_payment }.should raise_error(ArgumentError)
+    end
+
+    it "raises if the recurring_detail_reference info is missing" do
+      @payment.params[:recurring_detail_reference] = nil
+      lambda { @payment.authorise_one_click_payment }.should raise_error(ArgumentError)
+    end
+
+    it "raises if the shopper details are missing" do
+      @payment.params[:shopper] = nil
+      lambda { @payment.authorise_one_click_payment }.should raise_error(ArgumentError)
+    end
+
+    [:reference, :email].each do |attr|
+      it "raises if the shopper #{attr} is missing" do
+        @payment.params[:shopper][attr] = ''
+        lambda { @payment.authorise_one_click_payment }.should raise_error(ArgumentError)
+      end
+    end
+
+    it "raises if the amount info is missing" do
+      @payment.params[:amount] = nil
+      lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
+    end
+
+    [:currency, :value].each do |attr|
+      it "raises if the amount #{attr} is missing" do
+        @payment.params[:amount][attr] = ''
+        lambda { @payment.authorise_payment }.should raise_error(ArgumentError)
       end
     end
   end
