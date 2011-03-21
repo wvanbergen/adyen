@@ -17,11 +17,11 @@ describe Adyen::Form do
       Adyen.configuration.environment = nil
     end
 
-    it "should generate correct the testing url" do
+    it "should generate correct testing url" do
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
     end
 
-    it "should generate a live url if the environemtn is set top live" do
+    it "should generate a live url if the environment is set to live" do
       Adyen.configuration.environment = :live
       Adyen::Form.url.should == 'https://live.adyen.com/hpp/select.shtml'
     end
@@ -33,6 +33,21 @@ describe Adyen::Form do
 
     it "should generate correct live url if explicitely asked for" do
       Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/select.shtml'
+    end
+    
+    it "should generate correct testing url if the payment flow selection is set to select" do
+      Adyen.configuration.payment_flow = :select
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
+    end
+    
+    it "should generate correct testing url if the payment flow selection is set to pay" do
+      Adyen.configuration.payment_flow = :pay
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/pay.shtml'
+    end
+    
+    it "should generate correct testing url if the payment flow selection is set to details" do
+      Adyen.configuration.payment_flow = :details
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/details.shtml'
     end
   end
 
