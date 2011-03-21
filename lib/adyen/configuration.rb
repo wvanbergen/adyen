@@ -4,6 +4,7 @@ class Adyen::Configuration
     @default_api_params  = {}
     @default_form_params = {}
     @form_skins          = {}
+    @payment_flow        = :select
   end
 
   # The Rails environment for which to use to Adyen "live" environment.
@@ -42,9 +43,9 @@ class Adyen::Configuration
   # The payment flow URL that’s used to choose the payement process
   #
   # @example
-  #   Adyen.configuration.payment_flow = 'select.shtml'
-  #   Adyen.configuration.payment_flow = 'pay.shtml'
-  #   Adyen.configuration.payment_flow = 'details.shtml'
+  #   Adyen.configuration.payment_flow = :select
+  #   Adyen.configuration.payment_flow = :pay
+  #   Adyen.configuration.payment_flow = :details
   #
   # @return [String]
   attr_accessor :payment_flow

@@ -17,50 +17,37 @@ describe Adyen::Form do
       Adyen.configuration.environment = nil
     end
 
-    it "should generate correct the testing url" do
-      case Adyen.configuration.payment_flow
-        when 'select.shtml'
-          Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
-        when 'pay.shtml'
-          Adyen::Form.url.should == 'https://test.adyen.com/hpp/pay.shtml'
-        when 'details.shtml'
-          Adyen::Form.url.should == 'https://test.adyen.com/hpp/details.shtml'
-      end
+    it "should generate correct testing url" do
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
     end
 
-    it "should generate a live url if the environemtn is set top live" do
+    it "should generate a live url if the environment is set to live" do
       Adyen.configuration.environment = :live
-      case Adyen.configuration.payment_flow
-        when 'select.shtml'
-          Adyen::Form.url.should == 'https://live.adyen.com/hpp/select.shtml'
-        when 'pay.shtml'
-          Adyen::Form.url.should == 'https://live.adyen.com/hpp/pay.shtml'
-        when 'details.shtml'
-          Adyen::Form.url.should == 'https://live.adyen.com/hpp/details.shtml'
-      end
+      Adyen::Form.url.should == 'https://live.adyen.com/hpp/select.shtml'
     end
 
     it "should generate correct live url in a production environment" do
       Adyen.configuration.stub!(:autodetect_environment).and_return('live')
-      case Adyen.configuration.payment_flow
-        when 'select.shtml'
-          Adyen::Form.url.should == 'https://live.adyen.com/hpp/select.shtml'
-        when 'pay.shtml'
-          Adyen::Form.url.should == 'https://live.adyen.com/hpp/pay.shtml'
-        when 'details.shtml'
-          Adyen::Form.url.should == 'https://live.adyen.com/hpp/details.shtml'
-      end
+      Adyen::Form.url.should. == 'https://live.adyen.com/hpp/select.shtml'
     end
 
     it "should generate correct live url if explicitely asked for" do
-      case Adyen.configuration.payment_flow
-        when 'select.shtml'
-          Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/select.shtml'
-        when 'pay.shtml'
-          Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/pay.shtml'
-        when 'details.shtml'
-          Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/details.shtml'
-      end
+      Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/select.shtml'
+    end
+    
+    it "should generate correct testing url if the payment flow selection is set to select" do
+      Adyen.configuration.payment_flow = :select
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
+    end
+    
+    it "should generate correct testing url if the payment flow selection is set to pay" do
+      Adyen.configuration.payment_flow = :pay
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/pay.shtml'
+    end
+    
+    it "should generate correct testing url if the payment flow selection is set to details" do
+      Adyen.configuration.payment_flow = :details
+      Adyen::Form.url.should == 'https://test.adyen.com/hpp/details.shtml'
     end
   end
 
