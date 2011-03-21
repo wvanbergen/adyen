@@ -7,7 +7,7 @@ begin
   require 'yard'
   require File.expand_path('../yard_extensions', __FILE__)
   YARD::Rake::YardocTask.new do |y|
-    y.options << '--no-private' << '--title' << 'The ‘Adyen payment service’ library for Ruby'
+    y.options << '--no-private' << '--title' << "The 'Adyen payment service' library for Ruby"
   end
 rescue LoadError
 end
