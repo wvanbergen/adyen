@@ -38,7 +38,17 @@ class Adyen::Configuration
     
     LIVE_RAILS_ENVIRONMENTS.include?(rails_env) ? 'live' : 'test'
   end
-
+  
+  # The payment flow URL that’s used to choose the payement process
+  #
+  # @example
+  #   Adyen.configuration.payment_flow = 'select.shtml'
+  #   Adyen.configuration.payment_flow = 'pay.shtml'
+  #   Adyen.configuration.payment_flow = 'details.shtml'
+  #
+  # @return [String]
+  attr_accessor :payment_flow
+  
   # The username that’s used to authenticate for the Adyen SOAP services. It should look
   # something like ‘+ws@AndyInc.SuperShop+’
   #
