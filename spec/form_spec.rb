@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+require 'date'
 require 'spec_helper'
 require 'adyen/form'
 
@@ -63,6 +64,8 @@ describe Adyen::Form do
 
     it "should calculate the signature string correctly" do
       Adyen::Form.redirect_signature_string(@params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJA'
+      params = @params.merge(:merchantReturnData => 'testing1234')
+      Adyen::Form.redirect_signature_string(params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJAtesting1234'
     end
 
     it "should calculate the signature correctly" do
@@ -145,6 +148,10 @@ describe Adyen::Form do
     it "should construct the signature string correctly" do
       signature_string = Adyen::Form.calculate_signature_string(@parameters)
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z"
+      
+      signature_string = Adyen::Form.calculate_signature_string(@parameters.merge(:merchant_return_data => 'testing123'))
+      signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Ztesting123"
+      
     end
     
     it "should calculate the signature correctly" do

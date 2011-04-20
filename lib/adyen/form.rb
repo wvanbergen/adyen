@@ -207,7 +207,8 @@ module Adyen
     # @param [Hash] params A hash of HTTP GET parameters for the redirect request.
     # @return [String] The signature string.
     def redirect_signature_string(params)
-      params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + params[:skinCode].to_s
+      params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + 
+        params[:skinCode].to_s + params[:merchantReturnData].to_s
     end
     
     # Computes the redirect signature using the request parameters, so that the 
