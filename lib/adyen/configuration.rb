@@ -78,6 +78,17 @@ class Adyen::Configuration
   #
   # @return [Hash]
   attr_accessor :default_form_params
+  
+  # Username that's set in Notification settings screen in Adyen PSP system and used by notification service to 
+  # authenticate instant payment notification requests.
+  #
+  # @return [String]
+  attr_accessor :ipn_username
+  
+  # Password used to authenticate notification requests together with '+ipn_username+' configuration attribute.
+  #
+  # @return [String]
+  attr_accessor :ipn_password
 
   ######################################################
   # SKINS
