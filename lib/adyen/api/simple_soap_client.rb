@@ -32,6 +32,16 @@ EOS
         end
       end
 
+      class ServerError < StandardError
+        def initialize(response, action, endpoint)
+          @response, @action, @endpoint = response, action, endpoint
+        end
+
+        def message
+          "[#{@response.code} #{@response.message}] A server error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'."
+        end
+      end
+
       class << self
         # When a response instance has been assigned, the subsequent call to
         # {SimpleSOAPClient#call_webservice_action} will not make a remote call, but simply return
@@ -109,6 +119,7 @@ EOS
           request.start do |http|
             http_response = http.request(post)
             raise ClientError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPClientError)
+            raise ServerError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPServerError)
             response_class.new(http_response)
           end
         end
