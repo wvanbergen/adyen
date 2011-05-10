@@ -145,7 +145,7 @@ describe Adyen::Form do
       Adyen::Form.do_parameter_transformations!(@parameters)
     end
 
-    it "should construct the signature string correctly" do
+    it "should construct the signature base string correctly" do
       signature_string = Adyen::Form.calculate_signature_string(@parameters)
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z"
       
@@ -159,7 +159,7 @@ describe Adyen::Form do
       signature.should == 'x58ZcRVL1H6y+XSeBGrySJ9ACVo='
     end
 
-    it "should calculate the signature correctly for a recurring payment" do
+    it "should calculate the signature base string correctly for a recurring payment" do
       # Add the required recurrent payment attributes
       @parameters.merge!(:recurring_contract => 'DEFAULT', :shopper_reference => 'grasshopper52', :shopper_email => 'gras.shopper@somewhere.org')
 
