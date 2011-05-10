@@ -277,5 +277,13 @@ module Adyen
         :recurring_detail_reference => recurring_detail_reference
       }).disable
     end
+
+    def store_recurring_token(reference, shopper, card)
+      RecurringService.new({
+        :reference => reference,
+        :shopper   => shopper,
+        :card      => card
+      }).store_token
+    end
   end
 end

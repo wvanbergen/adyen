@@ -31,7 +31,19 @@ module Adyen
         call_webservice_action('disable', disable_request_body, DisableResponse)
       end
 
+      # @see API.store_recurring_token
+      def store_token
+        call_webservice_action('storeToken', store_token_request_body, StoreTokenResponse)
+      end
+
       private
+
+      def card_partial
+        validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
+        card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
+        card << @params[:card][:expiry_month].to_i
+        CARD_PARTIAL % card
+      end
 
       def list_request_body
         validate_parameters!(:merchant_account, :shopper => [:reference])
@@ -44,6 +56,12 @@ module Adyen
           reference = RECURRING_DETAIL_PARTIAL % reference
         end
         DISABLE_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], reference || '']
+      end
+
+      def store_token_request_body
+        validate_parameters!(:merchant_account, :shopper => [:email, :reference])
+        content = card_partial
+        STORE_TOKEN_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], @params[:shopper][:email], content]
       end
 
       class DisableResponse < Response
@@ -119,6 +137,24 @@ module Adyen
             :iban                => bank.text('./payment:iban'),
             :owner_name          => bank.text('./payment:ownerName')
           }
+        end
+      end
+
+      class StoreTokenResponse < Response
+        response_attrs :response, :recurring_detail_reference
+
+        def recurring_detail_reference
+          params[:recurring_detail_reference]
+        end
+
+        def success?
+          super && params[:response] == 'Success'
+        end
+
+        def params
+          @params ||= { :response => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:result'),
+            :reference =>  xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:rechargeReference'),
+            :recurring_detail_reference => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:recurringDetailReference')}
         end
       end
     end
