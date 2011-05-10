@@ -1,11 +1,3 @@
-1.0
-===
-
-* Screen documentation
-
-Possible/Later
-==============
-
 * Add a capture! method to an authorisation response from the PaymentService.
 
 * Add iDEAL API. To get started, see the `iDEAL' topic-branch which contains `ideal-scratchpad.rb' and a stub for a functional spec.
@@ -18,3 +10,7 @@ Possible/Later
   * adyen-soap
   * adyen-railtie
   * adyen-activemerchant
+
+* Add mocks for notification requests in order to test your app
+
+* Add more mock SOAP responses for testing your app.
