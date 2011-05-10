@@ -278,6 +278,39 @@ module Adyen
       }).disable
     end
 
+    # Stores the recurring token for a shopper.
+    #
+    # # @example
+    #   response = Adyen::API.store_recurring_token(
+    #     invoice.id,
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737', :expiry_month => 12, :expiry_year => 2012 }
+    #   )
+    #   response.success? # => true
+    #   # Now we can authorize this credit card.
+    #   authorize_response = Adyen::API.authorise_recurring_payment(
+    #     invoice.id,
+    #     { :currency => 'EUR', :value => invoice.amount },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     response.recurring_detail_reference
+    #   )
+    #   authorize_response.authorised? # => true
+    #
+    # @param          [Numeric,String] reference      Your reference (ID) for this payment.
+    # @param          [Hash]           shopper        A hash describing the shopper.
+    # @param          [Hash]           card           A hash describing the creditcard details.
+    #
+    # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
+    # @option shopper [String]         :email         The shopper’s email address.
+    # @option shopper [String]         :ip            The shopper’s IP address.
+    #
+    # @option card    [String]         :holder_name   The full name on the card.
+    # @option card    [String]         :number        The card number.
+    # @option card    [String]         :cvc           The card’s verification code.
+    # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
+    # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
+    #
+    # @return [RecurringService::StoreTokenResponse] The response object
     def store_recurring_token(reference, shopper, card)
       RecurringService.new({
         :reference => reference,
