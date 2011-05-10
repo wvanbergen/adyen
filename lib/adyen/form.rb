@@ -126,7 +126,7 @@ module Adyen
     # @param [Hash] parameters The payment parameters to include in the payment request.
     # @return [String] An absolute URL to redirect to the Adyen payment system.
     def redirect_url(parameters = {})
-      url + '?' + payment_parameters(parameters).map { |(k, v)| 
+      url + '?' + payment_parameters(parameters).map{|k,v| [k.to_s,v] }.sort.map { |(k, v)| 
         "#{camelize(k)}=#{CGI.escape(v.to_s)}" }.join('&')
     end
     
