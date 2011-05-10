@@ -6,7 +6,29 @@ describe Adyen::API::RecurringService do
   include APISpecHelper
 
   before do
-    @params = { :shopper => { :reference => 'user-id' } }
+    @params = {
+      :reference => 'order-id',
+      :amount => {
+        :currency => 'EUR',
+        :value => '1234',
+      },
+      :shopper => {
+        :email => 's.hopper@example.com',
+        :reference => 'user-id',
+        :ip => '61.294.12.12',
+      },
+      :card => {
+        :expiry_month => 12,
+        :expiry_year => 2012,
+        :holder_name => 'Simon わくわく Hopper',
+        :number => '4444333322221111',
+        :cvc => '737',
+        # Maestro UK/Solo only
+        #:issue_number => ,
+        #:start_month => ,
+        #:start_year => ,
+      }
+    }
     @recurring = @object = Adyen::API::RecurringService.new(@params)
   end
 
@@ -86,6 +108,57 @@ describe Adyen::API::RecurringService do
       xpath('./recurring:recurringDetailReference').should be_empty
       @recurring.params[:recurring_detail_reference] = 'RecurringDetailReference1'
       text('./recurring:recurringDetailReference').should == 'RecurringDetailReference1'
+    end
+  end
+
+  describe_response_from :disable, (DISABLE_RESPONSE % '[detail-successfully-disabled]'), 'disable' do
+    it "returns whether or not it was disabled" do
+      @response.should be_success
+      @response.should be_disabled
+
+      stub_net_http(DISABLE_RESPONSE % '[all-details-successfully-disabled]')
+      @response = @recurring.disable
+      @response.should be_success
+      @response.should be_disabled
+    end
+
+    it_should_return_params_for_each_xml_backend(:response => '[detail-successfully-disabled]')
+  end
+
+  describe_request_body_of :store_token, '//recurring:storeToken/recurring:request' do
+    it_should_validate_request_parameters :merchant_account,
+                                          :shopper => [:email, :reference]
+
+    it "includes the merchant account handle" do
+      text('./recurring:merchantAccount').should == 'SuperShopper'
+    end
+
+    it "includes the shopper’s reference" do
+      text('./recurring:shopperReference').should == 'user-id'
+    end
+
+    it "includes the shopper’s email" do
+      text('./recurring:shopperEmail').should == 's.hopper@example.com'
+    end
+
+    it "includes the creditcard details" do
+      xpath('./recurring:card') do |card|
+        # there's no reason why Nokogiri should escape these characters, but as long as they're correct
+        card.text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
+        card.text('./payment:number').should == '4444333322221111'
+        card.text('./payment:cvc').should == '737'
+        card.text('./payment:expiryMonth').should == '12'
+        card.text('./payment:expiryYear').should == '2012'
+      end
+    end
+
+    it "formats the creditcard’s expiry month as a two digit number" do
+      @recurring.params[:card][:expiry_month] = 6
+      text('./recurring:card/payment:expiryMonth').should == '06'
+    end
+
+    it "includes the necessary recurring and one-click contract info if the `:recurring' param is truthful" do
+      text('./recurring:recurring/payment:contract').should == 'RECURRING'
     end
   end
 
