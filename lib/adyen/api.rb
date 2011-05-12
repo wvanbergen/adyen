@@ -281,10 +281,12 @@ module Adyen
     # Stores and tokenises the creditcard details so that recurring payments can be made in the
     # future.
     #
+    # You do *not* have to include the card's CVC, because it won't be stored anyway.
+    #
     # # @example
     #   response = Adyen::API.store_recurring_token(
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
-    #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737', :expiry_month => 12, :expiry_year => 2012 }
+    #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :expiry_month => 12, :expiry_year => 2012 }
     #   )
     #   response.stored? # => true
     #
@@ -306,7 +308,6 @@ module Adyen
     #
     # @option card    [String]         :holder_name   The full name on the card.
     # @option card    [String]         :number        The card number.
-    # @option card    [String]         :cvc           The card’s verification code.
     # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
     # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
     #

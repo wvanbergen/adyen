@@ -60,7 +60,7 @@ if File.exist?(API_SPEC_INITIALIZER)
     it "stores the provided creditcard details" do
       response = Adyen::API.store_recurring_token(
         { :email => "#{@user_id}@example.com", :reference => @user_id },
-        { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon #{@user_id} Hopper", :number => '4111111111111111', :cvc => '737' }
+        { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon #{@user_id} Hopper", :number => '4111111111111111' }
       )
       response.should be_stored
       response.recurring_detail_reference.should_not be_empty

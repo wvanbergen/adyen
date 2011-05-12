@@ -38,8 +38,9 @@ module Adyen
 
       private
 
+      # The card's CVC isn't needed when tokenising details, so insert `nil'.
       def card_partial
-        validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
+        validate_parameters!(:card => [:holder_name, :number, :expiry_year, :expiry_month])
         card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
         card << @params[:card][:expiry_month].to_i
         CARD_PARTIAL % card

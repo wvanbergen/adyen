@@ -123,11 +123,11 @@ describe Adyen::API do
       it "performs a `tokenize creditcard details' request" do
         should_map_shortcut_to(:store_token,
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111' }
         )
         Adyen::API.store_recurring_token(
           { :reference => 'user-id', :email => 's.hopper@example.com' },
-          { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+          { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111' }
         )
       end
 
