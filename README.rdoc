@@ -2,6 +2,8 @@
 
 Package to simplify including the Adyen payments services into a Ruby on Rails application.
 
+Visit the wiki for documentation: https://github.com/wvanbergen/adyen/wiki.
+
 Adyen integration relies on three modes of communication between Adyen, your server and
 your client/customer:
 
@@ -13,30 +15,9 @@ This library aims to ease the implementation of all these modes into your applic
 Moreover, it provides matchers, assertions and mocks to make it easier to implement an
 automated test suite to assert the integration is working correctly.
 
-== Installation
-
-<b>Bundler / Rails 3</b>: Add the following line to your <tt>Gemfile</tt>:
-
-  gem 'adyen'
-
-<b>Rails 2.x</b>: Add the following line to your <tt>environment.rb</tt> and run <tt>rake gems:install</tt>
-to make the Adyen functionality available in your Rails project:
-
-  config.gem 'adyen'
-
-The Adyen gem will happily use REXML for communication with Adyen’s SOAP API, however, if
-you have the Nokogiri gem installed and required the gem will use that for performance.
-
-== Generators
-
-The gem ships with a generator for Rails 3. To create an ActiveRecord migration, mode, and
-ActionController for the notifications send by Adyen, run the following:
-
-  $ rails generate adyen:notification
-
 == Usage
 
-See the project wiki on http://wiki.github.com/wvanbergen/adyen to get started. Complete
+See the project wiki on https://github.com/wvanbergen/adyen/wiki to get started. Complete
 RDoc documentation for the project can be found on http://rdoc.info/projects/wvanbergen/adyen.
 
 * For more information about Adyen, see http://www.adyen.com
@@ -49,3 +30,13 @@ This package is written by Michel Barbosa and Willem van Bergen for Floorplanner
 made public under the MIT license (see LICENSE). Its is currently maintained by Willem van
 Bergen, Stefan Borsje and Eloy Duran. We are not affiliated with Adyen B.V. The software 
 comes without warranty of any kind, so use at your own risk.
+
+Contributions are welcomed; this is very much a scratch your own itch project. Some notes:
+
+* Fork the project, implement your stuff and issue a pull request. Topic branches not necessary.
+* All functionality must include tests and preferably documentation.
+* New SOAP API calls should include functional tests that actually test if the call is working. 
+  Adyen has a nasty tendency to switch things up every now and then, so this is vital.
+
+Please visit the changelog at https://github.com/wvanbergen/adyen/wiki/Changelog to see the 
+changes in the different releases.
