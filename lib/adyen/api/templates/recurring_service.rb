@@ -3,10 +3,10 @@ module Adyen
     class RecurringService < SimpleSOAPClient
       # @private
       LIST_LAYOUT = <<EOS
-    <recurring:listRecurringDetails xmlns:recurring="http://recurring.services.adyen.com">
+    <recurring:listRecurringDetails xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com">
       <recurring:request>
         <recurring:recurring>
-          <recurring:contract>RECURRING</recurring:contract>
+          <payment:contract>RECURRING</payment:contract>
         </recurring:recurring>
         <recurring:merchantAccount>%s</recurring:merchantAccount>
         <recurring:shopperReference>%s</recurring:shopperReference>

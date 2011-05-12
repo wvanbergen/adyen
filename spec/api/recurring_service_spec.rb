@@ -45,7 +45,7 @@ describe Adyen::API::RecurringService do
     end
 
     it "includes the type of contract, which is always `RECURRING'" do
-      text('./recurring:recurring/recurring:contract').should == 'RECURRING'
+      text('./recurring:recurring/payment:contract').should == 'RECURRING'
     end
   end
 
