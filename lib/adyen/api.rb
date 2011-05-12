@@ -278,16 +278,17 @@ module Adyen
       }).disable
     end
 
-    # Stores the recurring token for a shopper.
+    # Stores and tokenises the creditcard details so that recurring payments can be made in the
+    # future.
     #
     # # @example
     #   response = Adyen::API.store_recurring_token(
-    #     invoice.id,
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
     #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737', :expiry_month => 12, :expiry_year => 2012 }
     #   )
-    #   response.success? # => true
-    #   # Now we can authorize this credit card.
+    #   response.stored? # => true
+    #
+    #   # Now we can authorize a payment with the token.
     #   authorize_response = Adyen::API.authorise_recurring_payment(
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
@@ -296,7 +297,6 @@ module Adyen
     #   )
     #   authorize_response.authorised? # => true
     #
-    # @param          [Numeric,String] reference      Your reference (ID) for this payment.
     # @param          [Hash]           shopper        A hash describing the shopper.
     # @param          [Hash]           card           A hash describing the creditcard details.
     #
@@ -311,9 +311,8 @@ module Adyen
     # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
     #
     # @return [RecurringService::StoreTokenResponse] The response object
-    def store_recurring_token(reference, shopper, card)
+    def store_recurring_token(shopper, card)
       RecurringService.new({
-        :reference => reference,
         :shopper   => shopper,
         :card      => card
       }).store_token

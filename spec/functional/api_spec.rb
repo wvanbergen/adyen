@@ -7,6 +7,7 @@ API_SPEC_INITIALIZER = File.expand_path("../initializer.rb", __FILE__)
 if File.exist?(API_SPEC_INITIALIZER)
 
   describe Adyen::API, "with an actual remote connection" do
+
     before :all do
       require API_SPEC_INITIALIZER
       Net::HTTP.stubbing_enabled = false
@@ -54,6 +55,15 @@ if File.exist?(API_SPEC_INITIALIZER)
       )
       response.should be_authorized
       response.psp_reference.should_not be_empty
+    end
+
+    it "stores the provided creditcard details" do
+      response = Adyen::API.store_recurring_token(
+        { :email => "#{@user_id}@example.com", :reference => @user_id },
+        { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon #{@user_id} Hopper", :number => '4111111111111111', :cvc => '737' }
+      )
+      response.should be_stored
+      response.recurring_detail_reference.should_not be_empty
     end
 
     it "captures a payment" do

@@ -151,6 +151,8 @@ module Adyen
           super && params[:response] == 'Success'
         end
 
+        alias stored? success?
+
         def params
           @params ||= { :response => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:result'),
             :reference =>  xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:rechargeReference'),

@@ -120,6 +120,17 @@ describe Adyen::API do
         @recurring.should_receive(method)
       end
 
+      it "performs a `tokenize creditcard details' request" do
+        should_map_shortcut_to(:store_token,
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+        )
+        Adyen::API.store_recurring_token(
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' }
+        )
+      end
+
       it "preforms a `list recurring details' request" do
         should_map_shortcut_to(:list, :shopper => { :reference => 'user-id' })
         Adyen::API.list_recurring_details('user-id')
