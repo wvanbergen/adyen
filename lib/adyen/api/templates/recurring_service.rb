@@ -54,6 +54,18 @@ EOS
           <payment:expiryMonth>%02d</payment:expiryMonth>
         </recurring:card>
 EOS
+      # Electronic bank debit in Germany. Semi real-time payment method.
+      # @private
+      ELV_PARTIAL = <<EOS
+        <recurring:elv>
+          <payment:bankLocation>%s</payment:bankLocation>
+          <payment:bankName>%s</payment:bankName>
+          <payment:bankLocationId>%s</payment:bankLocationId>
+          <payment:accountHolderName>%s</payment:accountHolderName>
+          <payment:bankAccountNumber>%02d</payment:bankAccountNumber>
+        </recurring:elv>
+EOS
+
     end
   end
 end
