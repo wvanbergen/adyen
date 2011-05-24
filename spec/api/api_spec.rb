@@ -131,6 +131,17 @@ describe Adyen::API do
         )
       end
 
+      it "performs a `tokenize ELV details' request" do
+        should_map_shortcut_to(:store_token,
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :elv => { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => "Simon Hopper", :bank_account_number => "1234567890" }
+        )
+        Adyen::API.store_recurring_token_using_elv(
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => "Simon Hopper", :bank_account_number => "1234567890" }
+        )
+      end
+
       it "preforms a `list recurring details' request" do
         should_map_shortcut_to(:list, :shopper => { :reference => 'user-id' })
         Adyen::API.list_recurring_details('user-id')
