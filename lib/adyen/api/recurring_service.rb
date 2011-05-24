@@ -45,6 +45,13 @@ module Adyen
         card << @params[:card][:expiry_month].to_i
         CARD_PARTIAL % card
       end
+      
+      # The ELV - (Elektronisches Lastschriftverfahren) does not require bank_location, so insert 'nil'.
+      def elv_partial
+        validate_parameters!(:elv => [:bank_location, :bank_name, :bank_location_id, :account_holder_name, :bank_account_number])
+        elv  = @params[:elv].values_at(:bank_location, :bank_name, :bank_location_id, :account_holder_name, :bank_account_number)
+        ELV_PARTIAL % elv
+      end
 
       def list_request_body
         validate_parameters!(:merchant_account, :shopper => [:reference])
@@ -61,7 +68,10 @@ module Adyen
 
       def store_token_request_body
         validate_parameters!(:merchant_account, :shopper => [:email, :reference])
-        content = card_partial
+        content = []
+        content << card_partial unless @params[:card].nil?
+        content << elv_partial  unless @params[:elv].nil?        
+        raise " recurring_service#store_token_request_body() failed to set content nor card or elv passed! " if content.empty? 
         STORE_TOKEN_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], @params[:shopper][:email], content]
       end
 
@@ -111,12 +121,17 @@ module Adyen
           }
 
           card = node.xpath('./recurring:card')
-          if card.children.empty?
-            result[:bank] = parse_bank_details(node.xpath('./recurring:bank'))
-          else
+          elv  = node.xpath('./recurring:elv')  
+          bank = node.xpath('./recurring:bank')        
+          
+          if !card.children.empty?
             result[:card] = parse_card_details(card)
+          elsif !elv.children.empty?
+            result[:elv] = parse_elv_details(elv)
+          else
+            result[:bank] = parse_bank_details(bank)
           end
-
+          
           result
         end
 
@@ -125,6 +140,16 @@ module Adyen
             :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
             :holder_name => card.text('./payment:holderName'),
             :number      => card.text('./payment:number')
+          }
+        end
+
+        def parse_elv_details(elv)
+          {
+            :account_holder_name => bank.text('./payment:accountHolderName'),
+            :bank_account_number => bank.text('./payment:bankAccountNumber'),
+            :bank_location       => bank.text('./payment:bankLocation'),
+            :bank_location_id    => bank.text('./payment:bankLocationId'),
+            :bank_name           => bank.text('./payment:bankName')
           }
         end
 

@@ -318,5 +318,46 @@ module Adyen
         :card      => card
       }).store_token
     end
+    
+    # Stores and tokenises the ELV (Elektronisches Lastschriftverfahren) 
+    # details so that recurring payments can be made in the future.
+    #
+    # # @example
+    #   response = Adyen::API.store_recurring_token_using_elv(
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => user.full_name, :bank_account_number => "1234567890" }
+    #   )
+    #   response.stored? # => true
+    #
+    #   # Now we can authorize a payment with the token.
+    #   authorize_response = Adyen::API.authorise_recurring_payment(
+    #     invoice.id,
+    #     { :currency => 'EUR', :value => invoice.amount },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     response.recurring_detail_reference
+    #   )
+    #   authorize_response.authorised? # => true
+    #
+    # @param          [Hash]           shopper        A hash describing the shopper.
+    # @param          [Hash]           elv            A hash describing the ELV (Elektronisches Lastschriftverfahren) details.
+    #
+    # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
+    # @option shopper [String]         :email         The shopper’s email address.
+    # @option shopper [String]         :ip            The shopper’s IP address.
+    #
+    # @option elv    [String]         :bank_location        The Bank Location.
+    # @option elv    [String]         :bank_name            The Bank Name.
+    # @option elv    [Numeric,String] :bank_location_id     The Bank Location ID (Bankleitzahl).
+                                                            
+    # @option elv    [String]         :account_holder_name  The holder's full name on the account.
+    # @option elv    [Numeric,String] :bank_account_number  The account number.
+    #
+    # @return [RecurringService::StoreTokenResponse] The response object
+    def store_recurring_token_using_elv(shopper, elv)
+      RecurringService.new({
+        :shopper   => shopper,
+        :elv      => elv
+      }).store_token
+    end
   end
 end

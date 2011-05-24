@@ -27,6 +27,14 @@ describe Adyen::API::RecurringService do
         #:issue_number => ,
         #:start_month => ,
         #:start_year => ,
+      },
+      # German's Direct Debit (Elektronisches Lastschriftverfahren)
+      :elv => {
+        :account_holder_name => 'Simon わくわく Hopper',
+        :bank_account_number => '1234567890',
+        :bank_location       => 'Berlin',
+        :bank_location_id    => '12345678',
+        :bank_name           => 'TestBank',
       }
     }
     @recurring = @object = Adyen::API::RecurringService.new(@params)
@@ -155,6 +163,38 @@ describe Adyen::API::RecurringService do
     it "formats the creditcard’s expiry month as a two digit number" do
       @recurring.params[:card][:expiry_month] = 6
       text('./recurring:card/payment:expiryMonth').should == '06'
+    end
+
+    it "includes the necessary recurring and one-click contract info if the `:recurring' param is truthful" do
+      text('./recurring:recurring/payment:contract').should == 'RECURRING'
+    end
+  end
+  
+  describe_request_body_of :store_token, '//recurring:storeToken/recurring:request' do
+    it_should_validate_request_parameters :merchant_account,
+                                          :shopper => [:email, :reference]
+
+    it "includes the merchant account handle" do
+      text('./recurring:merchantAccount').should == 'SuperShopper'
+    end
+
+    it "includes the shopper’s reference" do
+      text('./recurring:shopperReference').should == 'user-id'
+    end
+
+    it "includes the shopper’s email" do
+      text('./recurring:shopperEmail').should == 's.hopper@example.com'
+    end
+
+    it "includes the ELV details" do
+      xpath('./recurring:elv') do |elv|
+        # there's no reason why Nokogiri should escape these characters, but as long as they're correct        
+        elv.text('./payment:accountHolderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
+        elv.text('./payment:bankAccountNumber').should == '1234567890'
+        elv.text('./payment:bankLocation').should == 'Berlin'
+        elv.text('./payment:bankLocationId').should == '12345678'
+        elv.text('./payment:bankName').should == 'TestBank'
+      end
     end
 
     it "includes the necessary recurring and one-click contract info if the `:recurring' param is truthful" do
