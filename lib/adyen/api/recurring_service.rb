@@ -70,8 +70,8 @@ module Adyen
         validate_parameters!(:merchant_account, :shopper => [:email, :reference])
         content = []
         content << card_partial unless @params[:card].nil?
-        content << elv_partial  unless @params[:elv].nil?        
-        raise " recurring_service#store_token_request_body() failed to set content nor card or elv details passed! " if content.empty? 
+        content << elv_partial  unless @params[:elv].nil?    
+        raise ArgumentError, "The required parameter 'card' or 'elv' is missing." if content.empty?    
         STORE_TOKEN_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], @params[:shopper][:email], content]
       end
 
