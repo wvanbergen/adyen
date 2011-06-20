@@ -310,9 +310,12 @@ module Adyen
     #   )
     #   authorize_response.authorised? # => true
     #
-    # @param          [Hash]           shopper                A hash describing the shopper.
+    # @option shopper   [Numeric,String] :reference            The shopper’s reference (ID).
+    # @option shopper   [String]         :email                The shopper’s email address.
+    # @option shopper   [String]         :ip                   The shopper’s IP address.
+    #
     # @param          [Hash]           params                 A hash describing the creditcard details.
-    #  OR                                                    
+    #  --- OR ---                                                     
     # @param          [Hash]           params                 A hash describing the ELV 
     #                                                         (Elektronisches Lastschriftverfahren) details.
     #                                                        
@@ -340,7 +343,9 @@ module Adyen
     # @option params    [Numeric,String] :bank_account_number  The account number.
     #
     # @return [RecurringService::StoreTokenResponse] The response object
-    def store_recurring_token(shopper, params, payment_method=:card)
+    def store_recurring_token(shopper, params)
+        payment_method = params.include?(:bank_location_id) ? :elv : :car
+      
         RecurringService.new({ 
           :shopper => shopper, 
           payment_method => params 
