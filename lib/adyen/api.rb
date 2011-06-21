@@ -344,7 +344,7 @@ module Adyen
     #
     # @return [RecurringService::StoreTokenResponse] The response object
     def store_recurring_token(shopper, params)
-        payment_method = params.include?(:bank_location_id) ? :elv : :car
+        payment_method = params.include?(:bank_location_id) ? :elv : :card
       
         RecurringService.new({ 
           :shopper => shopper, 
