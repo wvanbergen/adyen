@@ -30,11 +30,11 @@ describe Adyen::API::RecurringService do
       },
       # German's Direct Debit (Elektronisches Lastschriftverfahren)
       :elv => {
-        :account_holder_name => 'Simon わくわく Hopper',
-        :bank_account_number => '1234567890',
-        :bank_location       => 'Berlin',
-        :bank_location_id    => '12345678',
-        :bank_name           => 'TestBank',
+        :holder_name      => 'Simon わくわく Hopper',
+        :number           => '1234567890',
+        :bank_location    => 'Berlin',
+        :bank_location_id => '12345678',
+        :bank_name        => 'TestBank',
       }
     }
     @recurring = @object = Adyen::API::RecurringService.new(@params)
@@ -75,13 +75,13 @@ describe Adyen::API::RecurringService do
         },
         {
           :bank => {
-            :bank_account_number => '123456789',
+            :number => '123456789',
             :bank_location_id => 'bank-location-id',
             :bank_name => 'AnyBank',
             :bic => 'BBBBCCLLbbb',
             :country_code => 'NL',
             :iban => 'NL69PSTB0001234567',
-            :owner_name => 'S. Hopper'
+            :holder_name => 'S. Hopper'
           },
           :recurring_detail_reference => 'RecurringDetailReference2',
           :variant => 'IDEAL',
