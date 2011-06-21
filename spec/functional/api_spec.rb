@@ -58,7 +58,7 @@ if File.exist?(API_SPEC_INITIALIZER)
     end
 
     it "stores the provided ELV account details" do
-      response = Adyen::API.store_recurring_token_using_elv(
+      response = Adyen::API.store_recurring_token(
         { :email => "#{@user_id}@example.com", :reference => @user_id },
         { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => "Simon #{@user_id} Hopper", :bank_account_number => "1234567890" }
       )
