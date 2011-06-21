@@ -330,10 +330,6 @@ module Adyen
     #
     #            
     # ##### OPTIONS FOR ELV:                            
-    #                                                    
-    # @option shopper   [Numeric,String] :reference            The shopper’s reference (ID).
-    # @option shopper   [String]         :email                The shopper’s email address.
-    # @option shopper   [String]         :ip                   The shopper’s IP address.
     #
     # @option params    [String]         :bank_location        The Bank Location.
     # @option params    [String]         :bank_name            The Bank Name.
