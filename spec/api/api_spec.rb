@@ -136,7 +136,7 @@ describe Adyen::API do
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :elv => { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => "Simon Hopper", :bank_account_number => "1234567890" }
         )
-        Adyen::API.store_recurring_token_using_elv(
+        Adyen::API.store_recurring_token(
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => "Simon Hopper", :bank_account_number => "1234567890" }
         )
