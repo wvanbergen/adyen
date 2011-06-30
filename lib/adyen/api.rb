@@ -57,14 +57,15 @@ module Adyen
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
-    #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737', :expiry_month => 12, :expiry_year => 2012 }
+    #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737',
+    #       :expiry_month => 12, :expiry_year => 2012 }
     #   )
     #   response.authorised? # => true
     #
     # @param          [Numeric,String] reference      Your reference (ID) for this payment.
     # @param          [Hash]           amount         A hash describing the money to charge.
     # @param          [Hash]           shopper        A hash describing the shopper.
-    # @param          [Hash]           card           A hash describing the creditcard details.
+    # @param          [Hash]           card           A hash describing the credit card details.
     #
     # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
     # @option amount  [Integer]        :value         The value of the payment in discrete cents,
@@ -278,54 +279,25 @@ module Adyen
       }).disable
     end
 
-    # Stores and tokenises the creditcard details so that recurring payments can be made in the
-    # future.
+    # Stores and tokenises the payment details so that recurring payments can be made in the
+    # future. It can be either a credit card or ELV (Elektronisches Lastschriftverfahren).
     #
-    # You do *not* have to include the card's CVC, because it won't be stored anyway.
+    #  For instance, this is how you would store credit card details:
     #
     # # @example
     #   response = Adyen::API.store_recurring_token(
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
-    #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :expiry_month => 12, :expiry_year => 2012 }
+    #     { :holder_name => "Simon Hopper", :number => '4444333322221111',
+    #       :expiry_month => 12, :expiry_year => 2012 }
     #   )
-    #   response.stored? # => true
     #
-    #   # Now we can authorize a payment with the token.
-    #   authorize_response = Adyen::API.authorise_recurring_payment(
-    #     invoice.id,
-    #     { :currency => 'EUR', :value => invoice.amount },
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
-    #     response.recurring_detail_reference
-    #   )
-    #   authorize_response.authorised? # => true
-    #
-    # @param          [Hash]           shopper        A hash describing the shopper.
-    # @param          [Hash]           card           A hash describing the creditcard details.
-    #
-    # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
-    # @option shopper [String]         :email         The shopper’s email address.
-    # @option shopper [String]         :ip            The shopper’s IP address.
-    #
-    # @option card    [String]         :holder_name   The full name on the card.
-    # @option card    [String]         :number        The card number.
-    # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
-    # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
-    #
-    # @return [RecurringService::StoreTokenResponse] The response object
-    def store_recurring_token(shopper, card)
-      RecurringService.new({
-        :shopper   => shopper,
-        :card      => card
-      }).store_token
-    end
-    
-    # Stores and tokenises the ELV (Elektronisches Lastschriftverfahren) 
-    # details so that recurring payments can be made in the future.
+    # Or use the following to store ELV details:
     #
     # # @example
-    #   response = Adyen::API.store_recurring_token_using_elv(
+    #   response = Adyen::API.store_recurring_token(
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
-    #     { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678", :account_holder_name => user.full_name, :bank_account_number => "1234567890" }
+    #     { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678",
+    #       :holder_name => "Simon Hopper", :number => "1234567890" }
     #   )
     #   response.stored? # => true
     #
@@ -338,26 +310,35 @@ module Adyen
     #   )
     #   authorize_response.authorised? # => true
     #
-    # @param          [Hash]           shopper        A hash describing the shopper.
-    # @param          [Hash]           elv            A hash describing the ELV (Elektronisches Lastschriftverfahren) details.
+    # @param            [Hash]           params                A hash describing the credit card or
+    #                                                          ELV details.
     #
-    # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
-    # @option shopper [String]         :email         The shopper’s email address.
-    # @option shopper [String]         :ip            The shopper’s IP address.
+    # @option shopper   [Numeric,String] :reference            The shopper’s reference (ID).
+    # @option shopper   [String]         :email                The shopper’s email address.
+    # @option shopper   [String]         :ip                   The shopper’s IP address.
     #
-    # @option elv    [String]         :bank_location        The Bank Location.
-    # @option elv    [String]         :bank_name            The Bank Name.
-    # @option elv    [Numeric,String] :bank_location_id     The Bank Location ID (Bankleitzahl).
-                                                            
-    # @option elv    [String]         :account_holder_name  The holder's full name on the account.
-    # @option elv    [Numeric,String] :bank_account_number  The account number.
+    # @option params    [String]         :holder_name          The full name on the card or of the
+    #                                                          account holder.
+    # @option params    [String]         :number               The card or account number.
+    #
+    # ##### Credit card specific options:
+    #
+    # @option params    [Numeric,String] :expiry_month         The month in which the card expires.
+    # @option params    [Numeric,String] :expiry_year          The year in which the card expires.
+    #
+    # ##### ELV specific options:
+    #
+    # @option params    [String]         :bank_location        The Bank Location.
+    # @option params    [String]         :bank_name            The Bank Name.
+    # @option params    [Numeric,String] :bank_location_id     The Bank Location ID (Bankleitzahl).
     #
     # @return [RecurringService::StoreTokenResponse] The response object
-    def store_recurring_token_using_elv(shopper, elv)
-      RecurringService.new({
-        :shopper   => shopper,
-        :elv      => elv
-      }).store_token
+    def store_recurring_token(shopper, params)
+        payment_method = params.include?(:bank_location_id) ? :elv : :card
+        RecurringService.new({
+          :shopper => shopper,
+          payment_method => params
+        }).store_token
     end
   end
 end

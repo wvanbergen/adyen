@@ -45,11 +45,12 @@ module Adyen
         card << @params[:card][:expiry_month].to_i
         CARD_PARTIAL % card
       end
-      
+
+      ELV_ATTRS = [:bank_location, :bank_name, :bank_location_id, :holder_name, :number]
       # The ELV - (Elektronisches Lastschriftverfahren) does not require bank_location, so insert 'nil'.
       def elv_partial
-        validate_parameters!(:elv => [:bank_location, :bank_name, :bank_location_id, :account_holder_name, :bank_account_number])
-        elv  = @params[:elv].values_at(:bank_location, :bank_name, :bank_location_id, :account_holder_name, :bank_account_number)
+        validate_parameters!(:elv => ELV_ATTRS)
+        elv  = @params[:elv].values_at(*ELV_ATTRS)
         ELV_PARTIAL % elv
       end
 
@@ -70,8 +71,8 @@ module Adyen
         validate_parameters!(:merchant_account, :shopper => [:email, :reference])
         content = []
         content << card_partial unless @params[:card].nil?
-        content << elv_partial  unless @params[:elv].nil?        
-        raise " recurring_service#store_token_request_body() failed to set content nor card or elv passed! " if content.empty? 
+        content << elv_partial  unless @params[:elv].nil?    
+        raise ArgumentError, "The required parameter 'card' or 'elv' is missing." if content.empty?    
         STORE_TOKEN_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], @params[:shopper][:email], content]
       end
 
@@ -145,23 +146,23 @@ module Adyen
 
         def parse_elv_details(elv)
           {
-            :account_holder_name => bank.text('./payment:accountHolderName'),
-            :bank_account_number => bank.text('./payment:bankAccountNumber'),
-            :bank_location       => bank.text('./payment:bankLocation'),
-            :bank_location_id    => bank.text('./payment:bankLocationId'),
-            :bank_name           => bank.text('./payment:bankName')
+            :holder_name      => bank.text('./payment:accountHolderName'),
+            :number           => bank.text('./payment:bankAccountNumber'),
+            :bank_location    => bank.text('./payment:bankLocation'),
+            :bank_location_id => bank.text('./payment:bankLocationId'),
+            :bank_name        => bank.text('./payment:bankName')
           }
         end
 
         def parse_bank_details(bank)
           {
-            :bank_account_number => bank.text('./payment:bankAccountNumber'),
-            :bank_location_id    => bank.text('./payment:bankLocationId'),
-            :bank_name           => bank.text('./payment:bankName'),
-            :bic                 => bank.text('./payment:bic'),
-            :country_code        => bank.text('./payment:countryCode'),
-            :iban                => bank.text('./payment:iban'),
-            :owner_name          => bank.text('./payment:ownerName')
+            :number           => bank.text('./payment:bankAccountNumber'),
+            :bank_location_id => bank.text('./payment:bankLocationId'),
+            :bank_name        => bank.text('./payment:bankName'),
+            :bic              => bank.text('./payment:bic'),
+            :country_code     => bank.text('./payment:countryCode'),
+            :iban             => bank.text('./payment:iban'),
+            :holder_name      => bank.text('./payment:ownerName')
           }
         end
       end
@@ -180,9 +181,11 @@ module Adyen
         alias stored? success?
 
         def params
-          @params ||= { :response => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:result'),
+          @params ||= {
+            :response => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:result'),
             :reference =>  xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:rechargeReference'),
-            :recurring_detail_reference => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:recurringDetailReference')}
+            :recurring_detail_reference => xml_querier.text('//recurring:storeTokenResponse/recurring:result/recurring:recurringDetailReference')
+          }
         end
       end
     end
