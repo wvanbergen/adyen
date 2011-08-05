@@ -60,7 +60,7 @@ module Adyen
     #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737',
     #       :expiry_month => 12, :expiry_year => 2012 }
     #   )
-    #   response.authorised? # => true
+    #   response.authorized? # => true
     #
     # @param          [Numeric,String] reference      Your reference (ID) for this payment.
     # @param          [Hash]           amount         A hash describing the money to charge.
@@ -110,7 +110,7 @@ module Adyen
     #     { :currency => 'EUR', :value => invoice.amount },
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' }
     #   )
-    #   response.authorised? # => true
+    #   response.authorized? # => true
     #
     # @param          [Numeric,String] reference      Your reference (ID) for this payment.
     # @param          [Hash]           amount         A hash describing the money to charge.
@@ -154,7 +154,7 @@ module Adyen
     #     '737',
     #     detail
     #   )
-    #   payment.authorised? # => true
+    #   payment.authorized? # => true
     #
     # @param          [Numeric,String] reference      Your reference (ID) for this payment.
     # @param          [Hash]           amount         A hash describing the money to charge.
@@ -308,7 +308,7 @@ module Adyen
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
     #     response.recurring_detail_reference
     #   )
-    #   authorize_response.authorised? # => true
+    #   authorize_response.authorized? # => true
     #
     # @param            [Hash]           params                A hash describing the credit card or
     #                                                          ELV details.
