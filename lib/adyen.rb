@@ -24,5 +24,6 @@ require 'adyen/configuration'
 require 'adyen/encoding'
 require 'adyen/formatter'
 require 'adyen/form'
+require 'adyen/api'
 
 require 'adyen/railtie' if defined?(::Rails) && ::Rails::VERSION::MAJOR >= 3
