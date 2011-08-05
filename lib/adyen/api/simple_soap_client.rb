@@ -38,7 +38,7 @@ EOS
         end
 
         def message
-          "[#{@response.code} #{@response.message}] A server error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'."
+          "[#{@response.code} #{@response.message}] A server error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'. Full response body was: #{@response.body}."
         end
       end
 
