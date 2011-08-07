@@ -28,7 +28,7 @@ EOS
         end
 
         def message
-          "[#{@response.code} #{@response.message}] A client error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'. Fault messa    ge: #{@response.fault_message}."
+          "[#{@response.code} #{@response.message}] A client error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'."
         end
       end
 
@@ -38,7 +38,7 @@ EOS
         end
 
         def message
-          "[#{@response.code} #{@response.message}] A server error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'. Fault message: #{@response.fault_message}."
+          "[#{@response.code} #{@response.message}] A server error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'. Full response body was: #{@response.body}."
         end
       end
 
@@ -117,10 +117,10 @@ EOS
           request.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
           request.start do |http|
-            http_response = response_class.new(http.request(post))
+            http_response = http.request(post)
             raise ClientError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPClientError)
             raise ServerError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPServerError)
-            http_response
+            response_class.new(http_response)
           end
         end
       end
