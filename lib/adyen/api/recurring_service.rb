@@ -85,7 +85,7 @@ module Adyen
           super && DISABLED_RESPONSES.include?(params[:response])
         end
 
-        alias disabled? success?
+        alias_method :disabled?, :success?
 
         def params
           @params ||= { :response => xml_querier.text('//recurring:disableResponse/recurring:result/recurring:response') }
@@ -178,7 +178,7 @@ module Adyen
           super && params[:response] == 'Success'
         end
 
-        alias stored? success?
+        alias_method :stored?, :success?
 
         def params
           @params ||= {

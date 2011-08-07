@@ -173,7 +173,8 @@ module Adyen
           super && params[:result_code] == AUTHORISED
         end
 
-        alias authorized? success?
+        alias_method :authorised?, :success?
+        alias_method :authorized?, :success?
 
         # @return [Boolean] Returns whether or not the request was valid.
         def invalid_request?

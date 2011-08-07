@@ -56,7 +56,7 @@ class AdyenNotification < ActiveRecord::Base
     event_code == 'AUTHORISATION'
   end
 
-  alias :authorization? :authorisation?
+  alias_method :authorization?, :authorisation?
   
   # Returns true if this notification is an AUTHORISATION notification and
   # the success status indicates that the authorization was successfull.
@@ -66,5 +66,5 @@ class AdyenNotification < ActiveRecord::Base
     event_code == 'AUTHORISATION' && success?
   end
   
-  alias :successful_authorization? :successful_authorisation?
+  alias_method :successful_authorization?, :successful_authorisation?
 end
