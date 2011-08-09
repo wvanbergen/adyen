@@ -76,16 +76,30 @@ describe Adyen::API::SimpleSOAPClient do
       @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
     end
 
-    it "raises when the HTTP response is a subclass of Net::HTTPClientError" do
-      Net::HTTP.stubbed_response = Net::HTTPBadRequest.new('1.1', '401', 'Bad request')
-      exception = nil
-      begin
-        @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
-      rescue Adyen::API::SimpleSOAPClient::ClientError => e
-        exception = e
+    [
+      [
+        "[401 Bad request] A client",
+        Net::HTTPBadRequest.new('1.1', '401', 'Bad request'),
+        Adyen::API::SimpleSOAPClient::ClientError
+      ],
+      [
+        "[502 Bad gateway] A server",
+        Net::HTTPBadGateway.new('1.1', '502', 'Bad gateway'),
+        Adyen::API::SimpleSOAPClient::ServerError
+      ]
+    ].each do |label, response, expected_exception|
+      it "raises when the HTTP response is a subclass of #{response.class.name}" do
+        response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
+        Net::HTTP.stubbed_response = response
+
+        exception = nil
+        begin
+          @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
+        rescue expected_exception => e
+          exception = e
+        end
+        exception.message.should ==  %{#{label} error occurred while calling SOAP action `Action' on endpoint `https://test.example.com/soap/Action', with fault message: Illegal argument. For input string: "100.0".}
       end
-      msg = "[401 Bad request] A client error occurred while calling SOAP action `Action' on endpoint `https://test.example.com/soap/Action'."
-      exception.message.should == msg
     end
   end
 end
