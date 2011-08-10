@@ -22,23 +22,27 @@ EOS
       # @see http://curl.haxx.se/ca/cacert.pem
       CACERT = File.expand_path('../cacert.pem', __FILE__)
 
-      class ClientError < StandardError
+      class StandardError < ::StandardError
         def initialize(response, action, endpoint)
           @response, @action, @endpoint = response, action, endpoint
         end
 
+        private
+
+        def message_template
+          %{[#{@response.http_response.code} #{@response.http_response.message}] A %s error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}', with fault message: #{@response.fault_message}.}
+        end
+      end
+
+      class ClientError < StandardError
         def message
-          "[#{@response.code} #{@response.message}] A client error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'."
+          message_template % "client"
         end
       end
 
       class ServerError < StandardError
-        def initialize(response, action, endpoint)
-          @response, @action, @endpoint = response, action, endpoint
-        end
-
         def message
-          "[#{@response.code} #{@response.message}] A server error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'."
+          message_template % "server"
         end
       end
 
@@ -118,9 +122,10 @@ EOS
 
           request.start do |http|
             http_response = http.request(post)
-            raise ClientError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPClientError)
-            raise ServerError.new(http_response, action, endpoint) if http_response.is_a?(Net::HTTPServerError)
-            response_class.new(http_response)
+            response = response_class.new(http_response)
+            raise ClientError.new(response, action, endpoint) if http_response.is_a?(Net::HTTPClientError)
+            raise ServerError.new(response, action, endpoint) if http_response.is_a?(Net::HTTPServerError)
+            response
           end
         end
       end

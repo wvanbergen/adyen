@@ -159,14 +159,6 @@ module Adyen
 
         AUTHORISED = 'Authorised'
 
-        def self.original_fault_message_for(attribute, message)
-          if error = ERRORS.find { |_, (a, m)| a == attribute && m == message }
-            error.first
-          else
-            message
-          end
-        end
-
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
 
         def success?

@@ -202,19 +202,6 @@ describe Adyen::API::PaymentService do
         end
       end
 
-      it "returns the original message corresponding to the given attribute and message" do
-        [
-          ["validation 101 Invalid card number",                           [:number,       'is not a valid creditcard number']],
-          ["validation 103 CVC is not the right length",                   [:cvc,          'is not the right length']],
-          ["validation 128 Card Holder Missing",                           [:holder_name,  'can\'t be blank']],
-          ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
-          ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
-          ["validation 130 Reference Missing",                             [:base,         'validation 130 Reference Missing']],
-        ].each do |expected, attr_and_message|
-          Adyen::API::PaymentService::AuthorisationResponse.original_fault_message_for(*attr_and_message).should == expected
-        end
-      end
-
       private
 
       def response_with_fault_message(message)
