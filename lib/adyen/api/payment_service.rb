@@ -158,11 +158,16 @@ module Adyen
         }
 
         AUTHORISED = 'Authorised'
+        REFUSED    = 'Refused'
 
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
 
         def success?
           super && params[:result_code] == AUTHORISED
+        end
+
+        def refused?
+          params[:result_code] == REFUSED
         end
 
         alias_method :authorised?, :success?
@@ -186,8 +191,12 @@ module Adyen
         def error(prefix = nil)
           if error = ERRORS[fault_message]
             prefix ? ["#{prefix}_#{error[0]}".to_sym, error[1]] : error
-          else
+          elsif fault_message
             [:base, fault_message]
+          elsif refused?
+            [:base, 'Transaction was refused.']
+          else
+            [:base, 'Transaction failed for unkown reasons.']
           end
         end
 
