@@ -17,9 +17,14 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2')
-  s.add_development_dependency('nokogiri')
   s.add_development_dependency('rails', '>= 2.3')
-
+  
+  if RUBY_PLATFORM == 'java'
+    s.add_development_dependency('nokogiri', '~> 1.4.6')
+  else
+    s.add_development_dependency('nokogiri')
+  end
+  
   s.add_runtime_dependency('jruby-openssl') if RUBY_PLATFORM == 'java'
   
   s.requirements << 'Having Nokogiri installed will speed up XML handling when using the SOAP API.'
