@@ -274,6 +274,21 @@ AUTHORISE_REQUEST_INVALID_RESPONSE = <<EOS
 </soap:Envelope>
 EOS
 
+AUTHORISE_REQUEST_REFUSED_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
+      <ns1:paymentResult>
+        <refusalReason xmlns="http://payment.services.adyen.com">You need to actually own money.</refusalReason>
+        <resultCode xmlns="http://payment.services.adyen.com">Refused</resultCode>
+      </ns1:paymentResult>
+    </ns1:authoriseResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+
 LIST_RESPONSE = <<EOS
 <?xml version="1.0"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

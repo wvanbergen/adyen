@@ -156,6 +156,18 @@ describe Adyen::API::PaymentService do
       end
     end
 
+    describe "with a `refused' response" do
+      before do
+        stub_net_http(AUTHORISE_REQUEST_REFUSED_RESPONSE)
+        @response = @payment.authorise_payment
+      end
+
+      it "returns that the payment was refused" do
+        @response.should be_refused
+        @response.error.should == [:base, 'Transaction was refused.']
+      end
+    end
+
     describe "with a `invalid' response" do
       before do
         stub_net_http(AUTHORISE_REQUEST_INVALID_RESPONSE % 'validation 101 Invalid card number')
