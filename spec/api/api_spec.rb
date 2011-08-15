@@ -157,5 +157,32 @@ describe Adyen::API do
         Adyen::API.disable_recurring_contract('user-id', 'detail-id')
       end
     end
+
+    describe "shortcut methods" do
+      describe "for the ElvPaymentService" do
+        before do
+          @elv_payment = mock('ElvPaymentService')
+        end
+
+        def should_map_shortcut_to(method, params)
+          Adyen::API::ElvPaymentService.should_receive(:new).with(params).and_return(@elv_payment)
+          @elv_payment.should_receive(method)
+        end
+
+        it "performs a `authorise elv payment' request" do
+          should_map_shortcut_to(:authorise_payment,
+            :reference  => 'order-id',
+            :amount     => { :currency => 'EUR', :value => 1234 },
+            :shopper    => { :reference => 'user-id', :email => 's.hopper@example.com' },
+            :elv        => { :holder_name => "Simon Hopper", :number => '1234567890', :bank_location_id => '12345678' }
+          )
+          Adyen::API.authorise_elv_payment('order-id',
+            { :currency     => 'EUR', :value => 1234 },
+            { :reference    => 'user-id', :email => 's.hopper@example.com' },
+            { :holder_name  => "Simon Hopper", :number => '1234567890', :bank_location_id => '12345678' }
+          )
+        end
+      end
+    end
   end
 end

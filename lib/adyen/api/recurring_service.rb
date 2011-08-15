@@ -1,5 +1,6 @@
 require 'adyen/api/simple_soap_client'
 require 'adyen/api/templates/recurring_service'
+require 'adyen/api/templates/elv_service'
 
 module Adyen
   module API
@@ -18,6 +19,8 @@ module Adyen
     #  response.success? # => true
     #
     class RecurringService < SimpleSOAPClient
+      include Elv
+
       # The Adyen Recurring SOAP service endpoint uri.
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Recurring'
 
@@ -44,14 +47,6 @@ module Adyen
         card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
         card << @params[:card][:expiry_month].to_i
         CARD_PARTIAL % card
-      end
-
-      ELV_ATTRS = [:bank_location, :bank_name, :bank_location_id, :holder_name, :number]
-      # The ELV - (Elektronisches Lastschriftverfahren) does not require bank_location, so insert 'nil'.
-      def elv_partial
-        validate_parameters!(:elv => ELV_ATTRS)
-        elv  = @params[:elv].values_at(*ELV_ATTRS)
-        ELV_PARTIAL % elv
       end
 
       def list_request_body
@@ -141,16 +136,6 @@ module Adyen
             :expiry_date => Date.new(card.text('./payment:expiryYear').to_i, card.text('./payment:expiryMonth').to_i, -1),
             :holder_name => card.text('./payment:holderName'),
             :number      => card.text('./payment:number')
-          }
-        end
-
-        def parse_elv_details(elv)
-          {
-            :holder_name      => bank.text('./payment:accountHolderName'),
-            :number           => bank.text('./payment:bankAccountNumber'),
-            :bank_location    => bank.text('./payment:bankLocation'),
-            :bank_location_id => bank.text('./payment:bankLocationId'),
-            :bank_name        => bank.text('./payment:bankName')
           }
         end
 

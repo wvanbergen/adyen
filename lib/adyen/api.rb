@@ -2,6 +2,8 @@ require 'adyen'
 require 'adyen/api/simple_soap_client'
 require 'adyen/api/payment_service'
 require 'adyen/api/recurring_service'
+require 'adyen/api/elv_payment_service'
+require 'adyen/api/elv'
 
 module Adyen
   # The API module contains classes that interact with the Adyen SOAP API.
@@ -339,6 +341,47 @@ module Adyen
           :shopper => shopper,
           payment_method => params
         }).store_token
+    end
+
+    # Authorise a one time payment via ELV.
+    #
+    # @example
+    #   response = Adyen::API.authorise_elv_payment(
+    #     invoice.id,
+    #     { :currency => 'EUR', :value => invoice.amount },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :holder_name => "Simon Hopper", :account_number => '1234567890', :bank_location_id => '12345678' }
+    #   )
+    #   response.authorized? # => true
+    #
+    # @param          [Numeric,String] reference      Your reference (ID) for this payment.
+    # @param          [Hash]           amount         A hash describing the money to charge.
+    # @param          [Hash]           shopper        A hash describing the shopper.
+    # @param          [Hash]           elv            A hash describing the ELV details.
+    #
+    # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
+    # @option amount  [Integer]        :value         The value of the payment in discrete cents,
+    #                                                 unless the currency does not have cents.
+    #
+    # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
+    # @option shopper [String]         :email         The shopper’s email address.
+    # @option shopper [String]         :ip            The shopper’s IP address.
+    #
+    # @option elv     [String]         :holder_name      The full name on the card.
+    # @option elv     [String]         :number           The account number.
+    # @option elv     [String]         :bank_location_id The card’s verification code.
+    # @option elv     [String]         :bank_location    The Bank Location (optional).
+    # @option elv     [String]         :bank_name        The Bank Name (optional).
+    #
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
+    #                                                 authorisation status.
+    def authorise_elv_payment(reference, amount, shopper, elv)
+      ElvPaymentService.new(
+        :reference => reference,
+        :amount    => amount,
+        :shopper   => shopper,
+        :elv       => elv
+      ).authorise_payment
     end
   end
 end
