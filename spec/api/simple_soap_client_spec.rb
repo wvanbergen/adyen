@@ -81,11 +81,6 @@ describe Adyen::API::SimpleSOAPClient do
         "[401 Bad request] A client",
         Net::HTTPBadRequest.new('1.1', '401', 'Bad request'),
         Adyen::API::SimpleSOAPClient::ClientError
-      ],
-      [
-        "[502 Bad gateway] A server",
-        Net::HTTPBadGateway.new('1.1', '502', 'Bad gateway'),
-        Adyen::API::SimpleSOAPClient::ServerError
       ]
     ].each do |label, response, expected_exception|
       it "raises when the HTTP response is a subclass of #{response.class.name}" do
@@ -98,7 +93,40 @@ describe Adyen::API::SimpleSOAPClient do
         rescue expected_exception => e
           exception = e
         end
-        exception.message.should ==  %{#{label} error occurred while calling SOAP action `Action' on endpoint `https://test.example.com/soap/Action', with fault message: Illegal argument. For input string: "100.0".}
+        exception.message.should ==  %{#{label} error occurred while calling SOAP action `Action' on endpoint `https://test.example.com/soap/Action'. Fault message: Illegal argument. For input string: "100.0".}
+      end
+    end
+
+    describe 'server error' do
+      [
+        ["[500 Internal Server Error] A server",      Net::HTTPBadGateway.new('1.1', '500', 'Internal Server Error')],
+        ["[501 Not Implemented] A server",            Net::HTTPBadGateway.new('1.1', '501', 'Not Implemented')],
+        ["[502 Bad Gateway] A server",                Net::HTTPBadGateway.new('1.1', '502', 'Bad Gateway')],
+        ["[503 Service Unavailable] A server",        Net::HTTPBadGateway.new('1.1', '503', 'Service Unavailable')],
+        ["[504 Gateway Timeout] A server",            Net::HTTPBadGateway.new('1.1', '504', 'Gateway Timeout')],
+        ["[505 HTTP Version Not Supported] A server", Net::HTTPBadGateway.new('1.1', '505', 'HTTP Version Not Supported')],
+      ].each do |label, response|
+        it "is raised when the HTTP response is a `real` server error by status code" do
+          response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body></soap:Body></soap:Envelope>})
+          Net::HTTP.stubbed_response = response
+
+          exception = nil
+          begin
+            @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
+          rescue Adyen::API::SimpleSOAPClient::ServerError => e
+            exception = e
+          end
+          exception.message.should ==  %{#{label} error occurred while calling SOAP action `Action' on endpoint `https://test.example.com/soap/Action'.}
+        end
+      end
+
+      it "is not raised when the HTTP response has a 500 status code with a fault message" do
+        response = Net::HTTPServerError.new('1.1', '500', 'Internal Server Error')
+        response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
+
+         lambda do
+            @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
+          end.should_not raise_error Adyen::API::SimpleSOAPClient::ServerError
       end
     end
   end
