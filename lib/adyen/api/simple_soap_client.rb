@@ -32,25 +32,17 @@ EOS
         def message_prefix
           %{[#{@response.http_response.code} #{@response.http_response.message}] A %s error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'.}
         end
-
-        def client_error_template
-          "#{message_prefix % "client"} Fault message: #{@response.fault_message}."
-        end
-
-        def server_error_template
-          message_prefix % 'server'
-        end
       end
 
       class ClientError < StandardError
         def message
-          client_error_template
+          "#{message_prefix % "client"} Fault message: #{@response.fault_message}."
         end
       end
 
       class ServerError < StandardError
         def message
-          server_error_template
+          message_prefix % 'server'
         end
       end
 
