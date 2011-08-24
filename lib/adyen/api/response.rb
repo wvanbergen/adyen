@@ -32,6 +32,13 @@ module Adyen
         !@http_response.is_a?(Net::HTTPSuccess)
       end
 
+      # @return [Boolean] Whether or not the SOAP request itself was a success.
+      # Adyen returns a 500 status code for e.g. failed CC validation and in this case, we don't
+      # want to throw a server error but rather treat it as something normal.
+      def server_error?
+        @http_response.is_a?(Net::HTTPServerError) && fault_message.nil?
+      end
+
       # @return [XMLQuerier] The response body wrapped in a XMLQuerier.
       def xml_querier
         @xml_querier ||= XMLQuerier.new(@http_response.body)
