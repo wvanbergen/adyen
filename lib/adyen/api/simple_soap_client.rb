@@ -29,20 +29,28 @@ EOS
 
         private
 
-        def message_template
-          %{[#{@response.http_response.code} #{@response.http_response.message}] A %s error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}', with fault message: #{@response.fault_message}.}
+        def message_prefix
+          %{[#{@response.http_response.code} #{@response.http_response.message}] A %s error occurred while calling SOAP action `#{@action}' on endpoint `#{@endpoint}'.}
+        end
+
+        def client_error_template
+          "#{message_prefix % "client"} Fault message: #{@response.fault_message}."
+        end
+
+        def server_error_template
+          message_prefix % 'server'
         end
       end
 
       class ClientError < StandardError
         def message
-          message_template % "client"
+          client_error_template
         end
       end
 
       class ServerError < StandardError
         def message
-          message_template % "server"
+          server_error_template
         end
       end
 
@@ -124,7 +132,7 @@ EOS
             http_response = http.request(post)
             response = response_class.new(http_response)
             raise ClientError.new(response, action, endpoint) if http_response.is_a?(Net::HTTPClientError)
-            raise ServerError.new(response, action, endpoint) if http_response.is_a?(Net::HTTPServerError)
+            raise ServerError.new(response, action, endpoint) if response.server_error?
             response
           end
         end
