@@ -12,7 +12,7 @@ module Adyen
   # Version constant for the Adyen plugin.
   # DO NOT CHANGE THIS VALUE BY HAND. It will be updated automatically by
   # the gem:release rake task.
-  VERSION = "1.2.0"
+  VERSION = "1.3.0"
 
   # @return [Configuration] The configuration singleton.
   def self.configuration
