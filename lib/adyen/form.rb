@@ -84,8 +84,8 @@ module Adyen
     def payment_parameters(parameters = {}, shared_secret = nil)
       do_parameter_transformations!(parameters)
       
-      raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
-      raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]
+      raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code] || parameters[:recurring_contract] == 'RECURRING'
+      raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]  || parameters[:recurring_contract] == 'RECURRING'
       raise ArgumentError, "Cannot generate form: :merchant_account attribute not found!"      unless parameters[:merchant_account]
       raise ArgumentError, "Cannot generate form: :skin_code attribute not found!"             unless parameters[:skin_code]
 
