@@ -21,6 +21,7 @@ shared_examples_for "payment requests" do
     text('./payment:shopperReference').should == 'user-id'
     text('./payment:shopperEmail').should == 's.hopper@example.com'
     text('./payment:shopperIP').should == '61.294.12.12'
+    text('./payment:shopperStatement').should == 'some shopperstatement'
   end
 
   it "only includes shopper details for given parameters" do
@@ -69,6 +70,7 @@ describe Adyen::API::PaymentService do
         :email => 's.hopper@example.com',
         :reference => 'user-id',
         :ip => '61.294.12.12',
+        :statement => 'some shopperstatement',
       },
       :card => {
         :expiry_month => 12,

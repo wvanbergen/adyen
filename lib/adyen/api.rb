@@ -74,6 +74,7 @@ module Adyen
     # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
     # @option shopper [String]         :email         The shopper’s email address.
     # @option shopper [String]         :ip            The shopper’s IP address.
+    # @option shopper [String]         :statement     The shopper's statement (optional)
     #
     # @option card    [String]         :holder_name   The full name on the card.
     # @option card    [String]         :number        The card number.
