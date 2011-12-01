@@ -33,6 +33,8 @@ shared_examples_for "payment requests" do
       xpath('./payment:shopperEmail').should be_empty
       @payment.params[:shopper].delete(:ip)
       xpath('./payment:shopperIP').should be_empty
+      @payment.params[:shopper].delete(:statement)
+      xpath('./payment:shopperStatement').should be_empty
     end
   end
 
@@ -43,6 +45,7 @@ shared_examples_for "payment requests" do
       xpath('./payment:shopperReference').should be_empty
       xpath('./payment:shopperEmail').should be_empty
       xpath('./payment:shopperIP').should be_empty
+      xpath('./payment:statement').should be_empty
     end
   end
 end

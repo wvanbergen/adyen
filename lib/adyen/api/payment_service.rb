@@ -106,7 +106,9 @@ module Adyen
       def payment_request_body(content)
         validate_parameters!(:merchant_account, :reference, :amount => [:currency, :value])
         content << amount_partial
-        content << shopper_partial if @params[:shopper]
+        if @params[:shopper]
+          content << shopper_partial
+        end
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
