@@ -23,7 +23,7 @@ module Adyen
     #      :email => user.email,
     #      :reference => user.id,
     #      :ip => request.ip,
-    #      :statement => 'Shopper statement'
+    #      :statement => 'Invoice number 123456'
     #    },
     #    :card => {
     #      :expiry_month => 12,
