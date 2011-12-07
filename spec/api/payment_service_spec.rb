@@ -21,6 +21,7 @@ shared_examples_for "payment requests" do
     text('./payment:shopperReference').should == 'user-id'
     text('./payment:shopperEmail').should == 's.hopper@example.com'
     text('./payment:shopperIP').should == '61.294.12.12'
+    text('./payment:shopperStatement').should == 'invoice number 123456'
   end
 
   it "only includes shopper details for given parameters" do
@@ -32,6 +33,8 @@ shared_examples_for "payment requests" do
       xpath('./payment:shopperEmail').should be_empty
       @payment.params[:shopper].delete(:ip)
       xpath('./payment:shopperIP').should be_empty
+      @payment.params[:shopper].delete(:statement)
+      xpath('./payment:shopperStatement').should be_empty
     end
   end
 
@@ -42,6 +45,7 @@ shared_examples_for "payment requests" do
       xpath('./payment:shopperReference').should be_empty
       xpath('./payment:shopperEmail').should be_empty
       xpath('./payment:shopperIP').should be_empty
+      xpath('./payment:statement').should be_empty
     end
   end
 end
@@ -69,6 +73,7 @@ describe Adyen::API::PaymentService do
         :email => 's.hopper@example.com',
         :reference => 'user-id',
         :ip => '61.294.12.12',
+        :statement => 'invoice number 123456',
       },
       :card => {
         :expiry_month => 12,
