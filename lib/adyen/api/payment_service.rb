@@ -22,7 +22,8 @@ module Adyen
     #    :shopper => {
     #      :email => user.email,
     #      :reference => user.id,
-    #      #:ip => request.,
+    #      :ip => request.ip,
+    #      :statement => 'Shopper statement'
     #    },
     #    :card => {
     #      :expiry_month => 12,
