@@ -56,7 +56,7 @@ module Adyen
     #   response = Adyen::API.authorise_payment(
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456'},
     #     { :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737',
     #       :expiry_month => 12, :expiry_year => 2012 }
     #   )
@@ -74,6 +74,7 @@ module Adyen
     # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
     # @option shopper [String]         :email         The shopper’s email address.
     # @option shopper [String]         :ip            The shopper’s IP address.
+    # @option shopper [String]         :statement     The shopper's statement
     #
     # @option card    [String]         :holder_name   The full name on the card.
     # @option card    [String]         :number        The card number.
@@ -108,7 +109,7 @@ module Adyen
     #   response = Adyen::API.authorise_recurring_payment(
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' }
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' }
     #   )
     #   response.authorised? # => true
     #
@@ -123,6 +124,7 @@ module Adyen
     # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
     # @option shopper [String]         :email         The shopper’s email address.
     # @option shopper [String]         :ip            The shopper’s IP address.
+    # @option shopper [String]         :statement     The shopper's statement
     #
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
@@ -150,7 +152,7 @@ module Adyen
     #   payment = Adyen::API.authorise_one_click_payment(
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
     #     '737',
     #     detail
     #   )
@@ -168,6 +170,7 @@ module Adyen
     # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
     # @option shopper [String]         :email         The shopper’s email address.
     # @option shopper [String]         :ip            The shopper’s IP address.
+    # @option shopper [String]         :statement     The shopper's statement
     #
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
@@ -286,7 +289,7 @@ module Adyen
     #
     # # @example
     #   response = Adyen::API.store_recurring_token(
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
     #     { :holder_name => "Simon Hopper", :number => '4444333322221111',
     #       :expiry_month => 12, :expiry_year => 2012 }
     #   )
@@ -295,7 +298,7 @@ module Adyen
     #
     # # @example
     #   response = Adyen::API.store_recurring_token(
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
     #     { :bank_location => "Berlin", :bank_name => "TestBank", :bank_location_id => "12345678",
     #       :holder_name => "Simon Hopper", :number => "1234567890" }
     #   )
@@ -305,7 +308,7 @@ module Adyen
     #   authorize_response = Adyen::API.authorise_recurring_payment(
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
-    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8' },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
     #     response.recurring_detail_reference
     #   )
     #   authorize_response.authorised? # => true
@@ -316,6 +319,7 @@ module Adyen
     # @option shopper   [Numeric,String] :reference            The shopper’s reference (ID).
     # @option shopper   [String]         :email                The shopper’s email address.
     # @option shopper   [String]         :ip                   The shopper’s IP address.
+    # @option shopper   [String]         :statement            The shopper's statement
     #
     # @option params    [String]         :holder_name          The full name on the card or of the
     #                                                          account holder.

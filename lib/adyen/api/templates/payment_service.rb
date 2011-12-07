@@ -97,6 +97,7 @@ EOS
         :reference => '        <payment:shopperReference>%s</payment:shopperReference>',
         :email     => '        <payment:shopperEmail>%s</payment:shopperEmail>',
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
+        :statement => '        <payment:shopperStatement>%s</payment:shopperStatement>',
       }
     end
   end
