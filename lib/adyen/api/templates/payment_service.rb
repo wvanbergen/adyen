@@ -99,7 +99,6 @@ EOS
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
         :statement => '        <payment:shopperStatement>%s</payment:shopperStatement>',
       }
-
     end
   end
 end
