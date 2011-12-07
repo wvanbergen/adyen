@@ -16,7 +16,7 @@ describe Adyen::API::RecurringService do
         :email => 's.hopper@example.com',
         :reference => 'user-id',
         :ip => '61.294.12.12',
-        :statement => 'shopper statement'
+        :statement => 'invoice number 123456'
       },
       :card => {
         :expiry_month => 12,
