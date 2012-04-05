@@ -43,8 +43,8 @@ class AdyenNotification < ActiveRecord::Base
     # For example, merchantReference will be converted to merchant_reference
     self.new.tap do |notification|
       params.each do |key, value|
-        column_name = key.to_s.underscore
-        notification.send("#{column_name}=", value) if self.column_names.include?(column_name)
+        setter = "#{key.to_s.underscore}="
+        notification.send(setter, value) if notification.respond_to?(setter)
       end
       notification.save!
     end
