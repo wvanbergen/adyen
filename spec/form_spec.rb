@@ -35,17 +35,17 @@ describe Adyen::Form do
     it "should generate correct live url if explicitely asked for" do
       Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/select.shtml'
     end
-    
+
     it "should generate correct testing url if the payment flow selection is set to select" do
       Adyen.configuration.payment_flow = :select
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
     end
-    
+
     it "should generate correct testing url if the payment flow selection is set to pay" do
       Adyen.configuration.payment_flow = :pay
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/pay.shtml'
     end
-    
+
     it "should generate correct testing url if the payment flow selection is set to details" do
       Adyen.configuration.payment_flow = :details
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/details.shtml'
@@ -102,16 +102,16 @@ describe Adyen::Form do
 
       @redirect_url = Adyen::Form.redirect_url(@attributes)
     end
-    
+
     it "should return an URL pointing to the adyen server" do
       @redirect_url.should =~ %r[^#{Adyen::Form.url}]
     end
-    
+
     it "should include all provided attributes" do
       params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
       params.should include(*(@attributes.keys.map { |k| Adyen::Form.camelize(k) }))
     end
-    
+
     it "should include the merchant signature" do
       params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
       params.should include('merchantSig')
@@ -130,7 +130,7 @@ describe Adyen::Form do
       html_snippet = <<-HTML
         <form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>
       HTML
-      
+
       html_snippet.should have_adyen_payment_form
     end
   end
@@ -151,12 +151,12 @@ describe Adyen::Form do
     it "should construct the signature base string correctly" do
       signature_string = Adyen::Form.calculate_signature_string(@parameters)
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z"
-      
+
       signature_string = Adyen::Form.calculate_signature_string(@parameters.merge(:merchant_return_data => 'testing123'))
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Ztesting123"
-      
+
     end
-    
+
     it "should calculate the signature correctly" do
       signature = Adyen::Form.calculate_signature(@parameters)
       signature.should == 'x58ZcRVL1H6y+XSeBGrySJ9ACVo='
