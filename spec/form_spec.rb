@@ -80,8 +80,17 @@ describe Adyen::Form do
       Adyen::Form.redirect_signature_check(@params).should be_true
     end
 
-    it "should return false on empty input" do
-      Adyen::Form.redirect_signature_check({}).should be_false
+    it "should raise ArgumentError on missing skinCode" do
+      expect do
+        @params.delete(:skinCode)
+        Adyen::Form.redirect_signature_check(@params).should be_false
+      end.to raise_error ArgumentError
+    end
+
+    it "should raise ArgumentError on empty input" do
+      expect do
+        Adyen::Form.redirect_signature_check({}).should be_false
+      end.to raise_error ArgumentError
     end
 
     it "should detect a tampered field" do
@@ -160,6 +169,13 @@ describe Adyen::Form do
     it "should calculate the signature correctly" do
       signature = Adyen::Form.calculate_signature(@parameters)
       signature.should == 'x58ZcRVL1H6y+XSeBGrySJ9ACVo='
+    end
+
+    it "should raise ArgumentError on empty shared_secret" do
+      expect do
+        @parameters.delete(:shared_secret)
+        signature = Adyen::Form.calculate_signature(@parameters)
+      end.to raise_error ArgumentError
     end
 
     it "should calculate the signature base string correctly for a recurring payment" do

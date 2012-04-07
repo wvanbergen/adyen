@@ -194,8 +194,10 @@ module Adyen
     #    It should correspond with the skin_code parameter. This parameter can be
     #    left out if the shared_secret is included as key in the parameters.
     # @return [String] The signature of the payment request
+    # @raise [ArgumentError] Thrown if shared_secret is empty
     def calculate_signature(parameters, shared_secret = nil)
       shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate payment request signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Encoding.hmac_base64(shared_secret, calculate_signature_string(parameters))
     end
 
@@ -219,9 +221,11 @@ module Adyen
     #     the original payment form. You can leave this out of the skin is registered
     #     using the {Adyen::Form.register_skin} method.
     # @return [String] The redirect signature
+    # @raise [ArgumentError] Thrown if shared_secret is empty
     def redirect_signature(params, shared_secret = nil)
       shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params[:skinCode])
-      Adyen::Encoding.hmac_base64(shared_secret.to_s, redirect_signature_string(params))
+      raise ArgumentError, "Cannot compute redirect signature with empty shared_secret" if shared_secret.to_s.empty?
+      Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
     end
 
     # Checks the redirect signature for this request by calcultating the signature from
