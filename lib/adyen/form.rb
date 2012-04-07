@@ -221,7 +221,7 @@ module Adyen
     # @return [String] The redirect signature
     def redirect_signature(params, shared_secret = nil)
       shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params[:skinCode])
-      Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
+      Adyen::Encoding.hmac_base64(shared_secret.to_s, redirect_signature_string(params))
     end
 
     # Checks the redirect signature for this request by calcultating the signature from

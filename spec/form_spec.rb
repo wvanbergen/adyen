@@ -80,6 +80,9 @@ describe Adyen::Form do
       Adyen::Form.redirect_signature_check(@params).should be_true
     end
 
+    it "should return false on empty input" do
+      Adyen::Form.redirect_signature_check({}).should be_false
+    end
 
     it "should detect a tampered field" do
       Adyen::Form.redirect_signature_check(@params.merge(:pspReference => 'tampered')).should be_false
