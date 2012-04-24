@@ -332,6 +332,21 @@ LIST_RESPONSE = <<EOS
             <recurringDetailReference>RecurringDetailReference2</recurringDetailReference>
             <variant>IDEAL</variant>
           </RecurringDetail>
+          <RecurringDetail>
+            <card xsi:nil="true"/>
+            <bank xsi:nil="true"/>            
+            <elv>
+              <accountHolderName xmlns="http://payment.services.adyen.com">S. Hopper</accountHolderName>
+              <bankAccountNumber xmlns="http://payment.services.adyen.com">1234567890</bankAccountNumber>
+              <bankLocation xmlns="http://payment.services.adyen.com">Berlin</bankLocation>
+              <bankLocationId xmlns="http://payment.services.adyen.com">12345678</bankLocationId>
+              <bankName xmlns="http://payment.services.adyen.com">TestBank</bankName>
+            </elv>
+            <creationDate>2009-10-27T11:26:22.216+01:00</creationDate>
+            <name/>
+            <recurringDetailReference>RecurringDetailReference3</recurringDetailReference>
+            <variant>elv</variant>
+          </RecurringDetail>
         </details>
         <ns1:lastKnownShopperEmail>s.hopper@example.com</ns1:lastKnownShopperEmail>
         <ns1:shopperReference>user-id</ns1:shopperReference>
