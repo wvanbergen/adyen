@@ -94,7 +94,20 @@ module Adyen
       raise ArgumentError, "Cannot calculate payment request signature without shared secret!" unless shared_secret
       parameters[:merchant_sig] = calculate_signature(parameters, shared_secret)
 
+      if parameters[:billing_address]
+        parameters[:billing_address_sig] = calculate_billing_address_signature(parameters, shared_secret)
+      end
+
       return parameters
+    end
+
+    # Transforms and flattens payment parameters to be in the correct format which is understood and accepted by adyen
+    #
+    # @param [Hash] parameters The payment parameters. The parameters set in the
+    #    {Adyen::Configuration#default_form_params} hash will be included automatically.
+    # @return [Hash] The payment parameters flatten, with camelized and prefixed key, stringified value
+    def flat_payment_parameters(parameters = {})
+      flatten(payment_parameters(parameters))
     end
 
     # Returns an absolute URL to the Adyen payment system, with the payment parameters included
@@ -126,8 +139,9 @@ module Adyen
     # @param [Hash] parameters The payment parameters to include in the payment request.
     # @return [String] An absolute URL to redirect to the Adyen payment system.
     def redirect_url(parameters = {})
-      url + '?' + payment_parameters(parameters).map{|k,v| [k.to_s,v] }.sort.map { |(k, v)|
-        "#{camelize(k)}=#{CGI.escape(v.to_s)}" }.join('&')
+      url + '?' + flat_payment_parameters(parameters).map { |(k, v)|
+        "#{k}=#{CGI.escape(v)}"
+      }.join('&')
     end
 
     # Returns a HTML snippet of hidden INPUT tags with the provided payment parameters.
@@ -154,8 +168,8 @@ module Adyen
     def hidden_fields(parameters = {})
 
       # Generate a hidden input tag per parameter, join them by newlines.
-      form_str = payment_parameters(parameters).map { |key, value|
-        "<input type=\"hidden\" name=\"#{CGI.escapeHTML(camelize(key))}\" value=\"#{CGI.escapeHTML(value.to_s)}\" />"
+      form_str = flat_payment_parameters(parameters).map { |key, value|
+        "<input type=\"hidden\" name=\"#{CGI.escapeHTML(key)}\" value=\"#{CGI.escapeHTML(value)}\" />"
       }.join("\n")
 
       form_str.respond_to?(:html_safe) ? form_str.html_safe : form_str
@@ -199,6 +213,36 @@ module Adyen
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate payment request signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Encoding.hmac_base64(shared_secret, calculate_signature_string(parameters))
+    end
+
+    # Generates the string that is used to calculate the request signature. This signature
+    # is used by Adyen to check whether the request is genuinely originating from you.
+    # @param [Hash] parameters The parameters that will be included in the billing address request.
+    # @return [String] The string for which the siganture is calculated.
+    def calculate_billing_address_signature_string(parameters)
+      %w(street house_number_or_name city postal_code state_or_province country).map do |key|
+        parameters[key.to_sym]
+      end.join
+    end
+
+    # Calculates the billing address request signature for the given billing address parameters.
+    #
+    # This signature is used by Adyen to check whether the request is
+    # genuinely originating from you. The resulting signature should be
+    # included in the billing address request parameters as the +billingAddressSig+
+    # parameter; the shared secret should of course not be included.
+    #
+    # @param [Hash] parameters The billing address parameters for which to calculate
+    #    the billing address request signature.
+    # @param [String] shared_secret The shared secret to use for this signature.
+    #    It should correspond with the skin_code parameter. This parameter can be
+    #    left out if the shared_secret is included as key in the parameters.
+    # @return [String] The signature of the billing address request
+    # @raise [ArgumentError] Thrown if shared_secret is empty
+    def calculate_billing_address_signature(parameters, shared_secret = nil)
+      shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate billing address request signature with empty shared_secret" if shared_secret.to_s.empty?
+      Adyen::Encoding.hmac_base64(shared_secret, calculate_billing_address_signature_string(parameters[:billing_address]))
     end
 
     ######################################################
@@ -269,5 +313,32 @@ module Adyen
       identifier.to_s.gsub(/_(.)/) { $1.upcase }
     end
 
+    # Transforms the nested parameters Hash into a 'flat' Hash which is understood by adyen. This is:
+    #  * all keys are camelized
+    #  * all keys are  stringified
+    #  * nested hash is flattened, keys are prefixed with root key
+    #
+    # @example
+    #    flatten {:billing_address => { :street => 'My Street'}}
+    #
+    #    # resolves in:
+    #    {'billingAddress.street' =>  'My Street'}
+    #
+    # @param [Hash] parameters The payment parameters which to transform
+    # @param [String] prefix The prefix to add to the key
+    # @param [Hash] return_hash The new hash which is retruned (needed for recursive calls)
+    # @return [Hash] The return_hash filled with camelized and prefixed key, stringified value
+    def flatten(parameters, prefix = "", return_hash = {})
+      parameters ||= {}
+      parameters.inject(return_hash) do |hash, (key, value)|
+        key = "#{prefix}#{camelize(key)}"
+        if value.is_a?(Hash)
+          flatten(value, "#{key}.", return_hash)
+        else
+          hash[key] = value.to_s
+        end
+        hash
+      end
+    end
   end
 end
