@@ -152,7 +152,16 @@ describe Adyen::Form do
 
       @parameters = { :currency_code => 'GBP', :payment_amount => 10000,
         :ship_before_date => '2007-10-20', :merchant_reference => 'Internet Order 12345',
-        :skin => :testing, :session_validity => '2007-10-11T11:00:00Z' }
+        :skin => :testing, :session_validity => '2007-10-11T11:00:00Z',
+        :billing_address => {
+           :street               => 'Alexanderplatz',
+           :house_number_or_name => '0815',
+           :city                 => 'Berlin',
+           :postal_code          => '10119',
+           :state_or_province    => 'Berlin',
+           :country              => 'Germany',
+          }
+        }
 
       Adyen::Form.do_parameter_transformations!(@parameters)
     end
@@ -192,6 +201,45 @@ describe Adyen::Form do
 
       signature = Adyen::Form.calculate_signature(@parameters)
       signature.should == 'F2BQEYbE+EUhiRGuPtcD16Gm7JY='
+    end
+
+    context 'billing address' do
+
+      it "should construct the signature base string correctly" do
+        signature_string = Adyen::Form.calculate_billing_address_signature_string(@parameters[:billing_address])
+        signature_string.should == "Alexanderplatz0815Berlin10119BerlinGermany"
+      end
+
+      it "should calculate the signature correctly" do
+        signature = Adyen::Form.calculate_billing_address_signature(@parameters)
+        signature.should == '5KQb7VJq4cz75cqp11JDajntCY4='
+      end
+
+      it "should raise ArgumentError on empty shared_secret" do
+        expect do
+          @parameters.delete(:shared_secret)
+          signature = Adyen::Form.calculate_billing_address_signature(@parameters)
+        end.to raise_error ArgumentError
+      end
+    end
+
+  end
+
+  describe "flatten" do
+   let(:parameters) do
+      {
+        :billing_address => { :street => 'My Street'}
+      }
+    end
+
+    it "returns empty hash for nil input" do
+      Adyen::Form.flatten(nil).should == {}
+    end
+
+    it "flattens hash and prefixes keys" do
+      Adyen::Form.flatten(parameters).should == {
+        'billingAddress.street' =>  'My Street'
+      }
     end
   end
 end
