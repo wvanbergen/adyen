@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
     Package to simplify including the Adyen payments services into a Ruby on Rails application.
     The package provides functionality to create payment forms, handling and storing notifications 
     sent by Adyen and consuming the SOAP services provided by Adyen. Moreover, it contains helper
-    methods, mocks and matchers to simpify writing tests/specsfor your code.
+    methods, mocks and matchers to simpify writing tests/specs for your code.
   EOS
 
   s.authors  = ['Willem van Bergen', 'Michel Barbosa', 'Stefan Borsje', 'Eloy Duran']
