@@ -99,6 +99,9 @@ EOS
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
         :statement => '        <payment:shopperStatement>%s</payment:shopperStatement>',
       }
+                              
+      # @private
+      FRAUD_OFFSET_PARTIAL = '<payment:fraudOffset>%s</payment:fraudOffset>'
     end
   end
 end
