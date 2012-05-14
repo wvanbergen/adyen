@@ -36,10 +36,10 @@ class Adyen::Configuration
     elsif defined?(::RAILS_ENV)
       ::RAILS_ENV.to_s
     end
-    
+
     LIVE_RAILS_ENVIRONMENTS.include?(rails_env) ? 'live' : 'test'
   end
-  
+
   # The payment flow URL that’s used to choose the payement process
   #
   # @example
@@ -49,7 +49,7 @@ class Adyen::Configuration
   #
   # @return [String]
   attr_accessor :payment_flow
-  
+
   # The username that’s used to authenticate for the Adyen SOAP services. It should look
   # something like ‘+ws@AndyInc.SuperShop+’
   #
@@ -78,13 +78,13 @@ class Adyen::Configuration
   #
   # @return [Hash]
   attr_accessor :default_form_params
-  
-  # Username that's set in Notification settings screen in Adyen PSP system and used by notification service to 
+
+  # Username that's set in Notification settings screen in Adyen PSP system and used by notification service to
   # authenticate instant payment notification requests.
   #
   # @return [String]
   attr_accessor :ipn_username
-  
+
   # Password used to authenticate notification requests together with '+ipn_username+' configuration attribute.
   #
   # @return [String]
@@ -98,10 +98,10 @@ class Adyen::Configuration
   #
   # @return [Hash] The hash of registered skins.
   attr_reader :form_skins
-  
+
   # Sets the registered skins.
   #
-  # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash 
+  # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash
   #    (which should include +:skin_code+ and +:shared_secret+) as value.
   #
   # @see Adyen::Configuration.register_form_skin
