@@ -125,8 +125,8 @@ class Adyen::Configuration
   # @param [Symbol] name The name of the skin.
   # @param [String] skin_code The skin code for this skin, as defined by Adyen.
   # @param [String] shared_secret The shared secret used for signature calculation.
-  def register_form_skin(name, skin_code, shared_secret)
-    @form_skins[name.to_sym] = { :name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
+  def register_form_skin(name, skin_code, shared_secret, default_form_params = {})
+    @form_skins[name.to_sym] = { :name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret, :default_form_params => default_form_params}
   end
 
   # Returns a skin information by name.
