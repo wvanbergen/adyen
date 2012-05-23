@@ -58,16 +58,18 @@ module Adyen
     # @param [Hash] parameters The payment parameters hash to transform
     def do_parameter_transformations!(parameters = {})
       parameters.replace(Adyen.configuration.default_form_params.merge(parameters))
-      parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
-      parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
-      parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
-      parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
 
       if parameters[:skin]
         skin = Adyen.configuration.form_skin_by_name(parameters.delete(:skin))
         parameters[:skin_code]     ||= skin[:skin_code]
         parameters[:shared_secret] ||= skin[:shared_secret]
+        parameters.merge!(skin[:default_form_params])
       end
+
+      parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
+      parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
+      parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
+      parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
     end
 
     # Transforms the payment parameters to be in the correct format and calculates the merchant

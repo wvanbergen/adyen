@@ -6,7 +6,7 @@ require 'adyen/form'
 
 describe Adyen::Form do
 
-  before(:all) do
+  before(:each) do
     Adyen.configuration.register_form_skin(:testing, '4aD37dJA', 'Kah942*$7sdp0)')
     Adyen.configuration.default_form_params[:merchant_account] = 'TestMerchant'
   end
@@ -128,6 +128,7 @@ describe Adyen::Form do
   end
 
   describe 'hidden fields generation' do
+    subject { %Q'<form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>' }
 
     before(:each) do
       @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
@@ -135,12 +136,18 @@ describe Adyen::Form do
         :session_validity => Time.now + 3600 }
     end
 
-    it "should generate a valid payment form" do
-      html_snippet = <<-HTML
-        <form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>
-      HTML
+    it { should have_adyen_payment_form }
+    it { should include('<input type="hidden" name="merchantAccount" value="TestMerchant" />') }
 
-      html_snippet.should have_adyen_payment_form
+    context "width default_form_params" do
+      before(:each) do
+        Adyen.configuration.register_form_skin(:testing, '4aD37dJA', 'Kah942*$7sdp0)', {
+          :merchant_account => 'OtherMerchant',
+        })
+      end
+
+      it { should include('<input type="hidden" name="merchantAccount" value="OtherMerchant" />') }
+      it { should_not include('<input type="hidden" name="merchantAccount" value="TestMerchant" />') }
     end
   end
 
