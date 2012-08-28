@@ -50,6 +50,17 @@ describe Adyen::Form do
       Adyen.configuration.payment_flow = :details
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/details.shtml'
     end
+
+    context "with custom domain" do
+      before(:each) do
+        Adyen.configuration.payment_flow = :select
+        Adyen.configuration.payment_flow_domain = "checkout.mydomain.com"
+      end
+
+      it "should generate correct testing url" do
+        Adyen::Form.url.should == 'https://checkout.mydomain.com/hpp/select.shtml'
+      end
+    end
   end
 
   describe 'redirect signature check' do
