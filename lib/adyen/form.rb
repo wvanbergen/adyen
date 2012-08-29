@@ -27,22 +27,41 @@ module Adyen
     # ADYEN FORM URL
     ######################################################
 
+    # The DOMAIN of the Adyen payment system that still requires the current
+    # Adyen enviroment.
+    ACTION_DOMAIN = "%s.adyen.com"
+
     # The URL of the Adyen payment system that still requires the current
-    # Adyen enviroment and payment flow to be filled.
-    ACTION_URL = "https://%s.adyen.com/hpp/%s.shtml"
+    # domain and payment flow to be filled.
+    ACTION_URL = "https://%s/hpp/%s.shtml"
+
+    # Returns the DOMAIN of the Adyen payment system, adjusted for an Adyen environment.
+    #
+    # @param [String] environment The Adyen environment to use. This parameter can be
+    #    left out, in which case the 'current' environment will be used.
+    # @return [String] The domain of the Adyen payment system that can be used
+    #    for payment forms or redirects.
+    # @see Adyen::Form.environment
+    # @see Adyen::Form.redirect_url
+    def domain(environment = nil)
+      environment  ||= Adyen.configuration.environment
+      (Adyen.configuration.payment_flow_domain || ACTION_DOMAIN) % [environment.to_s]
+    end
 
     # Returns the URL of the Adyen payment system, adjusted for an Adyen environment.
     #
     # @param [String] environment The Adyen environment to use. This parameter can be
     #    left out, in which case the 'current' environment will be used.
+    # @param [String] payment_flow The Adyen payment type to use. This parameter can be
+    #    left out, in which case the default payment type will be used.
     # @return [String] The absolute URL of the Adyen payment system that can be used
     #    for payment forms or redirects.
     # @see Adyen::Form.environment
+    # @see Adyen::Form.domain
     # @see Adyen::Form.redirect_url
     def url(environment = nil, payment_flow = nil)
-      environment  ||= Adyen.configuration.environment
       payment_flow ||= Adyen.configuration.payment_flow
-      Adyen::Form::ACTION_URL % [environment.to_s, payment_flow.to_s]
+      Adyen::Form::ACTION_URL % [domain(environment), payment_flow.to_s]
     end
 
     ######################################################
