@@ -40,7 +40,7 @@ class Adyen::Configuration
     LIVE_RAILS_ENVIRONMENTS.include?(rails_env) ? 'live' : 'test'
   end
 
-  # The payment flow URL that’s used to choose the payement process
+  # The payment flow page type that’s used to choose the payment process
   #
   # @example
   #   Adyen.configuration.payment_flow = :select
@@ -49,6 +49,14 @@ class Adyen::Configuration
   #
   # @return [String]
   attr_accessor :payment_flow
+
+  # The payment flow domain that’s used to choose the payment process
+  #
+  # @example
+  #   Adyen.configuration.payment_flow_domain = checkout.mydomain.com
+  #
+  # @return [String]
+  attr_accessor :payment_flow_domain
 
   # The username that’s used to authenticate for the Adyen SOAP services. It should look
   # something like ‘+ws@AndyInc.SuperShop+’
