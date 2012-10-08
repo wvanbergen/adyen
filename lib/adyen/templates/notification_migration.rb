@@ -5,7 +5,7 @@ class CreateAdyenNotifications < ActiveRecord::Migration
     create_table :adyen_notifications do |t|
       t.boolean  :live,                  :null => false, :default => false
       t.string   :event_code,            :null => false, :limit => 20
-      t.string   :psp_reference,         :null => false, :limit => 30
+      t.string   :psp_reference,         :null => false, :limit => 50
       t.string   :original_reference,    :null => true
       t.string   :merchant_reference,    :null => false
       t.string   :merchant_account_code, :null => false
