@@ -20,8 +20,14 @@ module Adyen
   # * {RecurringService} - for handling recurring contract details.
   #
   # *However*, direct use of these classes is discouraged in favor of the shortcut methods defined
-  # on the API module. These methods *expect* that you set the :merchant_account as a default
-  # parameter.
+  # on the API module. These methods *require* that you set the :merchant_account *beforehand* as
+  # a default parameter passed in all API calls:
+  #
+  #     Adyen.configuration.default_api_params[:merchant_account] = 'MerchantAccount'
+  #
+  # For Rails apps, you can also set it `application.rb` config block, like this:
+  #
+  #     config.adyen.default_api_params = { :merchant_account => 'MerchantAccount' }
   #
   # Note that you'll need an Adyen notification PSP reference for some of the calls. Because of
   # this, store all notifications that Adyen sends to you. Moreover, the responses to these calls 
