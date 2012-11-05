@@ -106,10 +106,15 @@ describe Adyen::API::RecurringService do
     it "returns an array with just the detail references" do
       @response.references.should == %w{ RecurringDetailReference1 RecurringDetailReference2 RecurringDetailReference3 }
     end
+  end
 
+  describe_response_from :list, LIST_EMPTY_RESPONSE, 'listRecurringDetails' do
     it "returns an empty hash when there are no details" do
-      stub_net_http(LIST_EMPTY_RESPONSE)
       @recurring.list.params.should == {}
+    end
+
+    it "returns an empty array when there are no references" do
+      @response.references.should == []
     end
   end
 
