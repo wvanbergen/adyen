@@ -227,6 +227,11 @@ module Adyen
           super && params[:response] == self.class.request_received_value
         end
 
+        # return nil to satisfy spree
+        def authorization
+          nil
+        end
+
         def params
           @params ||= xml_querier.xpath(self.class.base_xpath) do |result|
             {
