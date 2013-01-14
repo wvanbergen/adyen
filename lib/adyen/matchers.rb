@@ -1,6 +1,3 @@
-require 'rexml/document'
-require 'rexml/xpath'
-
 module Adyen
   module Matchers
 
@@ -32,10 +29,10 @@ module Adyen
 
       def self.document(subject)
         if String === subject
-          REXML::Document.new(subject.to_s)
+          Nokogiri::XML.parse(subject.to_s)
         elsif subject.respond_to?(:body)
-          REXML::Document.new(subject.body.to_s)
-        elsif REXML::Document === subject
+          Nokogiri::XML.parse(subject.body.to_s)
+        elsif Nokogiri::XML::Document === subject
           subject
         else
           raise "Cannot handle this XML input type"
@@ -43,7 +40,7 @@ module Adyen
       end
 
       def self.check(subject, checks = {})
-        !!REXML::XPath.first(document(subject), build_xpath_query(checks))
+        !!document(subject).xpath(build_xpath_query(checks))
       end
     end
 
