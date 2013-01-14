@@ -40,7 +40,7 @@ module Adyen
       end
 
       def self.check(subject, checks = {})
-        !!document(subject).xpath(build_xpath_query(checks))
+        !document(subject).xpath(build_xpath_query(checks)).empty?
       end
     end
 
