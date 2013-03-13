@@ -2,8 +2,8 @@ require 'cgi'
 
 module Adyen
 
-  # The Adyen::Form module contains all functionality that is used to send payment requests 
-  # to the Adyen payment system, using either a HTML form (see {Adyen::Form.hidden_fields}) 
+  # The Adyen::Form module contains all functionality that is used to send payment requests
+  # to the Adyen payment system, using either a HTML form (see {Adyen::Form.hidden_fields})
   # or a HTTP redirect (see {Adyen::Form.redirect_url}).
   #
   # Moreover, this module contains the method {Adyen::Form.redirect_signature_check} to
@@ -12,7 +12,7 @@ module Adyen
   #
   # You can use different skins in Adyen to define different payment environments. You can
   # register these skins under a custom name in the module. The other methods will automatically
-  # use this information (i.e. the skin code and the shared secret) if it is available. 
+  # use this information (i.e. the skin code and the shared secret) if it is available.
   # Otherwise, you have to provide it yourself for every method call you make. See
   # {Adyen::Configuration#register_form_skin} for more information.
   #
@@ -27,22 +27,41 @@ module Adyen
     # ADYEN FORM URL
     ######################################################
 
-    # The URL of the Adyen payment system that still requires the current
-    # Adyen enviroment and payment flow to be filled.
-    ACTION_URL = "https://%s.adyen.com/hpp/%s.shtml"
+    # The DOMAIN of the Adyen payment system that still requires the current
+    # Adyen enviroment.
+    ACTION_DOMAIN = "%s.adyen.com"
 
-    # Returns the URL of the Adyen payment system, adjusted for an Adyen environment.
+    # The URL of the Adyen payment system that still requires the current
+    # domain and payment flow to be filled.
+    ACTION_URL = "https://%s/hpp/%s.shtml"
+
+    # Returns the DOMAIN of the Adyen payment system, adjusted for an Adyen environment.
     #
-    # @param [String] environment The Adyen environment to use. This parameter can be 
+    # @param [String] environment The Adyen environment to use. This parameter can be
     #    left out, in which case the 'current' environment will be used.
-    # @return [String] The absolute URL of the Adyen payment system that can be used
+    # @return [String] The domain of the Adyen payment system that can be used
     #    for payment forms or redirects.
     # @see Adyen::Form.environment
     # @see Adyen::Form.redirect_url
-    def url(environment = nil, payment_flow = nil)
+    def domain(environment = nil)
       environment  ||= Adyen.configuration.environment
+      (Adyen.configuration.payment_flow_domain || ACTION_DOMAIN) % [environment.to_s]
+    end
+
+    # Returns the URL of the Adyen payment system, adjusted for an Adyen environment.
+    #
+    # @param [String] environment The Adyen environment to use. This parameter can be
+    #    left out, in which case the 'current' environment will be used.
+    # @param [String] payment_flow The Adyen payment type to use. This parameter can be
+    #    left out, in which case the default payment type will be used.
+    # @return [String] The absolute URL of the Adyen payment system that can be used
+    #    for payment forms or redirects.
+    # @see Adyen::Form.environment
+    # @see Adyen::Form.domain
+    # @see Adyen::Form.redirect_url
+    def url(environment = nil, payment_flow = nil)
       payment_flow ||= Adyen.configuration.payment_flow
-      Adyen::Form::ACTION_URL % [environment.to_s, payment_flow.to_s]
+      Adyen::Form::ACTION_URL % [domain(environment), payment_flow.to_s]
     end
 
     ######################################################
@@ -58,22 +77,24 @@ module Adyen
     # @param [Hash] parameters The payment parameters hash to transform
     def do_parameter_transformations!(parameters = {})
       parameters.replace(Adyen.configuration.default_form_params.merge(parameters))
-      parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
-      parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
-      parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
-      parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
-      
+
       if parameters[:skin]
         skin = Adyen.configuration.form_skin_by_name(parameters.delete(:skin))
         parameters[:skin_code]     ||= skin[:skin_code]
         parameters[:shared_secret] ||= skin[:shared_secret]
+        parameters.merge!(skin[:default_form_params])
       end
+
+      parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
+      parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
+      parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
+      parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
     end
 
     # Transforms the payment parameters to be in the correct format and calculates the merchant
     # signature parameter. It also does some basic health checks on the parameters hash.
     #
-    # @param [Hash] parameters The payment parameters. The parameters set in the 
+    # @param [Hash] parameters The payment parameters. The parameters set in the
     #    {Adyen::Configuration#default_form_params} hash will be included automatically.
     # @param [String] shared_secret The shared secret that should be used to calculate
     #    the payment request signature. This parameter can be left if the skin that is
@@ -83,7 +104,7 @@ module Adyen
     # @raise [ArgumentError] Thrown if some parameter health check fails.
     def payment_parameters(parameters = {}, shared_secret = nil)
       do_parameter_transformations!(parameters)
-      
+
       raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
       raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]
       raise ArgumentError, "Cannot generate form: :merchant_account attribute not found!"      unless parameters[:merchant_account]
@@ -93,14 +114,27 @@ module Adyen
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate payment request signature without shared secret!" unless shared_secret
       parameters[:merchant_sig] = calculate_signature(parameters, shared_secret)
-      
+
+      if parameters[:billing_address]
+        parameters[:billing_address_sig] = calculate_billing_address_signature(parameters, shared_secret)
+      end
+
       return parameters
     end
-    
+
+    # Transforms and flattens payment parameters to be in the correct format which is understood and accepted by adyen
+    #
+    # @param [Hash] parameters The payment parameters. The parameters set in the
+    #    {Adyen::Configuration#default_form_params} hash will be included automatically.
+    # @return [Hash] The payment parameters flatten, with camelized and prefixed key, stringified value
+    def flat_payment_parameters(parameters = {})
+      flatten(payment_parameters(parameters))
+    end
+
     # Returns an absolute URL to the Adyen payment system, with the payment parameters included
     # as GET parameters in the URL. The URL also depends on the current Adyen enviroment.
     #
-    # The payment parameters that are provided to this method will be merged with the 
+    # The payment parameters that are provided to this method will be merged with the
     # {Adyen::Configuration#default_form_params} hash. The default parameter values will be
     # overrided if another value is provided to this method.
     #
@@ -108,7 +142,7 @@ module Adyen
     # if you provide either a registered skin name as the +:skin+ parameter or provide both the
     # +:skin_code+ and +:shared_secret+ parameters.
     #
-    # Note that Internet Explorer has a maximum length for URLs it can handle (2083 characters). 
+    # Note that Internet Explorer has a maximum length for URLs it can handle (2083 characters).
     # Make sure that the URL is not longer than this limit if you want your site to work in IE.
     #
     # @example
@@ -117,7 +151,7 @@ module Adyen
     #      # Genarate a URL to redirect to Adyen's payment system.
     #      adyen_url = Adyen::Form.redirect_url(:skin => :my_skin, :currency_code => 'USD',
     #            :payment_amount => 1000, merchant_account => 'MyMerchant', ... )
-    #      
+    #
     #      respond_to do |format|
     #        format.html { redirect_to(adyen_url) }
     #      end
@@ -126,14 +160,15 @@ module Adyen
     # @param [Hash] parameters The payment parameters to include in the payment request.
     # @return [String] An absolute URL to redirect to the Adyen payment system.
     def redirect_url(parameters = {})
-      url + '?' + payment_parameters(parameters).map{|k,v| [k.to_s,v] }.sort.map { |(k, v)| 
-        "#{camelize(k)}=#{CGI.escape(v.to_s)}" }.join('&')
+      url + '?' + flat_payment_parameters(parameters).map { |(k, v)|
+        "#{k}=#{CGI.escape(v)}"
+      }.join('&')
     end
-    
-    # Returns a HTML snippet of hidden INPUT tags with the provided payment parameters. 
+
+    # Returns a HTML snippet of hidden INPUT tags with the provided payment parameters.
     # The snippet can be included in a payment form that POSTs to the Adyen payment system.
     #
-    # The payment parameters that are provided to this method will be merged with the 
+    # The payment parameters that are provided to this method will be merged with the
     # {Adyen::Configuration#default_form_params} hash. The default parameter values will be
     # overrided if another value is provided to this method.
     #
@@ -152,15 +187,15 @@ module Adyen
     # @return [String] An HTML snippet that can be included in a form that POSTs to the
     #       Adyen payment system.
     def hidden_fields(parameters = {})
-      
+
       # Generate a hidden input tag per parameter, join them by newlines.
-      form_str = payment_parameters(parameters).map { |key, value|
-        "<input type=\"hidden\" name=\"#{CGI.escapeHTML(camelize(key))}\" value=\"#{CGI.escapeHTML(value.to_s)}\" />"
+      form_str = flat_payment_parameters(parameters).map { |key, value|
+        "<input type=\"hidden\" name=\"#{CGI.escapeHTML(key)}\" value=\"#{CGI.escapeHTML(value)}\" />"
       }.join("\n")
-      
+
       form_str.respond_to?(:html_safe) ? form_str.html_safe : form_str
     end
-    
+
     ######################################################
     # MERCHANT SIGNATURE CALCULATION
     ######################################################
@@ -181,7 +216,7 @@ module Adyen
                              parameters[:billing_address_type].to_s << parameters[:offset].to_s
     end
 
-    # Calculates the payment request signature for the given payment parameters. 
+    # Calculates the payment request signature for the given payment parameters.
     #
     # This signature is used by Adyen to check whether the request is
     # genuinely originating from you. The resulting signature should be
@@ -190,13 +225,45 @@ module Adyen
     #
     # @param [Hash] parameters The payment parameters for which to calculate
     #    the payment request signature.
-    # @param [String] shared_secret The shared secret to use for this signature. 
-    #    It should correspond with the skin_code parameter. This parameter can be 
+    # @param [String] shared_secret The shared secret to use for this signature.
+    #    It should correspond with the skin_code parameter. This parameter can be
     #    left out if the shared_secret is included as key in the parameters.
     # @return [String] The signature of the payment request
+    # @raise [ArgumentError] Thrown if shared_secret is empty
     def calculate_signature(parameters, shared_secret = nil)
       shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate payment request signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Encoding.hmac_base64(shared_secret, calculate_signature_string(parameters))
+    end
+
+    # Generates the string that is used to calculate the request signature. This signature
+    # is used by Adyen to check whether the request is genuinely originating from you.
+    # @param [Hash] parameters The parameters that will be included in the billing address request.
+    # @return [String] The string for which the siganture is calculated.
+    def calculate_billing_address_signature_string(parameters)
+      %w(street house_number_or_name city postal_code state_or_province country).map do |key|
+        parameters[key.to_sym]
+      end.join
+    end
+
+    # Calculates the billing address request signature for the given billing address parameters.
+    #
+    # This signature is used by Adyen to check whether the request is
+    # genuinely originating from you. The resulting signature should be
+    # included in the billing address request parameters as the +billingAddressSig+
+    # parameter; the shared secret should of course not be included.
+    #
+    # @param [Hash] parameters The billing address parameters for which to calculate
+    #    the billing address request signature.
+    # @param [String] shared_secret The shared secret to use for this signature.
+    #    It should correspond with the skin_code parameter. This parameter can be
+    #    left out if the shared_secret is included as key in the parameters.
+    # @return [String] The signature of the billing address request
+    # @raise [ArgumentError] Thrown if shared_secret is empty
+    def calculate_billing_address_signature(parameters, shared_secret = nil)
+      shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate billing address request signature with empty shared_secret" if shared_secret.to_s.empty?
+      Adyen::Encoding.hmac_base64(shared_secret, calculate_billing_address_signature_string(parameters[:billing_address]))
     end
 
     ######################################################
@@ -207,20 +274,22 @@ module Adyen
     # @param [Hash] params A hash of HTTP GET parameters for the redirect request.
     # @return [String] The signature string.
     def redirect_signature_string(params)
-      params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s + 
+      params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s +
         params[:skinCode].to_s + params[:merchantReturnData].to_s
     end
-    
-    # Computes the redirect signature using the request parameters, so that the 
+
+    # Computes the redirect signature using the request parameters, so that the
     # redirect can be checked for forgery.
     #
     # @param [Hash] params A hash of HTTP GET parameters for the redirect request.
     # @param [String] shared_secret The shared secret for the Adyen skin that was used for
-    #     the original payment form. You can leave this out of the skin is registered 
+    #     the original payment form. You can leave this out of the skin is registered
     #     using the {Adyen::Form.register_skin} method.
     # @return [String] The redirect signature
+    # @raise [ArgumentError] Thrown if shared_secret is empty
     def redirect_signature(params, shared_secret = nil)
       shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params[:skinCode])
+      raise ArgumentError, "Cannot compute redirect signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
     end
 
@@ -235,14 +304,14 @@ module Adyen
     # @example
     #   class PaymentsController < ApplicationController
     #     before_filter :check_signature, :only => [:return_from_adyen]
-    #     
+    #
     #     def return_from_adyen
     #       @invoice = Invoice.find(params[:merchantReference])
     #       @invoice.set_paid! if params[:authResult] == 'AUTHORISED'
     #     end
-    #     
+    #
     #     private
-    #     
+    #
     #     def check_signature
     #       raise "Forgery!" unless Adyen::Form.redirect_signature_check(params)
     #     end
@@ -251,19 +320,46 @@ module Adyen
     # @param [Hash] params params A hash of HTTP GET parameters for the redirect request. This
     #      should include the +:merchantSig+ parameter, which contains the signature.
     # @param [String] shared_secret The shared secret for the Adyen skin that was used for
-    #     the original payment form. You can leave this out of the skin is registered 
+    #     the original payment form. You can leave this out of the skin is registered
     #     using the {Adyen::Configuration#register_form_skin} method.
     # @return [true, false] Returns true only if the signature in the parameters is correct.
     def redirect_signature_check(params, shared_secret = nil)
       params[:merchantSig] == redirect_signature(params, shared_secret)
     end
-    
+
     # Returns the camelized version of a string.
     # @param [:to_s] identifier The identifier to turn to camelcase
     # @return [String] The camelcase version of the identifier provided.
     def camelize(identifier)
       identifier.to_s.gsub(/_(.)/) { $1.upcase }
     end
-    
+
+    # Transforms the nested parameters Hash into a 'flat' Hash which is understood by adyen. This is:
+    #  * all keys are camelized
+    #  * all keys are  stringified
+    #  * nested hash is flattened, keys are prefixed with root key
+    #
+    # @example
+    #    flatten {:billing_address => { :street => 'My Street'}}
+    #
+    #    # resolves in:
+    #    {'billingAddress.street' =>  'My Street'}
+    #
+    # @param [Hash] parameters The payment parameters which to transform
+    # @param [String] prefix The prefix to add to the key
+    # @param [Hash] return_hash The new hash which is retruned (needed for recursive calls)
+    # @return [Hash] The return_hash filled with camelized and prefixed key, stringified value
+    def flatten(parameters, prefix = "", return_hash = {})
+      parameters ||= {}
+      parameters.inject(return_hash) do |hash, (key, value)|
+        key = "#{prefix}#{camelize(key)}"
+        if value.is_a?(Hash)
+          flatten(value, "#{key}.", return_hash)
+        else
+          hash[key] = value.to_s
+        end
+        hash
+      end
+    end
   end
 end

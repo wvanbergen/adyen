@@ -96,7 +96,7 @@ module Adyen
         response_attrs :details, :last_known_shopper_email, :shopper_reference, :creation_date
 
         def references
-          details.map { |d| d[:recurring_detail_reference] }
+          details ? details.map { |d| d[:recurring_detail_reference] } : []
         end
 
         def params
@@ -113,7 +113,6 @@ module Adyen
 
         private
 
-        # @todo add support for elv
         def parse_recurring_detail(node)
           result = {
             :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
@@ -146,11 +145,11 @@ module Adyen
 
         def parse_elv_details(elv)
           {
-            :holder_name      => bank.text('./payment:accountHolderName'),
-            :number           => bank.text('./payment:bankAccountNumber'),
-            :bank_location    => bank.text('./payment:bankLocation'),
-            :bank_location_id => bank.text('./payment:bankLocationId'),
-            :bank_name        => bank.text('./payment:bankName')
+            :holder_name      => elv.text('./payment:accountHolderName'),
+            :number           => elv.text('./payment:bankAccountNumber'),
+            :bank_location    => elv.text('./payment:bankLocation'),
+            :bank_location_id => elv.text('./payment:bankLocationId'),
+            :bank_name        => elv.text('./payment:bankName')
           }
         end
 

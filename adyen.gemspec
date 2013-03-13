@@ -1,14 +1,14 @@
 Gem::Specification.new do |s|
   s.name    = 'adyen'
-  s.version = "1.3.1"
-  s.date    = "2012-02-20"
+  s.version = "1.3.2"
+  s.date    = "2013-01-14"
 
   s.summary = "Integrate Adyen payment services in your Ruby on Rails application."
   s.description = <<-EOS
     Package to simplify including the Adyen payments services into a Ruby on Rails application.
     The package provides functionality to create payment forms, handling and storing notifications 
     sent by Adyen and consuming the SOAP services provided by Adyen. Moreover, it contains helper
-    methods, mocks and matchers to simpify writing tests/specsfor your code.
+    methods, mocks and matchers to simpify writing tests/specs for your code.
   EOS
 
   s.authors  = ['Willem van Bergen', 'Michel Barbosa', 'Stefan Borsje', 'Eloy Duran']

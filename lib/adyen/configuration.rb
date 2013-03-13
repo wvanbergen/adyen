@@ -36,11 +36,11 @@ class Adyen::Configuration
     elsif defined?(::RAILS_ENV)
       ::RAILS_ENV.to_s
     end
-    
+
     LIVE_RAILS_ENVIRONMENTS.include?(rails_env) ? 'live' : 'test'
   end
-  
-  # The payment flow URL that’s used to choose the payement process
+
+  # The payment flow page type that’s used to choose the payment process
   #
   # @example
   #   Adyen.configuration.payment_flow = :select
@@ -49,7 +49,15 @@ class Adyen::Configuration
   #
   # @return [String]
   attr_accessor :payment_flow
-  
+
+  # The payment flow domain that’s used to choose the payment process
+  #
+  # @example
+  #   Adyen.configuration.payment_flow_domain = checkout.mydomain.com
+  #
+  # @return [String]
+  attr_accessor :payment_flow_domain
+
   # The username that’s used to authenticate for the Adyen SOAP services. It should look
   # something like ‘+ws@AndyInc.SuperShop+’
   #
@@ -78,13 +86,13 @@ class Adyen::Configuration
   #
   # @return [Hash]
   attr_accessor :default_form_params
-  
-  # Username that's set in Notification settings screen in Adyen PSP system and used by notification service to 
+
+  # Username that's set in Notification settings screen in Adyen PSP system and used by notification service to
   # authenticate instant payment notification requests.
   #
   # @return [String]
   attr_accessor :ipn_username
-  
+
   # Password used to authenticate notification requests together with '+ipn_username+' configuration attribute.
   #
   # @return [String]
@@ -98,10 +106,10 @@ class Adyen::Configuration
   #
   # @return [Hash] The hash of registered skins.
   attr_reader :form_skins
-  
+
   # Sets the registered skins.
   #
-  # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash 
+  # @param [Hash<Symbol, Hash>] hash A hash with the skin name as key and the skin parameter hash
   #    (which should include +:skin_code+ and +:shared_secret+) as value.
   #
   # @see Adyen::Configuration.register_form_skin
@@ -125,8 +133,8 @@ class Adyen::Configuration
   # @param [Symbol] name The name of the skin.
   # @param [String] skin_code The skin code for this skin, as defined by Adyen.
   # @param [String] shared_secret The shared secret used for signature calculation.
-  def register_form_skin(name, skin_code, shared_secret)
-    @form_skins[name.to_sym] = { :name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret }
+  def register_form_skin(name, skin_code, shared_secret, default_form_params = {})
+    @form_skins[name.to_sym] = { :name => name.to_sym, :skin_code => skin_code, :shared_secret => shared_secret, :default_form_params => default_form_params}
   end
 
   # Returns a skin information by name.

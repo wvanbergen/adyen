@@ -6,7 +6,7 @@ require 'adyen/form'
 
 describe Adyen::Form do
 
-  before(:all) do
+  before(:each) do
     Adyen.configuration.register_form_skin(:testing, '4aD37dJA', 'Kah942*$7sdp0)')
     Adyen.configuration.default_form_params[:merchant_account] = 'TestMerchant'
   end
@@ -35,20 +35,31 @@ describe Adyen::Form do
     it "should generate correct live url if explicitely asked for" do
       Adyen::Form.url(:live).should == 'https://live.adyen.com/hpp/select.shtml'
     end
-    
+
     it "should generate correct testing url if the payment flow selection is set to select" do
       Adyen.configuration.payment_flow = :select
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/select.shtml'
     end
-    
+
     it "should generate correct testing url if the payment flow selection is set to pay" do
       Adyen.configuration.payment_flow = :pay
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/pay.shtml'
     end
-    
+
     it "should generate correct testing url if the payment flow selection is set to details" do
       Adyen.configuration.payment_flow = :details
       Adyen::Form.url.should == 'https://test.adyen.com/hpp/details.shtml'
+    end
+
+    context "with custom domain" do
+      before(:each) do
+        Adyen.configuration.payment_flow = :select
+        Adyen.configuration.payment_flow_domain = "checkout.mydomain.com"
+      end
+
+      it "should generate correct testing url" do
+        Adyen::Form.url.should == 'https://checkout.mydomain.com/hpp/select.shtml'
+      end
     end
   end
 
@@ -80,6 +91,18 @@ describe Adyen::Form do
       Adyen::Form.redirect_signature_check(@params).should be_true
     end
 
+    it "should raise ArgumentError on missing skinCode" do
+      expect do
+        @params.delete(:skinCode)
+        Adyen::Form.redirect_signature_check(@params).should be_false
+      end.to raise_error ArgumentError
+    end
+
+    it "should raise ArgumentError on empty input" do
+      expect do
+        Adyen::Form.redirect_signature_check({}).should be_false
+      end.to raise_error ArgumentError
+    end
 
     it "should detect a tampered field" do
       Adyen::Form.redirect_signature_check(@params.merge(:pspReference => 'tampered')).should be_false
@@ -99,16 +122,16 @@ describe Adyen::Form do
 
       @redirect_url = Adyen::Form.redirect_url(@attributes)
     end
-    
+
     it "should return an URL pointing to the adyen server" do
       @redirect_url.should =~ %r[^#{Adyen::Form.url}]
     end
-    
+
     it "should include all provided attributes" do
       params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
       params.should include(*(@attributes.keys.map { |k| Adyen::Form.camelize(k) }))
     end
-    
+
     it "should include the merchant signature" do
       params = @redirect_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
       params.should include('merchantSig')
@@ -116,6 +139,7 @@ describe Adyen::Form do
   end
 
   describe 'hidden fields generation' do
+    subject { %Q'<form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>' }
 
     before(:each) do
       @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
@@ -123,12 +147,18 @@ describe Adyen::Form do
         :session_validity => Time.now + 3600 }
     end
 
-    it "should generate a valid payment form" do
-      html_snippet = <<-HTML
-        <form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>
-      HTML
-      
-      html_snippet.should have_adyen_payment_form
+    it { should have_adyen_payment_form }
+    it { should include('<input type="hidden" name="merchantAccount" value="TestMerchant" />') }
+
+    context "width default_form_params" do
+      before(:each) do
+        Adyen.configuration.register_form_skin(:testing, '4aD37dJA', 'Kah942*$7sdp0)', {
+          :merchant_account => 'OtherMerchant',
+        })
+      end
+
+      it { should include('<input type="hidden" name="merchantAccount" value="OtherMerchant" />') }
+      it { should_not include('<input type="hidden" name="merchantAccount" value="TestMerchant" />') }
     end
   end
 
@@ -140,7 +170,16 @@ describe Adyen::Form do
 
       @parameters = { :currency_code => 'GBP', :payment_amount => 10000,
         :ship_before_date => '2007-10-20', :merchant_reference => 'Internet Order 12345',
-        :skin => :testing, :session_validity => '2007-10-11T11:00:00Z' }
+        :skin => :testing, :session_validity => '2007-10-11T11:00:00Z',
+        :billing_address => {
+           :street               => 'Alexanderplatz',
+           :house_number_or_name => '0815',
+           :city                 => 'Berlin',
+           :postal_code          => '10119',
+           :state_or_province    => 'Berlin',
+           :country              => 'Germany',
+          }
+        }
 
       Adyen::Form.do_parameter_transformations!(@parameters)
     end
@@ -148,15 +187,22 @@ describe Adyen::Form do
     it "should construct the signature base string correctly" do
       signature_string = Adyen::Form.calculate_signature_string(@parameters)
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z"
-      
+
       signature_string = Adyen::Form.calculate_signature_string(@parameters.merge(:merchant_return_data => 'testing123'))
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Ztesting123"
-      
+
     end
-    
+
     it "should calculate the signature correctly" do
       signature = Adyen::Form.calculate_signature(@parameters)
       signature.should == 'x58ZcRVL1H6y+XSeBGrySJ9ACVo='
+    end
+
+    it "should raise ArgumentError on empty shared_secret" do
+      expect do
+        @parameters.delete(:shared_secret)
+        signature = Adyen::Form.calculate_signature(@parameters)
+      end.to raise_error ArgumentError
     end
 
     it "should calculate the signature base string correctly for a recurring payment" do
@@ -173,6 +219,45 @@ describe Adyen::Form do
 
       signature = Adyen::Form.calculate_signature(@parameters)
       signature.should == 'F2BQEYbE+EUhiRGuPtcD16Gm7JY='
+    end
+
+    context 'billing address' do
+
+      it "should construct the signature base string correctly" do
+        signature_string = Adyen::Form.calculate_billing_address_signature_string(@parameters[:billing_address])
+        signature_string.should == "Alexanderplatz0815Berlin10119BerlinGermany"
+      end
+
+      it "should calculate the signature correctly" do
+        signature = Adyen::Form.calculate_billing_address_signature(@parameters)
+        signature.should == '5KQb7VJq4cz75cqp11JDajntCY4='
+      end
+
+      it "should raise ArgumentError on empty shared_secret" do
+        expect do
+          @parameters.delete(:shared_secret)
+          signature = Adyen::Form.calculate_billing_address_signature(@parameters)
+        end.to raise_error ArgumentError
+      end
+    end
+
+  end
+
+  describe "flatten" do
+   let(:parameters) do
+      {
+        :billing_address => { :street => 'My Street'}
+      }
+    end
+
+    it "returns empty hash for nil input" do
+      Adyen::Form.flatten(nil).should == {}
+    end
+
+    it "flattens hash and prefixes keys" do
+      Adyen::Form.flatten(parameters).should == {
+        'billingAddress.street' =>  'My Street'
+      }
     end
   end
 end

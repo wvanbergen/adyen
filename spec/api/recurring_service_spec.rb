@@ -88,16 +88,33 @@ describe Adyen::API::RecurringService do
           :variant => 'IDEAL',
           :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
         },
+        {
+          :elv => {
+            :holder_name      => 'S. Hopper',
+            :number           => '1234567890',
+            :bank_location    => 'Berlin',
+            :bank_location_id => '12345678',
+            :bank_name        => 'TestBank',
+          },
+          :recurring_detail_reference => 'RecurringDetailReference3',
+          :variant => 'elv',
+          :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
+        }
       ],
     })
 
     it "returns an array with just the detail references" do
-      @response.references.should == %w{ RecurringDetailReference1 RecurringDetailReference2 }
+      @response.references.should == %w{ RecurringDetailReference1 RecurringDetailReference2 RecurringDetailReference3 }
+    end
+  end
+
+  describe_response_from :list, LIST_EMPTY_RESPONSE, 'listRecurringDetails' do
+    it "returns an empty hash when there are no details" do
+      @recurring.list.params.should == {}
     end
 
-    it "returns an empty hash when there are no details" do
-      stub_net_http(LIST_EMPTY_RESPONSE)
-      @recurring.list.params.should == {}
+    it "returns an empty array when there are no references" do
+      @response.references.should == []
     end
   end
 
