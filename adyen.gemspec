@@ -21,8 +21,10 @@ Gem::Specification.new do |s|
   
   if RUBY_PLATFORM == 'java'
     s.add_development_dependency('nokogiri', '~> 1.4.6')
+  elsif RUBY_VERSION < "1.9"
+    s.add_development_dependency('nokogiri', '~> 1.5.0')
   else
-    s.add_development_dependency('nokogiri')
+    s.add_development_dependency('nokogiri'. '~> 1.6.0')
   end
   
   s.add_runtime_dependency('jruby-openssl') if RUBY_PLATFORM == 'java'
