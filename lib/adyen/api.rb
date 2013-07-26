@@ -101,8 +101,8 @@ module Adyen
                  :amount       => amount,
                  :shopper      => shopper,
                  :card         => card,
-                 :recurring    => enable_recurring_contract }
-      params.merge!(:fraud_offset => fraud_offset) unless fraud_offset.nil?
+                 :recurring    => enable_recurring_contract,
+                 :fraud_offset => fraud_offset }
       PaymentService.new(params).authorise_payment
     end
 
@@ -147,8 +147,8 @@ module Adyen
       params = { :reference => reference,
                  :amount    => amount,
                  :shopper   => shopper,
-                 :recurring_detail_reference => recurring_detail_reference }
-      params.merge!(:fraud_offset => fraud_offset) unless fraud_offset.nil?
+                 :recurring_detail_reference => recurring_detail_reference,
+                 :fraud_offset => fraud_offset }
       PaymentService.new(params).authorise_recurring_payment
     end
 
@@ -197,8 +197,8 @@ module Adyen
                  :amount    => amount,
                  :shopper   => shopper,
                  :card      => { :cvc => card_cvc },
-                 :recurring_detail_reference => recurring_detail_reference }
-      params.merge!(:fraud_offset => fraud_offset) unless fraud_offset.nil?
+                 :recurring_detail_reference => recurring_detail_reference,
+                 :fraud_offset => fraud_offset }
       PaymentService.new(params).authorise_one_click_payment
     end
 
