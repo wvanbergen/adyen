@@ -140,10 +140,14 @@ module Adyen
       end
 
       def card_partial
-        validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
-        card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
-        card << @params[:card][:expiry_month].to_i
-        CARD_PARTIAL % card
+        if @params[:card] and @params[:card][:encrypted] and @params[:card][:encrypted][:json]
+          ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
+        else
+          validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
+          card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
+          card << @params[:card][:expiry_month].to_i
+          CARD_PARTIAL % card
+        end
       end
 
       def shopper_partial

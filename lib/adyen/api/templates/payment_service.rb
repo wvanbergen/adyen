@@ -66,6 +66,17 @@ EOS
 EOS
 
       # @private
+      ENCRYPTED_CARD_PARTIAL = <<EOS
+        <additionalAmount xmlns="http://payment.services.adyen.com" xsi:nil="true" />
+        <additionalData xmlns="http://payment.services.adyen.com">
+          <entry>
+            <key xsi:type="xsd:string">card.encrypted.json</key>
+            <value xsi:type="xsd:string">%s</value>
+          </entry>
+        </additionalData>
+EOS
+
+      # @private
       ENABLE_RECURRING_CONTRACTS_PARTIAL = <<EOS
         <payment:recurring>
           <payment:contract>RECURRING,ONECLICK</payment:contract>
