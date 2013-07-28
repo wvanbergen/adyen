@@ -23,6 +23,15 @@ shared_examples_for "payment requests" do
     text('./payment:shopperIP').should == '61.294.12.12'
     text('./payment:shopperStatement').should == 'invoice number 123456'
   end
+  
+  it "includes the fraud offset" do
+    text('./payment:fraudOffset').should == '30'
+  end
+  
+  it "does not include the fraud offset if none is given" do
+    @payment.params.delete(:fraud_offset)
+    xpath('./payment:fraudOffset').should be_empty
+  end
 
   it "only includes shopper details for given parameters" do
     # TODO pretty lame, but for now it will do
@@ -86,7 +95,8 @@ describe Adyen::API::PaymentService do
         #:start_month => ,
         #:start_year => ,
       },
-      :recurring_detail_reference => 'RecurringDetailReference1'
+      :recurring_detail_reference => 'RecurringDetailReference1',
+      :fraud_offset => 30
     }
     @payment = @object = Adyen::API::PaymentService.new(@params)
   end
@@ -102,6 +112,10 @@ describe Adyen::API::PaymentService do
     it_should_validate_request_param(:shopper) do
       @payment.params[:recurring] = true
       @payment.params[:shopper] = nil
+    end
+    
+    it_should_validate_request_param(:fraud_offset) do
+      @payment.params[:fraud_offset] = ''
     end
 
     [:reference, :email].each do |attr|
@@ -233,6 +247,7 @@ describe Adyen::API::PaymentService do
 
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
+                                          :fraud_offset,
                                           :amount  => [:currency, :value],
                                           :shopper => [:reference, :email]
 
@@ -269,6 +284,7 @@ describe Adyen::API::PaymentService do
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
                                           :recurring_detail_reference,
+                                          :fraud_offset,
                                           :amount  => [:currency, :value],
                                           :shopper => [:reference, :email],
                                           :card    => [:cvc]

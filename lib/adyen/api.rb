@@ -91,16 +91,19 @@ module Adyen
     # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
     #                                                 future recurring or one-click payments.
     #
+    # @param [Numeric] fraud_offset                   Modify Adyen's fraud check by supplying
+    #                                                 an offset for their calculation.
+    #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false)
-      PaymentService.new(
-        :reference => reference,
-        :amount    => amount,
-        :shopper   => shopper,
-        :card      => card,
-        :recurring => enable_recurring_contract
-      ).authorise_payment
+    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil)
+      params = { :reference    => reference,
+                 :amount       => amount,
+                 :shopper      => shopper,
+                 :card         => card,
+                 :recurring    => enable_recurring_contract,
+                 :fraud_offset => fraud_offset }
+      PaymentService.new(params).authorise_payment
     end
 
     # Authorise a recurring payment. The contract detail will default to the ‘+latest+’, which
@@ -135,15 +138,18 @@ module Adyen
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
     #
+    # @param [Numeric] fraud_offset                   Modify Adyen's fraud check by supplying
+    #                                                 an offset for their calculation.
+    #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST')
-      PaymentService.new(
-        :reference => reference,
-        :amount    => amount,
-        :shopper   => shopper,
-        :recurring_detail_reference => recurring_detail_reference
-      ).authorise_recurring_payment
+    def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST', fraud_offset = nil)
+      params = { :reference => reference,
+                 :amount    => amount,
+                 :shopper   => shopper,
+                 :recurring_detail_reference => recurring_detail_reference,
+                 :fraud_offset => fraud_offset }
+      PaymentService.new(params).authorise_recurring_payment
     end
 
     # Authorise a ‘one-click’ payment. A specific contract detail *has* to be specified.
@@ -181,16 +187,19 @@ module Adyen
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
     #
+    # @param [Numeric] fraud_offset                   Modify Adyen's fraud check by supplying
+    #                                                 an offset for their calculation.
+    #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference)
-      PaymentService.new(
-        :reference => reference,
-        :amount    => amount,
-        :shopper   => shopper,
-        :card      => { :cvc => card_cvc },
-        :recurring_detail_reference => recurring_detail_reference
-      ).authorise_one_click_payment
+    def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference, fraud_offset = nil)
+      params = { :reference => reference,
+                 :amount    => amount,
+                 :shopper   => shopper,
+                 :card      => { :cvc => card_cvc },
+                 :recurring_detail_reference => recurring_detail_reference,
+                 :fraud_offset => fraud_offset }
+      PaymentService.new(params).authorise_one_click_payment
     end
 
     # Capture an authorised payment.

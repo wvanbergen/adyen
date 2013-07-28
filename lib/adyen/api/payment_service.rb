@@ -108,6 +108,7 @@ module Adyen
         validate_parameters!(:merchant_account, :reference, :amount => [:currency, :value])
         content << amount_partial
         content << shopper_partial if @params[:shopper]
+        content << fraud_offset_partial if @params[:fraud_offset]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
@@ -139,16 +140,25 @@ module Adyen
       end
 
       def card_partial
-        validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
-        card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
-        card << @params[:card][:expiry_month].to_i
-        CARD_PARTIAL % card
+        if @params[:card] and @params[:card][:encrypted] and @params[:card][:encrypted][:json]
+          ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
+        else
+          validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
+          card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
+          card << @params[:card][:expiry_month].to_i
+          CARD_PARTIAL % card
+        end
       end
 
       def shopper_partial
         @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
       end
-
+      
+      def fraud_offset_partial
+        validate_parameters!(:fraud_offset)
+        FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
+      end
+        
       class AuthorisationResponse < Response
         ERRORS = {
           "validation 101 Invalid card number"                           => [:number,       'is not a valid creditcard number'],
