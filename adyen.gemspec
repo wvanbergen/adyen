@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.authors  = ['Willem van Bergen', 'Michel Barbosa', 'Stefan Borsje', 'Eloy Durán']
   s.email    = ['willem@vanbergen.org', 'cicaboo@gmail.com', 'mail@sborsje.nl', 'eloy.de.enige@gmail.com']
   s.homepage = 'http://github.com/wvanbergen/adyen/wiki'
+  s.license  = 'MIT'
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2.14')
