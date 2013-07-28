@@ -98,7 +98,7 @@ module APISpecHelper
   def stub_net_http(response_body)
     Net::HTTP.stubbing_enabled = true
     response = Net::HTTPOK.new('1.1', '200', 'OK')
-    response.stub!(:body).and_return(response_body)
+    response.stub(:body).and_return(response_body)
     Net::HTTP.stubbed_response = response
   end
 

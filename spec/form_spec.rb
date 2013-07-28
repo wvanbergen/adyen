@@ -28,7 +28,7 @@ describe Adyen::Form do
     end
 
     it "should generate correct live url in a production environment" do
-      Adyen.configuration.stub!(:autodetect_environment).and_return('live')
+      Adyen.configuration.stub(:autodetect_environment).and_return('live')
       Adyen::Form.url.should. == 'https://live.adyen.com/hpp/select.shtml'
     end
 

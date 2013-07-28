@@ -5,7 +5,7 @@ describe Adyen::API::Response do
   before do
     http_response = Net::HTTPOK.new('1.1', '200', 'OK')
     http_response.add_field('Content-type', 'text/xml')
-    http_response.stub!(:body).and_return(AUTHORISE_RESPONSE)
+    http_response.stub(:body).and_return(AUTHORISE_RESPONSE)
     @response = Adyen::API::Response.new(http_response)
   end
 
@@ -36,7 +36,7 @@ describe Adyen::API::Response do
   describe "with a server error HTTP response and _no_ SOAP fault message" do
     before do
       http_response = Net::HTTPServerError.new('1.1', '500', 'Internal Server Error')
-      http_response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body></soap:Body></soap:Envelope>})
+      http_response.stub(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body></soap:Body></soap:Envelope>})
       @response = Adyen::API::Response.new(http_response)
     end
 
@@ -48,7 +48,7 @@ describe Adyen::API::Response do
   describe "with a server error HTTP response _and_ SOAP fault message" do
     before do
       http_response = Net::HTTPServerError.new('1.1', '500', 'Internal Server Error')
-      http_response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
+      http_response.stub(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
       @response = Adyen::API::Response.new(http_response)
     end
 

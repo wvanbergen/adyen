@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.homepage = 'http://github.com/wvanbergen/adyen/wiki'
 
   s.add_development_dependency('rake')
-  s.add_development_dependency('rspec', '~> 2')
+  s.add_development_dependency('rspec', '~> 2.14')
   
   if RUBY_VERSION < "1.9.3"
     s.add_development_dependency('rails', '>= 2.3', '< 4')

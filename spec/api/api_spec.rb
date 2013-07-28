@@ -7,7 +7,7 @@ describe Adyen::API do
   describe "shortcut methods" do
     describe "for the PaymentService" do
       before do
-        @payment = mock('PaymentService')
+        @payment = double('PaymentService')
       end
 
       def should_map_shortcut_to(method, params)
@@ -112,7 +112,7 @@ describe Adyen::API do
 
     describe "for the RecurringService" do
       before do
-        @recurring = mock('RecurringService')
+        @recurring = double('RecurringService')
       end
 
       def should_map_shortcut_to(method, params)

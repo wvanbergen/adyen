@@ -84,7 +84,7 @@ describe Adyen::API::SimpleSOAPClient do
       ]
     ].each do |label, response, expected_exception|
       it "raises when the HTTP response is a subclass of #{response.class.name}" do
-        response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
+        response.stub(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
         Net::HTTP.stubbed_response = response
 
         exception = nil
@@ -107,7 +107,7 @@ describe Adyen::API::SimpleSOAPClient do
         ["[505 HTTP Version Not Supported] A server", Net::HTTPBadGateway.new('1.1', '505', 'HTTP Version Not Supported')],
       ].each do |label, response|
         it "is raised when the HTTP response is a `real` server error by status code" do
-          response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body></soap:Body></soap:Envelope>})
+          response.stub(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body></soap:Body></soap:Envelope>})
           Net::HTTP.stubbed_response = response
 
           exception = nil
@@ -122,11 +122,11 @@ describe Adyen::API::SimpleSOAPClient do
 
       it "is not raised when the HTTP response has a 500 status code with a fault message" do
         response = Net::HTTPServerError.new('1.1', '500', 'Internal Server Error')
-        response.stub!(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
+        response.stub(:body).and_return(%{<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soap:Body><soap:Fault><faultcode>soap:Server</faultcode><faultstring>Illegal argument. For input string: "100.0"</faultstring></soap:Fault></soap:Body></soap:Envelope>})
 
-         lambda do
-            @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
-          end.should_not raise_error Adyen::API::SimpleSOAPClient::ServerError
+        lambda do
+          @client.call_webservice_action('Action', '<bananas>Yes, please</bananas>', Adyen::API::Response)
+        end.should_not raise_error
       end
     end
   end
