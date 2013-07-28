@@ -12,7 +12,7 @@ end
 
 # Update the cacert.pem file before each release.
 namespace :gem do
-  task :release => :update_cacert do
+  task :build => :update_cacert do
     sh "git commit #{CACERT_PATH} -m '[API] Update CA root certificates file.'"
   end
 end
