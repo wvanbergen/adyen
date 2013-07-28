@@ -21,7 +21,8 @@ describe Adyen::API do
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
-          :recurring => false
+          :recurring => false,
+          :fraud_offset => nil
         )
         Adyen::API.authorise_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -54,7 +55,8 @@ describe Adyen::API do
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
-          :recurring => true
+          :recurring => true,
+          :fraud_offset => nil
         )
         Adyen::API.authorise_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -69,7 +71,8 @@ describe Adyen::API do
           :reference => 'order-id',
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :recurring_detail_reference => 'LATEST'
+          :recurring_detail_reference => 'LATEST',
+          :fraud_offset => nil
         )
         Adyen::API.authorise_recurring_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -82,7 +85,8 @@ describe Adyen::API do
           :reference => 'order-id',
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :recurring_detail_reference => 'recurring-detail-reference'
+          :recurring_detail_reference => 'recurring-detail-reference',
+          :fraud_offset => nil
         )
         Adyen::API.authorise_recurring_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -113,7 +117,8 @@ describe Adyen::API do
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :cvc => '737' },
-          :recurring_detail_reference => 'recurring-detail-reference'
+          :recurring_detail_reference => 'recurring-detail-reference',
+          :fraud_offset => nil
         )
         Adyen::API.authorise_one_click_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
