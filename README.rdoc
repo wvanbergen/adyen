@@ -28,7 +28,7 @@ RDoc documentation for the project can be found on http://rdoc.info/projects/wva
 
 This package is written by Michel Barbosa and Willem van Bergen for Floorplanner.com, and
 made public under the MIT license (see LICENSE). Its is currently maintained by Willem van
-Bergen, Stefan Borsje and Eloy Duran. We are not affiliated with Adyen B.V. The software 
+Bergen, Stefan Borsje and Eloy Durán. We are not affiliated with Adyen B.V. The software 
 comes without warranty of any kind, so use at your own risk.
 
 Contributions are welcomed; this is very much a scratch your own itch project. Some notes:
