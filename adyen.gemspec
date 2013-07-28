@@ -17,7 +17,12 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2')
-  s.add_development_dependency('rails', '>= 2.3')
+  
+  if RUBY_VERSION < "1.9.3"
+    s.add_development_dependency('rails', '>= 2.3', '< 4')
+  else
+    s.add_development_dependency('rails', '>= 2.3')
+  end
   
   if RUBY_PLATFORM == 'java'
     s.add_development_dependency('nokogiri', '~> 1.4.6')
