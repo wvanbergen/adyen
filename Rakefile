@@ -1,4 +1,14 @@
-Dir[File.dirname(__FILE__) + "/tasks/*.rake"].each { |file| load(file) }
+require "bundler/gem_tasks"
+require "rspec/core/rake_task"
+
+Dir['tasks/*.rake'].each { |file| load(file) }
+
+
+
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.pattern = "./spec/**/*_spec.rb"
+  task.rspec_opts = ['--color']
+end
 
 CACERT_PATH = 'lib/adyen/api/cacert.pem'
 
@@ -11,13 +21,9 @@ task :update_cacert do
 end
 
 # Update the cacert.pem file before each release.
-namespace :gem do
-  task :build => :update_cacert do
-    sh "git commit #{CACERT_PATH} -m '[API] Update CA root certificates file.'"
-  end
+task :build => :update_cacert do
+  sh "git commit #{CACERT_PATH} -m '[API] Update CA root certificates file.'"
 end
-
-GithubGem::RakeTasks.new(:gem)
 
 begin
   require 'rubygems'
@@ -29,4 +35,4 @@ begin
 rescue LoadError
 end
 
-task :default => "spec:specdoc"
+task :default => [:spec]

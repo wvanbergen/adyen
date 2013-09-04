@@ -9,17 +9,13 @@
 #   (recurring) payments and recurring contract maintenance.
 module Adyen
 
-  # Version constant for the Adyen plugin.
-  # DO NOT CHANGE THIS VALUE BY HAND. It will be updated automatically by
-  # the gem:release rake task.
-  VERSION = "1.4.0"
-
   # @return [Configuration] The configuration singleton.
   def self.configuration
     @configuration ||= Adyen::Configuration.new
   end
 end
 
+require 'adyen/version'
 require 'adyen/configuration'
 require 'adyen/encoding'
 require 'adyen/formatter'
