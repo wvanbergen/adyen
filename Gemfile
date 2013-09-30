@@ -9,6 +9,8 @@ gemspec
 gem 'jquery-rails'
 
 group :development, :test do
+  gem 'sqlite3'
+  gem 'rspec-rails', '~> 2.14'
   gem 'factory_girl_rails'
 end
 
