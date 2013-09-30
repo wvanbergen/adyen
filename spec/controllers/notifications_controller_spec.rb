@@ -49,6 +49,10 @@ describe Adyen::NotificationsController, 'when the wrong credentials are provide
   it 'will not be authorised' do response.response_code.should == 401 end
 end
 
+describe Adyen::NotificationsController, 'when no config block is provided to the engine' do
+  it 'will raise the expected error' do expect { Adyen.setup }.to raise_error Adyen::ConfigMissing end
+end
+
 describe Adyen::NotificationsController, 'when an unauthorised request is received' do
   before :each do
     post :notify, use_route: :adyen
