@@ -15,6 +15,7 @@ module Adyen
   end
 end
 
+require 'adyen/engine'
 require 'adyen/version'
 require 'adyen/configuration'
 require 'adyen/encoding'

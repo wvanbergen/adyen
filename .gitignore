@@ -12,9 +12,9 @@ Gemfile.lock
 .bundle/
 log/*.log
 pkg/
-test/dummy/db/*.sqlite3
-test/dummy/log/*.log
-test/dummy/tmp/
-test/dummy/.sass-cache
+*/dummy/db/*.sqlite3
+*/dummy/log/*.log
+*/dummy/tmp/
+*/dummy/.sass-cache
 .ruby-version
 .idea

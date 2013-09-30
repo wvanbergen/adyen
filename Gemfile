@@ -1,4 +1,4 @@
-source "https://rubygems.org"
+source 'https://rubygems.org'
 
 # Declare your gem's dependencies in adyen.gemspec.
 # Bundler will treat runtime dependencies like base dependencies, and
@@ -6,11 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 # jquery-rails is used by the dummy application
-gem "jquery-rails"
-
-group :development, :test do
-  gem "sqlite3"
-end
+gem 'jquery-rails'
 
 # Declare any dependencies that are still in development here instead of in
 # your gemspec. These might include edge Rails or gems from your path or
