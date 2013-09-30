@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rspec', '~> 2.14')
   s.add_development_dependency('rspec-rails', '~> 2.14')
   s.add_development_dependency('sqlite3')
+  s.add_development_dependency('factory_girl_rails')
 
   if RUBY_VERSION < "1.9.3"
     s.add_development_dependency('rails', '>= 2.3', '< 4')

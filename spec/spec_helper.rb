@@ -9,6 +9,7 @@ require 'matchers'
 
 RSpec.configure do |config|
   config.include Adyen::Matchers
+  config.include FactoryGirl::Syntax::Methods
 end
 
 Rails.backtrace_cleaner.remove_silencers!
@@ -20,3 +21,6 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
 if ActiveSupport::TestCase.method_defined?(:fixture_path=)
   ActiveSupport::TestCase.fixture_path = File.expand_path("../fixtures", __FILE__)
 end
+
+FactoryGirl.definition_file_paths = [File.expand_path('../factories', __FILE__)]
+FactoryGirl.find_definitions
