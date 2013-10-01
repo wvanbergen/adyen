@@ -13,6 +13,12 @@ module Adyen
     end
   end
 
+  class FailureConfig
+    def method_missing method, *args
+      raise NotConfigured.new
+    end
+  end
+
   # Used to interpret the config run against the engine, and prevents on the fly
   # reconfiguration of things that should not be reconfigured
   class Configurator
@@ -26,8 +32,14 @@ module Adyen
   end
 
   class ConfigMissing < Exception
-    def message
-      'You have not passed a block to the Adyen#setup method!'
+    def initialize
+      super 'You have not passed a block to the Adyen#setup method!'
+    end
+  end
+
+  class NotConfigured < Exception
+    def initialize
+      super "You have not configured the Adyen engine.  Please add an Adyen#setup block into your enovironments/#{Rails.env}.rb file."
     end
   end
 
@@ -37,6 +49,6 @@ module Adyen
   end
 
   def self.config
-    @config
+    @config ||= FailureConfig.new
   end
 end

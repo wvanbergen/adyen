@@ -76,6 +76,26 @@ describe Adyen::NotificationsController, 'when no config block is provided to th
   it 'will raise the expected error' do expect { Adyen.setup }.to raise_error Adyen::ConfigMissing end
 end
 
+describe Adyen::NotificationsController, 'when no config has been run' do
+  before :each do
+    Adyen.instance_variable_set(:@config, nil)
+  end
+
+  it 'will raise the expected error' do
+    event_date = DateTime.now
+    expect {
+      post :notify, use_route: :adyen,
+         event_code: 'AUTHORISATION',
+         psp_reference: generate(:psp_reference),
+         live: false,
+         original_reference: 'origref',
+         merchant_reference: 'booking_ref',
+         merchant_account_code: 'upmysport_test',
+         event_date: event_date
+    }.to raise_error Adyen::NotConfigured
+  end
+end
+
 describe Adyen::NotificationsController, 'when an unauthorised request is received' do
   before :each do
     Adyen.setup do |config|
