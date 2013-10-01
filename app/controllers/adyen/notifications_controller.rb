@@ -8,8 +8,10 @@ class Adyen::NotificationsController < Adyen::ApplicationController
 
   private
   def authenticate
-    authenticate_or_request_with_http_basic do |username, password|
-      username == Adyen.config.http_username && password == Adyen.config.http_password
+    unless Adyen.config.disable_basic_auth
+      authenticate_or_request_with_http_basic do |username, password|
+        username == Adyen.config.http_username && password == Adyen.config.http_password
+      end
     end
   end
 end

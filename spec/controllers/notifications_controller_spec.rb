@@ -51,12 +51,37 @@ end
 
 describe Adyen::NotificationsController, 'when a successful notification is sent twice for the same transaction'
 
+describe Adyen::NotificationsController, 'when basic auth is disabled' do
+  before :each do
+    Adyen.setup do |config|
+      config.disable_basic_auth = true
+    end
+
+    event_date = DateTime.now
+    post :notify, use_route: :adyen,
+         event_code: 'AUTHORISATION',
+         psp_reference: generate(:psp_reference),
+         live: false,
+         original_reference: 'origref',
+         merchant_reference: 'booking_ref',
+         merchant_account_code: 'upmysport_test',
+         event_date: event_date
+  end
+
+  it 'will be successful' do response.response_code.should == 200 end
+  it 'will return the expected content' do @response.body.should == '[accepted]' end
+end
+
 describe Adyen::NotificationsController, 'when no config block is provided to the engine' do
   it 'will raise the expected error' do expect { Adyen.setup }.to raise_error Adyen::ConfigMissing end
 end
 
 describe Adyen::NotificationsController, 'when an unauthorised request is received' do
   before :each do
+    Adyen.setup do |config|
+      # nothing to do here, just need to reset config to defaults
+    end
+
     post :notify, use_route: :adyen
   end
 
