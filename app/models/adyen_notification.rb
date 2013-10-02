@@ -18,7 +18,7 @@
 class AdyenNotification < ActiveRecord::Base
 
   # A notification should always include an event_code, merchant ref, psp ref
-  validates_presence_of :event_code, :merchant_reference, :psp_reference
+  validates_presence_of :event_code, :merchant_reference, :merchant_account_code, :psp_reference
 
   # A notification should be unique using the composed key of
   # [:psp_reference, :event_code, :success]

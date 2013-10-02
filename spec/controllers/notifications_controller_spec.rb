@@ -96,6 +96,43 @@ describe Adyen::NotificationsController, 'when no config has been run' do
   end
 end
 
+describe Adyen::NotificationsController, 'when the request is invalid' do
+  before :each do
+    Adyen.setup do |config|
+      config.disable_basic_auth = true
+    end
+
+    post :notify, use_route: :adyen,
+         event_code: 'AUTHORISATION',
+         live: false,
+         psp_reference: generate(:psp_reference),
+         merchant_reference: 'booking_ref'
+  end
+
+  it 'will be successful' do response.response_code.should == 200 end
+  it 'will return the expected content' do @response.body.should == '[accepted]' end
+end
+
+describe Adyen::NotificationsController, 'when the request throws a record invalid error' do
+  before :each do
+    Adyen.setup do |config|
+      config.disable_basic_auth = true
+    end
+
+    event_date = DateTime.now
+    post :notify, use_route: :adyen,
+         event_code: 'AUTHORISATION',
+         live: false,
+         original_reference: 'origref',
+         merchant_reference: 'booking_ref',
+         merchant_account_code: 'upmysport_test',
+         event_date: event_date
+  end
+
+  it 'will be successful' do response.response_code.should == 200 end
+  it 'will return the expected content' do @response.body.should == '[accepted]' end
+end
+
 describe Adyen::NotificationsController, 'when an unauthorised request is received' do
   before :each do
     Adyen.setup do |config|

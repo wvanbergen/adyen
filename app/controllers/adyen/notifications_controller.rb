@@ -2,7 +2,13 @@ class Adyen::NotificationsController < Adyen::ApplicationController
   before_filter :authenticate
 
   def notify
-    @notification = AdyenNotification.log(params)
+    Rails.logger.info "Received Adyen notification:\n/    #{params}"
+    begin
+      @notification = AdyenNotification.log(params)
+    rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.warn "Unable to log Adyen notification:\n#{e}"
+      Rails.logger.warn "    #{e.backtrace.join('    \n')}"
+    end
     render text: '[accepted]'
   end
 
