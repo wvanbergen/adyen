@@ -49,8 +49,6 @@ describe Adyen::NotificationsController, 'when the wrong credentials are provide
   it 'will not be authorised' do response.response_code.should == 401 end
 end
 
-describe Adyen::NotificationsController, 'when a successful notification is sent twice for the same transaction'
-
 describe Adyen::NotificationsController, 'when basic auth is disabled' do
   before :each do
     Adyen.setup do |config|

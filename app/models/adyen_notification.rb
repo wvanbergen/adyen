@@ -34,14 +34,19 @@ class AdyenNotification < ActiveRecord::Base
   # @raise This method will raise an exception if the notification cannot be stored.
   # @see Adyen::Notification::HttpPost.log
   def self.log(params)
-    converted_params = {}
+    converted_params = params.inject({}) do |hash, pair|
+      hash[pair.first.to_s.underscore] = pair.last
+      hash
+    end
+
+    match = where('psp_reference = ? AND event_code = ?', converted_params['psp_reference'], converted_params['event_code']).first
+    return match if match and match.success == params[:success]
 
     # Assign explicit each attribute from CamelCase notation to notification
     # For example, merchantReference will be converted to merchant_reference
     self.new.tap do |notification|
-      params.each do |key, value|
-        setter = "#{key.to_s.underscore}="
-        notification.send(setter, value) if notification.respond_to?(setter)
+      converted_params.each do |key, value|
+        notification.send("#{key}=", value) if notification.respond_to?(key)
       end
       notification.save!
     end
