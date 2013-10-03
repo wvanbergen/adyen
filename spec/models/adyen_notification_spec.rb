@@ -10,7 +10,7 @@ module NotificationTestHelper
         'merchant_reference' => 'transaction_code',
         'merchant_account_code' => 'test_account',
         'psp_reference' => @psp_ref,
-        'success' => true
+        'success' => 'true'
     }
   end
 

@@ -40,7 +40,7 @@ class AdyenNotification < ActiveRecord::Base
     end
 
     match = where('psp_reference = ? AND event_code = ?', converted_params['psp_reference'], converted_params['event_code']).first
-    if match and match.success? == converted_params['success']
+    if match and match.success?.to_s == converted_params['success']
       Rails.logger.info 'Notification is a duplicate.  Taking no action.'
       return match
     end
