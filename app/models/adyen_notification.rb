@@ -22,7 +22,7 @@ class AdyenNotification < ActiveRecord::Base
 
   # A notification should be unique using the composed key of
   # [:psp_reference, :event_code, :success]
-  validates_uniqueness_of :psp_reference, scope: [:success, :event_code]
+  validates_uniqueness_of :psp_reference, scope: [:success, :event_code], message: 'psp_reference and event_code have already been logged with that success flag'
 
   # Make sure we don't end up with an original_reference with an empty string
   before_validation { |notification| notification.original_reference = nil if notification.original_reference.blank? }
@@ -40,7 +40,10 @@ class AdyenNotification < ActiveRecord::Base
     end
 
     match = where('psp_reference = ? AND event_code = ?', converted_params['psp_reference'], converted_params['event_code']).first
-    return match if match and match.success == params[:success]
+    if match and match.success? == converted_params['success']
+      Rails.logger.info 'Notification is a duplicate.  Taking no action.'
+      return match
+    end
 
     # Assign explicit each attribute from CamelCase notation to notification
     # For example, merchantReference will be converted to merchant_reference

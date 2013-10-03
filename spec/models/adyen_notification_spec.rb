@@ -5,18 +5,18 @@ module NotificationTestHelper
     @event_date = DateTime.now
     @psp_ref = generate(:psp_reference)
     {
-        event_code: 'AUTHORISATION',
-        event_date: @event_date,
-        merchant_reference: 'transaction_code',
-        merchant_account_code: 'test_account',
-        psp_reference: @psp_ref,
-        success: true
+        'event_code' => 'AUTHORISATION',
+        'event_date' => @event_date,
+        'merchant_reference' => 'transaction_code',
+        'merchant_account_code' => 'test_account',
+        'psp_reference' => @psp_ref,
+        'success' => true
     }
   end
 
-  def notification_without param_name
+  def notification_without(param_name)
     note = fake_notification
-    note.delete param_name.to_sym
+    note.delete param_name.to_s
     return note
   end
 end
@@ -55,9 +55,9 @@ describe AdyenNotification, 'when a failure notification is followed by a succes
 
   before :each do
     note = fake_notification
-    note[:success] = false
+    note['success'] = false
     @notification = AdyenNotification.log(note)
-    note[:success] = true
+    note['success'] = true
     @duplicate = AdyenNotification.log(note)
   end
 
