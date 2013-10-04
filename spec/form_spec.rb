@@ -74,42 +74,42 @@ describe Adyen::Form do
     end
 
     it "should calculate the signature string correctly" do
-      Adyen::Form.redirect_signature_string(@params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJA'
+      Adyen::Signature.redirect_signature_string(@params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJA'
       params = @params.merge(:merchantReturnData => 'testing1234')
-      Adyen::Form.redirect_signature_string(params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJAtesting1234'
+      Adyen::Signature.redirect_signature_string(params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJAtesting1234'
     end
 
     it "should calculate the signature correctly" do
-      Adyen::Form.redirect_signature(@params).should == @params[:merchantSig]
+      Adyen::Signature.redirect_signature(@params).should == @params[:merchantSig]
     end
 
     it "should check the signature correctly with explicit shared signature" do
-      Adyen::Form.redirect_signature_check(@params, 'Kah942*$7sdp0)').should be_true
+      Adyen::Signature.redirect_signature_check(@params, 'Kah942*$7sdp0)').should be_true
     end
 
     it "should check the signature correctly using the stored shared secret" do
-      Adyen::Form.redirect_signature_check(@params).should be_true
+      Adyen::Signature.redirect_signature_check(@params).should be_true
     end
 
     it "should raise ArgumentError on missing skinCode" do
       expect do
         @params.delete(:skinCode)
-        Adyen::Form.redirect_signature_check(@params).should be_false
+        Adyen::Signature.redirect_signature_check(@params).should be_false
       end.to raise_error ArgumentError
     end
 
     it "should raise ArgumentError on empty input" do
       expect do
-        Adyen::Form.redirect_signature_check({}).should be_false
+        Adyen::Signature.redirect_signature_check({}).should be_false
       end.to raise_error ArgumentError
     end
 
     it "should detect a tampered field" do
-      Adyen::Form.redirect_signature_check(@params.merge(:pspReference => 'tampered')).should be_false
+      Adyen::Signature.redirect_signature_check(@params.merge(:pspReference => 'tampered')).should be_false
     end
 
     it "should detect a tampered signature" do
-      Adyen::Form.redirect_signature_check(@params.merge(:merchantSig => 'tampered')).should be_false
+      Adyen::Signature.redirect_signature_check(@params.merge(:merchantSig => 'tampered')).should be_false
     end
 
   end
@@ -185,23 +185,23 @@ describe Adyen::Form do
     end
 
     it "should construct the signature base string correctly" do
-      signature_string = Adyen::Form.calculate_signature_string(@parameters)
+      signature_string = Adyen::Signature.calculate_signature_string(@parameters)
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z"
 
-      signature_string = Adyen::Form.calculate_signature_string(@parameters.merge(:merchant_return_data => 'testing123'))
+      signature_string = Adyen::Signature.calculate_signature_string(@parameters.merge(:merchant_return_data => 'testing123'))
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Ztesting123"
 
     end
 
     it "should calculate the signature correctly" do
-      signature = Adyen::Form.calculate_signature(@parameters)
+      signature = Adyen::Signature.calculate_signature(@parameters)
       signature.should == 'x58ZcRVL1H6y+XSeBGrySJ9ACVo='
     end
 
     it "should raise ArgumentError on empty shared_secret" do
       expect do
         @parameters.delete(:shared_secret)
-        signature = Adyen::Form.calculate_signature(@parameters)
+        Adyen::Signature.calculate_signature(@parameters)
       end.to raise_error ArgumentError
     end
 
@@ -209,7 +209,7 @@ describe Adyen::Form do
       # Add the required recurrent payment attributes
       @parameters.merge!(:recurring_contract => 'DEFAULT', :shopper_reference => 'grasshopper52', :shopper_email => 'gras.shopper@somewhere.org')
 
-      signature_string = Adyen::Form.calculate_signature_string(@parameters)
+      signature_string = Adyen::Signature.calculate_signature_string(@parameters)
       signature_string.should == "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Zgras.shopper@somewhere.orggrasshopper52DEFAULT"
     end
 
@@ -217,7 +217,7 @@ describe Adyen::Form do
       # Add the required recurrent payment attributes
       @parameters.merge!(:recurring_contract => 'DEFAULT', :shopper_reference => 'grasshopper52', :shopper_email => 'gras.shopper@somewhere.org')
 
-      signature = Adyen::Form.calculate_signature(@parameters)
+      signature = Adyen::Signature.calculate_signature(@parameters)
       signature.should == 'F2BQEYbE+EUhiRGuPtcD16Gm7JY='
     end
 
