@@ -1,3 +1,5 @@
+require File.expand_path('../invalid_signature', __FILE__)
+
 class Adyen::Signature
   class << self
     # Calculates the payment request signature for the given payment parameters.
