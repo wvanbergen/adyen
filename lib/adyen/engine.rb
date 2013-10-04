@@ -31,13 +31,13 @@ module Adyen
     end
   end
 
-  class ConfigMissing < Exception
+  class ConfigMissing < StandardError
     def initialize
       super 'You have not passed a block to the Adyen#setup method!'
     end
   end
 
-  class NotConfigured < Exception
+  class NotConfigured < StandardError
     def initialize
       super "You have not configured the Adyen engine.  Please add an Adyen#setup block into your enovironments/#{Rails.env}.rb file."
     end
