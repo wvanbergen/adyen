@@ -27,10 +27,11 @@ module Adyen
     attr_accessor :http_username, :http_password, :disable_basic_auth, :payment_result_redirect
 
     def initialize(&block)
-      @disable_basic_auth = false
-      @payment_result_redirect = lambda {|c| c.payments_complete_path()}
       raise ConfigMissing.new unless block
       yield self
+      # set defaults if they haven't already been set
+      @disable_basic_auth ||= false
+      @payment_result_redirect ||= lambda {|c| c.payments_complete_path()}
     end
 
     def method_missing method, *args
