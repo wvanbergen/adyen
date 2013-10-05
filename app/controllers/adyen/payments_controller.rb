@@ -3,6 +3,11 @@ class Adyen::PaymentsController < Adyen::ApplicationController
 
   def result
     Rails.logger.info "Received payment result, params: #{params}"
+    redirect_to Adyen.config.payment_result_redirect.call(self)
+  end
+
+  def complete
+
   end
 
   def check_signature

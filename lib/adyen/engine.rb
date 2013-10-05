@@ -4,12 +4,13 @@ module Adyen
   end
 
   class EngineConfiguration
-    attr_reader :http_username, :http_password, :disable_basic_auth
+    attr_reader :http_username, :http_password, :disable_basic_auth, :payment_result_redirect
 
     def initialize(http_username, http_password, configurator)
       @http_username = http_username
       @http_password = http_password
       @disable_basic_auth = configurator.disable_basic_auth
+      @payment_result_redirect = configurator.payment_result_redirect
     end
   end
 
@@ -20,14 +21,21 @@ module Adyen
   end
 
   # Used to interpret the config run against the engine, and prevents on the fly
-  # reconfiguration of things that should not be reconfigured
+  # reconfiguration of things that should not be reconfigured (well, okay, doesn't
+  # prevent, but makes it a bit less likely to happen accidentally)
   class Configurator
-    attr_accessor :http_username, :http_password, :disable_basic_auth
+    attr_accessor :http_username, :http_password, :disable_basic_auth, :payment_result_redirect
 
     def initialize(&block)
       @disable_basic_auth = false
+      @payment_result_redirect = lambda {|c| c.payments_complete_path()}
       raise ConfigMissing.new unless block
       yield self
+    end
+
+    def method_missing method, *args
+      Rails.logger.error "Your Adyen configuration is incorrect.  There is no setting called #{method}"
+      super
     end
   end
 
