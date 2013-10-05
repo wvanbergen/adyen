@@ -36,9 +36,8 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
 
     Adyen.setup do |config|
       config.payment_result_redirect = lambda do |c|
-        ref = c.params[:merchantReference]
         @results[:success] = c.payment_success?
-        "/some/other/path?ref=#{ref}"
+        "/some/other/path?ref=#{c.merchant_reference}"
       end
     end
 

@@ -19,4 +19,8 @@ class Adyen::PaymentsController < Adyen::ApplicationController
   def payment_success?
     params[:authResult] == 'AUTHORISATION'
   end
+
+  def merchant_reference
+    params[:merchantReference]
+  end
 end
