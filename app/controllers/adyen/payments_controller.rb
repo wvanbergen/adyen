@@ -1,5 +1,5 @@
 class Adyen::PaymentsController < Adyen::ApplicationController
-  before_filter :check_signature
+  before_filter :check_signature, only: :result
 
   def result
     Rails.logger.info "Received payment result, params: #{params}"

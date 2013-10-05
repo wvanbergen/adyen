@@ -22,12 +22,16 @@ end
 describe Adyen::PaymentsController, 'when a redirect location has been configured' do
   it 'will redirect to the configured location' do
     Adyen.setup do |config|
-      config.payment_result_redirect = lambda {|c| '/some/other/path' }
+      config.payment_result_redirect = lambda do |c|
+        ref = c.params[:merchantReference]
+        "/some/other/path?ref=#{ref}"
+      end
     end
+
     Adyen::Signature.stub(:redirect_signature_check).and_return(true)
     params = {authResult:'',
               pspReference: '',
-              merchantReference: '',
+              merchantReference: 'transaction_1',
               skinCode: '',
               merchantSig: '',
               paymentMethod: '',
@@ -36,7 +40,7 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
 
     get :result, params.merge(use_route: :adyen)
 
-    expect(response).to redirect_to('/some/other/path')
+    expect(response).to redirect_to('/some/other/path?ref=transaction_1')
   end
 end
 
@@ -53,5 +57,13 @@ describe Adyen::PaymentsController, 'when an invalid signature is received' do
               merchantReturnData:''}
 
     expect { get :result, params.merge(use_route: :adyen) }.to raise_error Adyen::InvalidSignature
+  end
+end
+
+describe Adyen::PaymentsController, 'when showing payment complete' do
+  it 'will be successful' do
+    get :complete, use_route: :adyen
+
+    expect(response).to be_success
   end
 end
