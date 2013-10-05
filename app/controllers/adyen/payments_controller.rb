@@ -7,7 +7,9 @@ class Adyen::PaymentsController < Adyen::ApplicationController
   end
 
   def complete
-
+    Rails.logger.warn 'You are using the default Adyen payment complete page.  '+
+        'The page looks pretty terrible, so please take the time to implement the'+
+        ' payment_result_redirect coniguration in the Adyen engine.'
   end
 
   def check_signature
