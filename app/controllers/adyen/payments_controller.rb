@@ -13,4 +13,8 @@ class Adyen::PaymentsController < Adyen::ApplicationController
   def check_signature
     raise Adyen::InvalidSignature.new('Forgery!') unless Adyen::Signature.redirect_signature_check(params)
   end
+
+  def payment_success?
+    params[:authResult] == 'AUTHORISATION'
+  end
 end
