@@ -13,7 +13,10 @@ class Adyen::PaymentsController < Adyen::ApplicationController
   end
 
   def check_signature
-    raise Adyen::InvalidSignature.new('Forgery!') unless Adyen::Signature.redirect_signature_check(params)
+    adyen_params = params.clone
+    adyen_params.delete(:action)
+    adyen_params.delete(:controller)
+    raise Adyen::InvalidSignature.new('Forgery!') unless Adyen::Signature.redirect_signature_check(adyen_params)
   end
 
   def payment_success?

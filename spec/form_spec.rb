@@ -73,16 +73,6 @@ describe Adyen::Form do
         :merchantSig => 'ytt3QxWoEhAskUzUne0P5VA9lPw='}
     end
 
-    it "should calculate the signature string correctly" do
-      Adyen::Signature.redirect_signature_string(@params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJA'
-      params = @params.merge(:merchantReturnData => 'testing1234')
-      Adyen::Signature.redirect_signature_string(params).should == 'AUTHORISED1211992213193029Internet Order 123454aD37dJAtesting1234'
-    end
-
-    it "should calculate the signature correctly" do
-      Adyen::Signature.redirect_signature(@params).should == @params[:merchantSig]
-    end
-
     it "should check the signature correctly with explicit shared signature" do
       Adyen::Signature.redirect_signature_check(@params, 'Kah942*$7sdp0)').should be_true
     end

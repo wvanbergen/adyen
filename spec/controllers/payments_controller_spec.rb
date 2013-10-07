@@ -2,15 +2,15 @@ require File.expand_path('../../spec_helper', __FILE__)
 
 module PaymentsController
   module TestHelper
-    def create_params(overrides)
-      {authResult: '',
-       pspReference: '',
-       merchantReference: '',
-       skinCode: '',
-       merchantSig: '',
-       paymentMethod: '',
-       shopperLocale:'',
-       merchantReturnData:''}.merge overrides
+    def create_params(overrides={})
+      {'authResult' => '',
+       'pspReference' => '',
+       'merchantReference' => '',
+       'skinCode' => 'skin_secret',
+       'merchantSig' => '',
+       'paymentMethod' => '',
+       'shopperLocale' => '',
+       'merchantReturnData' => ''}.merge overrides
     end
   end
 end
@@ -19,10 +19,13 @@ describe Adyen::PaymentsController, 'when a valid result is received' do
   include PaymentsController::TestHelper
 
   it 'should respond with 200 success' do
-    Adyen.setup {}
-    Adyen::Signature.stub(:redirect_signature_check).and_return(true)
+    Adyen.setup do |config|
+    end
 
-    get :result, create_params(use_route: :adyen)
+    params = create_params
+    Adyen::Signature.stub(:redirect_signature_check).with(params).and_return(true)
+
+    get :result, params.merge(use_route: :adyen)
 
     expect(response).to redirect_to('/adyen/payments/complete')
   end
@@ -43,7 +46,7 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
 
     Adyen::Signature.stub(:redirect_signature_check).and_return(true)
 
-    get :result, create_params(authResult: 'AUTHORISATION', merchantReference: 'transaction_1', use_route: :adyen)
+    get :result, create_params('authResult' => 'AUTHORISATION', 'merchantReference' => 'transaction_1', use_route: :adyen)
   end
 
   it 'will redirect to the configured location' do

@@ -11,11 +11,15 @@ module Adyen
       @http_password = http_password
       @disable_basic_auth = configurator.disable_basic_auth
       @payment_result_redirect = configurator.payment_result_redirect
+      @skins = {}
+      if main_skin = configurator.main_skin
+        Adyen.configuration.register_form_skin(:main, main_skin[:code], main_skin[:secret])
+      end
     end
   end
 
   class FailureConfig
-    def method_missing method, *args
+    def method_missing(method, *args)
       raise NotConfigured.new
     end
   end
@@ -27,11 +31,20 @@ module Adyen
     attr_accessor :http_username, :http_password, :disable_basic_auth, :payment_result_redirect
 
     def initialize(&block)
+      @skins ||= {}
       raise ConfigMissing.new unless block
       yield self
       # set defaults if they haven't already been set
       @disable_basic_auth ||= false
       @payment_result_redirect ||= lambda {|c| c.payments_complete_path()}
+    end
+
+    def add_main_skin(skin_code, secret)
+      @skins[:main] = {code: skin_code, secret: secret}
+    end
+
+    def main_skin
+      @skins[:main]
     end
 
     def method_missing method, *args
