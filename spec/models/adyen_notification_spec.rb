@@ -105,8 +105,6 @@ describe AdyenNotification, 'when decorated with a hook' do
   include NotificationTestHelper
 
   before :all do
-    @results = {}
-
     AdyenNotification.class_eval do
       def hook!
         instance_eval do
