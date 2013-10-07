@@ -101,3 +101,26 @@ describe AdyenNotification, 'when the psp reference is missing' do
   end
 end
 
+describe AdyenNotification, 'when decorated with a hook' do
+  include NotificationTestHelper
+
+  before :all do
+    @results = {}
+
+    AdyenNotification.class_eval do
+      def hook!
+        instance_eval do
+          def hooked?
+            true
+          end
+        end
+      end
+    end
+
+    @notification = AdyenNotification.log(fake_notification)
+  end
+
+  it 'will execute the hook' do
+    expect(@notification.hooked?).to be_true
+  end
+end

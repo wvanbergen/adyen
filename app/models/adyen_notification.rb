@@ -51,6 +51,7 @@ class AdyenNotification < ActiveRecord::Base
       converted_params.each do |key, value|
         notification.send("#{key}=", value) if notification.respond_to?(key)
       end
+      notification.hook!
       notification.save!
     end
   end
@@ -70,6 +71,11 @@ class AdyenNotification < ActiveRecord::Base
   #   and the authorization was successful according to the success field.
   def successful_authorisation?
     authorisation? && success?
+  end
+
+  def hook!
+    Rails.logger.warn 'No override for AdyenNotification.hook! has been defined.  Please add a ' +
+        'custom definition in your Adyen Rails initializer.'
   end
 
   alias_method :successful_authorization?, :successful_authorisation?
