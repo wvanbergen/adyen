@@ -3,16 +3,26 @@ module Adyen
     isolate_namespace Adyen
   end
 
-  class FailureConfig
+  class ConfigContainer
+    alias_method :orig_method_missing, :method_missing
+
+    def configure_with(&block)
+      raise ConfigMissing.new unless block
+      extend EngineConfiguration
+      class << self; alias_method :method_missing, :orig_method_missing; end
+
+      yield self
+      # set defaults if they haven't already been set
+      @disable_basic_auth ||= false
+      @payment_result_redirect_block ||= lambda {|c| c.payments_complete_path()}
+    end
+
     def method_missing(method, *args)
-      raise NotConfigured.new
+      raise NotConfigured.new method
     end
   end
 
-  # Used to interpret the config run against the engine, and prevents on the fly
-  # reconfiguration of things that should not be reconfigured (well, okay, doesn't
-  # prevent, but makes it a bit less likely to happen accidentally)
-  class EngineConfiguration
+  module EngineConfiguration
     attr_accessor :http_username, :http_password, :disable_basic_auth
 
     def redirect_payment_with(&block)
@@ -21,15 +31,6 @@ module Adyen
 
     def payment_result_redirect(controller)
       @payment_result_redirect_block.call(controller)
-    end
-
-    def initialize(&block)
-      @skins ||= {}
-      raise ConfigMissing.new unless block
-      yield self
-      # set defaults if they haven't already been set
-      @disable_basic_auth ||= false
-      @payment_result_redirect_block ||= lambda {|c| c.payments_complete_path()}
     end
 
     def add_main_skin(skin_code, secret)
@@ -49,16 +50,17 @@ module Adyen
   end
 
   class NotConfigured < StandardError
-    def initialize
-      super "You have not configured the Adyen engine.  Please add an Adyen#setup block into your enovironments/#{Rails.env}.rb file."
+    def initialize(method_name)
+      super "You have not configured the Adyen engine so cannot call #{method_name}.  Please add an Adyen#setup block into your enovironments/#{Rails.env}.rb file."
     end
   end
 
   def self.setup(&block)
-    @config = EngineConfiguration.new &block
+    @config = ConfigContainer.new if @config.nil? or @config.class == ConfigContainer
+    @config.configure_with &block
   end
 
   def self.config
-    @config ||= FailureConfig.new
+    @config ||= ConfigContainer.new
   end
 end
