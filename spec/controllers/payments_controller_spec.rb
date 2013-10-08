@@ -45,7 +45,7 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
 
   before :each do
     Adyen.setup do |config|
-      config.payment_result_redirect = lambda do |c|
+      config.redirect_payment_with do |c|
         "/some/other/path?ref=#{c.merchant_reference}"
       end
     end

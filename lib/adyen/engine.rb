@@ -4,7 +4,11 @@ module Adyen
   end
 
   class EngineConfiguration
-    attr_reader :http_username, :http_password, :disable_basic_auth, :payment_result_redirect
+    attr_reader :http_username, :http_password, :disable_basic_auth
+
+    def payment_result_redirect(controller)
+      @payment_result_redirect.call(controller)
+    end
 
     def initialize(http_username, http_password, configurator)
       @http_username = http_username
@@ -28,7 +32,15 @@ module Adyen
   # reconfiguration of things that should not be reconfigured (well, okay, doesn't
   # prevent, but makes it a bit less likely to happen accidentally)
   class Configurator
-    attr_accessor :http_username, :http_password, :disable_basic_auth, :payment_result_redirect
+    attr_accessor :http_username, :http_password, :disable_basic_auth
+
+    def redirect_payment_with(&block)
+      @payment_result_redirect_block = lambda {|c| block.call(c) }
+    end
+
+    def payment_result_redirect
+      @payment_result_redirect_block
+    end
 
     def initialize(&block)
       @skins ||= {}
@@ -36,7 +48,7 @@ module Adyen
       yield self
       # set defaults if they haven't already been set
       @disable_basic_auth ||= false
-      @payment_result_redirect ||= lambda {|c| c.payments_complete_path()}
+      @payment_result_redirect_block ||= lambda {|c| c.payments_complete_path()}
     end
 
     def add_main_skin(skin_code, secret)
