@@ -134,7 +134,7 @@ end
 describe Adyen::NotificationsController, 'when an unauthorised request is received' do
   before :each do
     Adyen.setup do |config|
-      # nothing to do here, just need to reset config to defaults
+      config.disable_basic_auth = false
     end
 
     post :notify, use_route: :adyen

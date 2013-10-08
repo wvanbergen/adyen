@@ -15,11 +15,11 @@ module Adyen
   end
 end
 
+require 'adyen/version'
+require 'adyen/configuration'
 require 'adyen/engine'
 require 'adyen/redirect_signature'
 require 'adyen/signature'
-require 'adyen/version'
-require 'adyen/configuration'
 require 'adyen/encoding'
 require 'adyen/formatter'
 require 'adyen/form'

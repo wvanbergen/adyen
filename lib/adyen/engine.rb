@@ -56,11 +56,17 @@ module Adyen
   end
 
   def self.setup(&block)
-    @config = ConfigContainer.new if @config.nil? or @config.class == ConfigContainer
+    @config ||= ConfigContainer.new
     @config.configure_with &block
   end
 
   def self.config
     @config ||= ConfigContainer.new
+  end
+
+  Adyen::Configuration.class_eval do
+    def engine
+      Adyen.config
+    end
   end
 end
