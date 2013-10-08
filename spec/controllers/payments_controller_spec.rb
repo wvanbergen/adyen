@@ -5,7 +5,7 @@ module PaymentsController
     def create_params(overrides={})
       {'authResult' => 'AUTHORISATION',
        'pspReference' => '',
-       'merchantReference' => '',
+       'merchantReference' => 'trans1',
        'skinCode' => 'skin_secret',
        'merchantSig' => '',
        'paymentMethod' => '',
@@ -31,6 +31,10 @@ describe Adyen::PaymentsController, 'when a valid result is received' do
     expect(controller.payment_success?).to be_true
   end
 
+  it 'will give the correct merchant reference' do
+    expect(controller.merchant_reference).to eq('trans1')
+  end
+
   it 'should respond with 200 success' do
     expect(response).to redirect_to('/adyen/payments/complete')
   end
@@ -40,11 +44,8 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
   include PaymentsController::SpecHelper
 
   before :each do
-    @results = {}
-
     Adyen.setup do |config|
       config.payment_result_redirect = lambda do |c|
-        @results[:success] = c.payment_success?
         "/some/other/path?ref=#{c.merchant_reference}"
       end
     end
@@ -58,8 +59,8 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
     expect(response).to redirect_to('/some/other/path?ref=transaction_1')
   end
 
-  it 'will have a successful payment' do
-    expect(@results[:success]).to be_true
+  it 'will be a successful authorisation' do
+    expect(controller.payment_success?).to be_true
   end
 end
 
