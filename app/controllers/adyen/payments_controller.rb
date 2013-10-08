@@ -1,4 +1,5 @@
 class Adyen::PaymentsController < Adyen::ApplicationController
+  before_filter :create_signature
   before_filter :check_signature, only: :result
 
   def result
@@ -12,15 +13,19 @@ class Adyen::PaymentsController < Adyen::ApplicationController
         ' payment_result_redirect coniguration in the Adyen engine.'
   end
 
-  def check_signature
+  def create_signature
     adyen_params = params.clone
     adyen_params.delete(:action)
     adyen_params.delete(:controller)
-    raise Adyen::InvalidSignature.new('Forgery!') unless Adyen::Signature.redirect_signature_check(adyen_params)
+    @signature = Adyen::RedirectSignature.new(adyen_params)
+  end
+
+  def check_signature
+    raise Adyen::InvalidSignature.new('Forgery!') unless @signature.redirect_signature_check
   end
 
   def payment_success?
-    params[:authResult] == 'AUTHORISATION'
+    @signature.payment_success?
   end
 
   def merchant_reference

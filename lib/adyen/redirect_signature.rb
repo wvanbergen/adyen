@@ -60,4 +60,8 @@ class Adyen::RedirectSignature
     @params[:authResult].to_s + @params[:pspReference].to_s + @params[:merchantReference].to_s +
         @params[:skinCode].to_s + @params[:merchantReturnData].to_s
   end
+
+  def payment_success?
+    @params[:authResult] == 'AUTHORISATION'
+  end
 end

@@ -1,9 +1,9 @@
 require File.expand_path('../../spec_helper', __FILE__)
 
 module PaymentsController
-  module TestHelper
+  module SpecHelper
     def create_params(overrides={})
-      {'authResult' => '',
+      {'authResult' => 'AUTHORISATION',
        'pspReference' => '',
        'merchantReference' => '',
        'skinCode' => 'skin_secret',
@@ -16,23 +16,28 @@ module PaymentsController
 end
 
 describe Adyen::PaymentsController, 'when a valid result is received' do
-  include PaymentsController::TestHelper
+  include PaymentsController::SpecHelper
 
-  it 'should respond with 200 success' do
+  before :each do
     Adyen.setup do |config|
     end
-
     params = create_params
-    Adyen::Signature.stub(:redirect_signature_check).with(params).and_return(true)
 
+    Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(true)
     get :result, params.merge(use_route: :adyen)
+  end
 
+  it 'will be a successful authorisation' do
+    expect(controller.payment_success?).to be_true
+  end
+
+  it 'should respond with 200 success' do
     expect(response).to redirect_to('/adyen/payments/complete')
   end
 end
 
 describe Adyen::PaymentsController, 'when a redirect location has been configured' do
-  include PaymentsController::TestHelper
+  include PaymentsController::SpecHelper
 
   before :each do
     @results = {}
@@ -44,7 +49,7 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
       end
     end
 
-    Adyen::Signature.stub(:redirect_signature_check).and_return(true)
+    Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(true)
 
     get :result, create_params('authResult' => 'AUTHORISATION', 'merchantReference' => 'transaction_1', use_route: :adyen)
   end
@@ -59,17 +64,16 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
 end
 
 describe Adyen::PaymentsController, 'when an invalid signature is received' do
-  include PaymentsController::TestHelper
+  include PaymentsController::SpecHelper
 
   it 'will raise an error' do
-    Adyen::Signature.stub(:redirect_signature_check).and_return(false)
-
+    Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(false)
     expect { get :result, create_params(use_route: :adyen) }.to raise_error Adyen::InvalidSignature
   end
 end
 
 describe Adyen::PaymentsController, 'when showing payment complete' do
-  include PaymentsController::TestHelper
+  include PaymentsController::SpecHelper
 
   it 'will be successful' do
     get :complete, use_route: :adyen
