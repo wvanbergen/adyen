@@ -3,25 +3,6 @@ module Adyen
     isolate_namespace Adyen
   end
 
-  class EngineConfiguration
-    attr_reader :http_username, :http_password, :disable_basic_auth
-
-    def payment_result_redirect(controller)
-      @payment_result_redirect.call(controller)
-    end
-
-    def initialize(http_username, http_password, configurator)
-      @http_username = http_username
-      @http_password = http_password
-      @disable_basic_auth = configurator.disable_basic_auth
-      @payment_result_redirect = configurator.payment_result_redirect
-      @skins = {}
-      if main_skin = configurator.main_skin
-        Adyen.configuration.register_form_skin(:main, main_skin[:code], main_skin[:secret])
-      end
-    end
-  end
-
   class FailureConfig
     def method_missing(method, *args)
       raise NotConfigured.new
@@ -31,15 +12,15 @@ module Adyen
   # Used to interpret the config run against the engine, and prevents on the fly
   # reconfiguration of things that should not be reconfigured (well, okay, doesn't
   # prevent, but makes it a bit less likely to happen accidentally)
-  class Configurator
+  class EngineConfiguration
     attr_accessor :http_username, :http_password, :disable_basic_auth
 
     def redirect_payment_with(&block)
       @payment_result_redirect_block = lambda {|c| block.call(c) }
     end
 
-    def payment_result_redirect
-      @payment_result_redirect_block
+    def payment_result_redirect(controller)
+      @payment_result_redirect_block.call(controller)
     end
 
     def initialize(&block)
@@ -52,11 +33,7 @@ module Adyen
     end
 
     def add_main_skin(skin_code, secret)
-      @skins[:main] = {code: skin_code, secret: secret}
-    end
-
-    def main_skin
-      @skins[:main]
+      Adyen.configuration.register_form_skin(:main, skin_code, secret)
     end
 
     def method_missing method, *args
@@ -78,8 +55,7 @@ module Adyen
   end
 
   def self.setup(&block)
-    config = Configurator.new &block
-    @config = EngineConfiguration.new(config.http_username, config.http_password, config)
+    @config = EngineConfiguration.new &block
   end
 
   def self.config
