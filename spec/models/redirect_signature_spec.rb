@@ -40,18 +40,6 @@ describe 'using an explicit secret' do
   it_behaves_like 'a valid signature'
 end
 
-describe 'using a secret configured in the engine' do
-  before :all do
-    Adyen.setup do |config|
-      config.add_main_skin '4aD37dJA', 'Kah942*$7sdp0)'
-    end
-  end
-
-  let(:secret){nil}
-
-  it_behaves_like 'a valid signature'
-end
-
 describe 'using a secret configured directly' do
   before :all do
     Adyen.configuration.register_form_skin(:main, '4aD37dJA', 'Kah942*$7sdp0)')
