@@ -51,7 +51,7 @@ module Adyen
 
   class NotConfigured < StandardError
     def initialize(method_name)
-      super "You have not configured the Adyen engine so cannot call #{method_name}.  Please add an Adyen#setup block into your enovironments/#{Rails.env}.rb file."
+      super "You have not configured the Adyen engine so cannot call #{method_name}.  Please add an Adyen#setup block into your environments/#{Rails.env}.rb file."
     end
   end
 

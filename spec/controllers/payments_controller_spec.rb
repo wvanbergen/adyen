@@ -3,7 +3,7 @@ require File.expand_path('../../spec_helper', __FILE__)
 module PaymentsController
   module SpecHelper
     def create_params(overrides={})
-      {'authResult' => 'AUTHORISATION',
+      {'authResult' => 'AUTHORISED',
        'pspReference' => '',
        'merchantReference' => 'trans1',
        'skinCode' => 'skin_secret',
@@ -52,7 +52,7 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
 
     Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(true)
 
-    get :result, create_params('authResult' => 'AUTHORISATION', 'merchantReference' => 'transaction_1', use_route: :adyen)
+    get :result, create_params('authResult' => 'AUTHORISED', 'merchantReference' => 'transaction_1', use_route: :adyen)
   end
 
   it 'will redirect to the configured location' do

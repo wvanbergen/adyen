@@ -62,6 +62,6 @@ class Adyen::RedirectSignature
   end
 
   def payment_success?
-    @params[:authResult] == 'AUTHORISATION'
+    @params[:authResult] == 'AUTHORISED'
   end
 end
