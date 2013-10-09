@@ -73,7 +73,7 @@ class Adyen::Signature
     #     using the {Adyen::Configuration#register_form_skin} method.
     # @return [true, false] Returns true only if the signature in the parameters is correct.
     def redirect_signature_check(params, shared_secret = nil)
-      Adyen::RedirectSignature.new(params).redirect_signature_check(shared_secret)
+      Adyen::PaymentResult.new(params).has_valid_signature?(shared_secret)
     end
 
     # Computes the redirect signature using the request parameters, so that the
@@ -85,17 +85,17 @@ class Adyen::Signature
     #     using the {Adyen::Form.register_skin} method.
     # @return [String] The redirect signature
     # @raise [ArgumentError] Thrown if shared_secret is empty
-    # @deprecated Please use Adyen::RedirectSignature#redirect_signature directly, not this method
+    # @deprecated Please use Adyen::PaymentResult#signature directly, not this method
     def redirect_signature(params, shared_secret = nil)
-      Adyen::RedirectSignature.new(params).redirect_signature(shared_secret)
+      Adyen::PaymentResult.new(params).signature(shared_secret)
     end
 
     # Generates the string for which the redirect signature is calculated, using the request paramaters.
     # @param [Hash] params A hash of HTTP GET parameters for the redirect request.
     # @return [String] The signature string.
-    # @deprecated Please use Adyen::RedirectSignature#redirect_signature_string directly, not this method
+    # @deprecated Please use Adyen::PaymentResult#signature_string directly, not this method
     def redirect_signature_string(params)
-      Adyen::RedirectSignature.new(params).redirect_signature_string
+      Adyen::PaymentResult.new(params).signature_string
     end
   end
 end

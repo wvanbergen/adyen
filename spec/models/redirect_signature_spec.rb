@@ -7,23 +7,23 @@ shared_examples 'a valid signature' do
                   'merchantReference' => 'Internet Order 12345', 'skinCode' => '4aD37dJA',
                   'merchantSig' => expected_signature }}
 
-  let(:signature) {Adyen::RedirectSignature.new(params)}
+  let(:signature) {Adyen::PaymentResult.new(params)}
 
   context '#redirect_signature_match' do
     it 'will pass' do
-      expect(signature.redirect_signature_check(secret)).to be_true
+      expect(signature.has_valid_signature?(secret)).to be_true
     end
   end
 
   context '#redirect_signature' do
     it 'will be correct' do
-      expect(signature.redirect_signature(secret)).to eq(expected_signature)
+      expect(signature.signature(secret)).to eq(expected_signature)
     end
   end
 
   context '#redirect_signature_string' do
     it 'will return the correct signature string' do
-      expect(signature.redirect_signature_string).to eq('AUTHORISED1211992213193029Internet Order 123454aD37dJA')
+      expect(signature.signature_string).to eq('AUTHORISED1211992213193029Internet Order 123454aD37dJA')
     end
   end
 
@@ -69,11 +69,11 @@ describe 'adding additional parameters' do
                   'merchantReference' => 'Internet Order 12345', 'skinCode' => '4aD37dJA',
                   'merchantSig' => expected_signature, 'merchantReturnData' => 'testing1234' }}
 
-  let(:signature) {Adyen::RedirectSignature.new(params)}
+  let(:signature) {Adyen::PaymentResult.new(params)}
 
   context '#redirect_signature_string' do
     it 'will calculate the correct value' do
-      expect(signature.redirect_signature_string).to eq 'AUTHORISED1211992213193029Internet Order 123454aD37dJAtesting1234'
+      expect(signature.signature_string).to eq 'AUTHORISED1211992213193029Internet Order 123454aD37dJAtesting1234'
     end
   end
 end

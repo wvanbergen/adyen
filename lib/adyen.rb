@@ -18,7 +18,7 @@ end
 require 'adyen/version'
 require 'adyen/configuration'
 require 'adyen/engine'
-require 'adyen/redirect_signature'
+require 'adyen/payment_result'
 require 'adyen/signature'
 require 'adyen/encoding'
 require 'adyen/formatter'

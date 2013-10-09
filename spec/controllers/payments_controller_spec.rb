@@ -23,7 +23,7 @@ describe Adyen::PaymentsController, 'when a valid result is received' do
     end
     params = create_params
 
-    Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(true)
+    Adyen::PaymentResult.any_instance.stub(:has_valid_signature?).and_return(true)
     get :result, params.merge(use_route: :adyen)
   end
 
@@ -50,7 +50,7 @@ describe Adyen::PaymentsController, 'when a redirect location has been configure
       end
     end
 
-    Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(true)
+    Adyen::PaymentResult.any_instance.stub(:has_valid_signature?).and_return(true)
 
     get :result, create_params('authResult' => 'AUTHORISED', 'merchantReference' => 'transaction_1', use_route: :adyen)
   end
@@ -68,7 +68,7 @@ describe Adyen::PaymentsController, 'when an invalid signature is received' do
   include PaymentsController::SpecHelper
 
   it 'will raise an error' do
-    Adyen::RedirectSignature.any_instance.stub(:redirect_signature_check).and_return(false)
+    Adyen::PaymentResult.any_instance.stub(:has_valid_signature?).and_return(false)
     expect { get :result, create_params(use_route: :adyen) }.to raise_error Adyen::InvalidSignature
   end
 end
