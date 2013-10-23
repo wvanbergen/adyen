@@ -1,7 +1,10 @@
 # encoding: UTF-8
 
-require File.expand_path('../../lib/adyen', __FILE__)
-require File.expand_path('../../lib/spec/matchers', __FILE__)
+require 'rubygems'
+require 'rspec'
+
+require 'adyen'
+require 'spec/matchers'
 
 RSpec.configure do |config|
   config.include Adyen::Matchers
