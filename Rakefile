@@ -1,5 +1,17 @@
-require "bundler/gem_tasks"
+begin
+  require 'bundler/setup'
+rescue LoadError
+  puts 'You must `gem install bundler` and `bundle install` to run rake tasks'
+end
 require "rspec/core/rake_task"
+
+begin
+  require 'rdoc/task'
+rescue LoadError
+  require 'rdoc/rdoc'
+  require 'rake/rdoctask'
+  RDoc::Task = Rake::RDocTask
+end
 
 Dir['tasks/*.rake'].each { |file| load(file) }
 
@@ -19,6 +31,17 @@ task :update_cacert do
   mv CACERT_PATH, '/tmp/cacert.pem.old'
   cp tmp, CACERT_PATH
 end
+
+RDoc::Task.new(:rdoc) do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title    = 'Adyen'
+  rdoc.options << '--line-numbers'
+  rdoc.rdoc_files.include('README.rdoc')
+  rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
+
+Bundler::GemHelper.install_tasks
 
 # Update the cacert.pem file before each release.
 task :build => :update_cacert do
