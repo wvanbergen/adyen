@@ -9,3 +9,7 @@ adyen-*.gem
 t.rb
 spec/functional/initializer.rb
 Gemfile.lock
+.bundle/
+pkg/
+.ruby-version
+.idea
