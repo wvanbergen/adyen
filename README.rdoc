@@ -1,4 +1,4 @@
-= Adyen
+= Adyen {<img src="https://travis-ci.org/wvanbergen/adyen.png" />}[https://travis-ci.org/wvanbergen/adyen]
 
 Package to simplify including the Adyen payments services into a Ruby on Rails application.
 
