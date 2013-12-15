@@ -21,6 +21,8 @@ Gem::Specification.new do |s|
   s.homepage = 'http://github.com/wvanbergen/adyen/wiki'
   s.license  = 'MIT'
 
+  s.required_ruby_version = '>= 1.9.3'
+
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2.14')
   s.add_development_dependency('rails', '>= 3.2')
