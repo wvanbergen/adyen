@@ -24,7 +24,7 @@ module Adyen
             private
             if backend == :nokogiri
               def document_for_xml(xml)
-                Nokogiri::XML::Document.parse(xml)
+                Nokogiri::XML::Document.parse(xml, nil, 'UTF-8')
               end
               def perform_xpath(query)
                 @node.xpath(query, NS)

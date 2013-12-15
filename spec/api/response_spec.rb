@@ -11,7 +11,7 @@ describe Adyen::API::Response do
 
   it "returns a XMLQuerier instance with the response body" do
     @response.xml_querier.should be_instance_of(Adyen::API::XMLQuerier)
-    @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
+    @response.xml_querier.to_s.rstrip.should == AUTHORISE_RESPONSE.rstrip
   end
 
   describe "with a successful HTTP response" do
