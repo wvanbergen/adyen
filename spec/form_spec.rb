@@ -139,6 +139,7 @@ describe Adyen::Form do
   end
 
   describe 'hidden fields generation' do
+    include APISpecHelper
     subject { %Q'<form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>' }
 
     before(:each) do
@@ -147,7 +148,10 @@ describe Adyen::Form do
         :session_validity => Time.now + 3600 }
     end
 
-    it { should have_adyen_payment_form }
+    for_each_xml_backend do
+      it { should have_adyen_payment_form }
+    end
+
     it { should include('<input type="hidden" name="merchantAccount" value="TestMerchant" />') }
 
     context "width default_form_params" do

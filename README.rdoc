@@ -24,6 +24,9 @@ RDoc documentation for the project can be found on http://rdoc.info/projects/wva
 * For more information about integrating Adyen, see their manuals at
   http://support.adyen.com/links/documentation
 
+The library doesn't have any dependencies, but making Nokogiri available in your environment 
+will greatly improve the speed of XML and HTML processing.
+
 == About
 
 This package is written by Michel Barbosa and Willem van Bergen for Floorplanner.com, and
@@ -34,6 +37,7 @@ comes without warranty of any kind, so use at your own risk.
 Contributions are welcomed; this is very much a scratch your own itch project. Some notes:
 
 * Fork the project, implement your stuff and issue a pull request. Topic branches not necessary.
+* We prefer to keep the number of dependencies of this library to 0.
 * All functionality must include tests and preferably documentation.
 * New SOAP API calls should include functional tests that actually test if the call is working. 
   Adyen has a nasty tendency to switch things up every now and then, so this is vital.

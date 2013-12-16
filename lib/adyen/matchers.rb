@@ -1,5 +1,4 @@
-require 'rexml/document'
-require 'rexml/xpath'
+require 'adyen/api/xml_querier'
 
 module Adyen
   module Matchers
@@ -30,20 +29,13 @@ module Adyen
         return xpath_query
       end
 
-      def self.document(subject)
-        if String === subject
-          REXML::Document.new(subject.to_s)
-        elsif subject.respond_to?(:body)
-          REXML::Document.new(subject.body.to_s)
-        elsif REXML::Document === subject
-          subject
-        else
-          raise "Cannot handle this XML input type"
-        end
-      end
-
       def self.check(subject, checks = {})
-        !!REXML::XPath.first(document(subject), build_xpath_query(checks))
+        found = false
+        document = Adyen::API::XMLQuerier.html(subject)
+        document.xpath(build_xpath_query(checks)) do |result|
+          found = true
+        end
+        return found
       end
     end
 

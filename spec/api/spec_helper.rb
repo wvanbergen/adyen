@@ -84,7 +84,7 @@ end
 
 module APISpecHelper
   def node_for_current_object_and_method
-    Adyen::API::XMLQuerier.new(@object.send(@method))
+    Adyen::API::XMLQuerier.xml(@object.send(@method))
   end
 
   def xpath(query, &block)
@@ -108,10 +108,10 @@ module APISpecHelper
 
   module ClassMethods
     def for_each_xml_backend(&block)
-      [:nokogiri, :rexml].each do |xml_backend|
+      backends = [Adyen::API::XMLQuerier::NokogiriBackend, Adyen::API::XMLQuerier::REXMLBackend]
+      backends.each do |xml_backend|
         describe "with a #{xml_backend} backend" do
-          before { Adyen::API::XMLQuerier.backend = xml_backend }
-          after  { Adyen::API::XMLQuerier.backend = :nokogiri }
+          before { Adyen::API::XMLQuerier.stub(:default_backend => xml_backend.new) }
           instance_eval(&block)
         end
       end
