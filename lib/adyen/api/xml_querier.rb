@@ -15,43 +15,78 @@ module Adyen
         'common'    => 'http://common.services.adyen.com'
       }
 
-      class << self
-        # @return [:rexml, :nokogiri] The XML backend to use.
-        attr_reader :backend
-        def backend=(backend)
-          @backend = backend
-          class_eval do
-            private
-            if backend == :nokogiri
-              def document_for_xml(xml)
-                Nokogiri::XML::Document.parse(xml)
-              end
-              def perform_xpath(query)
-                @node.xpath(query, NS)
-              end
-            else
-              def document_for_xml(xml)
-                REXML::Document.new(xml)
-              end
-              def perform_xpath(query)
-                REXML::XPath.match(@node, query, NS)
-              end
-            end
-          end
+      class NokogiriBackend
+        def initialize
+          require 'nokogiri'
+        end
+
+        def document_for_html(html)
+          Nokogiri::HTML::Document.parse(html, nil, 'UTF-8')
+        end
+
+        def document_for_xml(xml)
+          Nokogiri::XML::Document.parse(xml)
+        end
+
+        def perform_xpath(query, root_node)
+          root_node.xpath(query, NS)
         end
       end
 
-      begin
-        require 'nokogiri'
-        self.backend = :nokogiri
-      rescue LoadError
-        require 'rexml/document'
-        self.backend = :rexml
+      class REXMLBackend
+        def initialize
+          require 'rexml/document'
+        end
+
+        def document_for_html(html)
+          REXML::Document.new(html)
+        end
+
+        def document_for_xml(xml)
+          REXML::Document.new(xml)
+        end
+
+        def perform_xpath(query, root_node)
+          REXML::XPath.match(root_node, query, NS)
+        end        
       end
 
-      # @param [String, Array, Nokogiri::XML::NodeSet] data The XML data to wrap.
-      def initialize(data)
-        @node = data.is_a?(String) ? document_for_xml(data) : data
+      # @return A backend to handle XML parsing.
+      def self.default_backend
+        @default_backend ||= begin
+          NokogiriBackend.new
+        rescue LoadError => e
+          REXMLBackend.new
+        end
+      end
+
+      # Creates an XML querier for an XML document
+      def self.xml(data, backend = nil)
+        backend ||= default_backend
+        self.new(backend.document_for_xml(string_from(data)), backend)
+      end
+
+      # Creates an XML querier for an HTML document
+      def self.html(data, backend = nil)
+        backend ||= default_backend
+        self.new(backend.document_for_html(string_from(data)), backend)
+      end
+
+      def self.string_from(data)
+        if data.is_a?(String)
+          data
+        elsif data.responds_to?(:body)
+          data.body.to_s
+        else 
+          data.to_s
+        end
+      end
+
+      attr_reader :backend
+
+      # @param [Nokogiri::XML::NodeSet] data The XML data to wrap.
+      def initialize(node, backend)
+        @node, @backend = node, backend
       end
 
       # @param [String] query The xpath query to perform.
@@ -59,7 +94,7 @@ module Adyen
       # @return [XMLQuerier] A new XMLQuerier scoped to the given +query+. Or, if a block is given,
       #                      the result of calling the block.
       def xpath(query)
-        result = self.class.new(perform_xpath(query))
+        result = self.class.new(backend.perform_xpath(query, @node), backend)
         block_given? ? yield(result) : result
       end
 
@@ -87,7 +122,7 @@ module Adyen
       # @yield [XMLQuerier] A member of this node set, ready to be queried.
       # @return [Array] The list of nodes wrapped in XMLQuerier instances.
       def map(&block)
-        @node.map { |n| self.class.new(n) }.map(&block)
+        @node.map { |n| self.class.new(n, backend) }.map(&block)
       end
     end
   end

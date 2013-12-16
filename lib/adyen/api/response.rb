@@ -41,7 +41,7 @@ module Adyen
 
       # @return [XMLQuerier] The response body wrapped in a XMLQuerier.
       def xml_querier
-        @xml_querier ||= XMLQuerier.new(@http_response.body)
+        @xml_querier ||= XMLQuerier.xml(@http_response.body)
       end
 
       # @return [Hash] Subclasses return the parsed response body.
