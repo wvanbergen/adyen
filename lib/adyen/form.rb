@@ -324,6 +324,7 @@ module Adyen
     #     using the {Adyen::Configuration#register_form_skin} method.
     # @return [true, false] Returns true only if the signature in the parameters is correct.
     def redirect_signature_check(params, shared_secret = nil)
+      params[:merchantSig].gsub!(' ', '+') if params[:merchantSig].is_a?(String) # FIX for weird encoded merchantSig containing a '+' which becomes a space in params Hash.
       params[:merchantSig] == redirect_signature(params, shared_secret)
     end
 
