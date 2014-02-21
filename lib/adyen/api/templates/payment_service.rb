@@ -68,7 +68,7 @@ EOS
       # @private
       INSTALLMENTS_PARTIAL = <<EOS
         <payment:installments>
-          <payment:value>%s</payment:value>
+          <common:value>%s</common:value>
         </payment:installments>
 EOS
 
