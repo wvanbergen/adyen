@@ -10,7 +10,7 @@ shared_examples_for "payment requests" do
     text('./payment:reference').should == 'order-id'
   end
 
-  it "includes the given amount of 'currency'" do
+  it "includes the given amount of `currency'" do
     xpath('./payment:amount') do |amount|
       amount.text('./common:currency').should == 'EUR'
       amount.text('./common:value').should == '1234'
@@ -33,7 +33,7 @@ shared_examples_for "payment requests" do
     xpath('./payment:fraudOffset').should be_empty
   end
 
-  it "includes the given amount of 'installments'" do
+  it "includes the given amount of `installments'" do
     xpath('./payment:installments') do |amount|
       amount.text('./common:value').should == '6'
     end
