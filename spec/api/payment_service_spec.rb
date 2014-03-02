@@ -23,14 +23,25 @@ shared_examples_for "payment requests" do
     text('./payment:shopperIP').should == '61.294.12.12'
     text('./payment:shopperStatement').should == 'invoice number 123456'
   end
-  
+
   it "includes the fraud offset" do
     text('./payment:fraudOffset').should == '30'
   end
-  
+
   it "does not include the fraud offset if none is given" do
     @payment.params.delete(:fraud_offset)
     xpath('./payment:fraudOffset').should be_empty
+  end
+
+  it "includes the given amount of `installments'" do
+    xpath('./payment:installments') do |amount|
+      amount.text('./common:value').should == '6'
+    end
+  end
+
+  it "does not include the installments amount if none is given" do
+    @payment.params.delete(:installments)
+    xpath('./payment:installments').should be_empty
   end
 
   it "only includes shopper details for given parameters" do
@@ -95,6 +106,9 @@ describe Adyen::API::PaymentService do
         #:start_month => ,
         #:start_year => ,
       },
+      :installments => {
+        :value => 6
+      },
       :recurring_detail_reference => 'RecurringDetailReference1',
       :fraud_offset => 30
     }
@@ -113,7 +127,7 @@ describe Adyen::API::PaymentService do
       @payment.params[:recurring] = true
       @payment.params[:shopper] = nil
     end
-    
+
     it_should_validate_request_param(:fraud_offset) do
       @payment.params[:fraud_offset] = ''
     end
@@ -226,8 +240,9 @@ describe Adyen::API::PaymentService do
 
       it "prepends the error attribute with the given prefix, except for :base" do
         [
-          ["validation 101 Invalid card number", [:card_number, 'is not a valid creditcard number']],
-          ["validation 130 Reference Missing",   [:base,        "validation 130 Reference Missing"]],
+          ["validation 101 Invalid card number",            [:card_number, 'is not a valid creditcard number']],
+          ["validation 130 Reference Missing",              [:base,        "validation 130 Reference Missing"]],
+          ["validation 152 Invalid number of installments", [:base,        "validation 152 Invalid number of installments"]],
         ].each do |message, error|
           response_with_fault_message(message).error(:card).should == error
         end

@@ -66,6 +66,13 @@ EOS
 EOS
 
       # @private
+      INSTALLMENTS_PARTIAL = <<EOS
+        <payment:installments>
+          <common:value>%s</common:value>
+        </payment:installments>
+EOS
+
+      # @private
       ENCRYPTED_CARD_PARTIAL = <<EOS
         <additionalAmount xmlns="http://payment.services.adyen.com" xsi:nil="true" />
         <additionalData xmlns="http://payment.services.adyen.com">
@@ -110,7 +117,7 @@ EOS
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
         :statement => '        <payment:shopperStatement>%s</payment:shopperStatement>',
       }
-                              
+
       # @private
       FRAUD_OFFSET_PARTIAL = '<payment:fraudOffset>%s</payment:fraudOffset>'
     end
