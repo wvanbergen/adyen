@@ -8,6 +8,8 @@ Gem::Specification.new do |s|
   s.name    = "adyen"
   s.version = Adyen::VERSION
 
+  s.required_ruby_version = '>= 1.9.3'
+
   s.summary = "Integrate Adyen payment services in your Ruby on Rails application."
   s.description = <<-EOS
     Package to simplify including the Adyen payments services into a Ruby on Rails application.
@@ -24,21 +26,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec', '~> 2.14')
   
-  if RUBY_VERSION < "1.9.3"
-    s.add_development_dependency('rails', '>= 2.3', '< 4')
-  else
-    s.add_development_dependency('rails', '>= 2.3')
-  end
-  
-  if RUBY_PLATFORM == 'java'
-    s.add_development_dependency('nokogiri', '~> 1.4.6')
-  elsif RUBY_VERSION < "1.9"
-    s.add_development_dependency('nokogiri', '~> 1.5.0')
-  else
-    s.add_development_dependency('nokogiri', '~> 1.6.0')
-  end
-  
-  s.add_runtime_dependency('jruby-openssl') if RUBY_PLATFORM == 'java'
+  s.add_development_dependency('rails', '>= 3.2')
+  s.add_development_dependency('nokogiri', '>= 1.6.1')
   
   s.requirements << 'Having Nokogiri installed will speed up XML handling when using the SOAP API.'
 
