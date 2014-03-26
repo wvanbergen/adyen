@@ -73,7 +73,7 @@ describe Adyen::API::SimpleSOAPClient do
 
     it "returns an Adyen::API::Response instance" do
       @response.should be_instance_of(Adyen::API::Response)
-      @response.xml_querier.to_s.should == AUTHORISE_RESPONSE
+      @response.xml_querier.to_s.rstrip.should == AUTHORISE_RESPONSE.rstrip
     end
 
     [

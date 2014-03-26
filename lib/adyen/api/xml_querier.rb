@@ -31,6 +31,10 @@ module Adyen
         def perform_xpath(query, root_node)
           root_node.xpath(query, NS)
         end
+
+        def stringify_nodeset(nodeset)
+          nodeset.to_xml(encoding: 'UTF-8')
+        end
       end
 
       class REXMLBackend
@@ -48,7 +52,11 @@ module Adyen
 
         def perform_xpath(query, root_node)
           REXML::XPath.match(root_node, query, NS)
-        end        
+        end
+
+        def stringify_nodeset(nodeset)
+          nodeset.map { |n| n.to_s }.join("")
+        end
       end
 
       # @return A backend to handle XML parsing.
@@ -116,7 +124,7 @@ module Adyen
 
       # @return [String] A string representation of this node.
       def to_s
-        Array === @node ? @node.join("") : @node.to_s
+        backend.stringify_nodeset(@node)
       end
 
       # @yield [XMLQuerier] A member of this node set, ready to be queried.

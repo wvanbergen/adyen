@@ -170,7 +170,7 @@ describe Adyen::API::RecurringService do
     it "includes the creditcard details" do
       xpath('./recurring:card') do |card|
         # there's no reason why Nokogiri should escape these characters, but as long as they're correct
-        card.text('./payment:holderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
+        card.text('./payment:holderName').should == 'Simon わくわく Hopper'
         card.text('./payment:number').should == '4444333322221111'
         card.text('./payment:cvc').should == '737'
         card.text('./payment:expiryMonth').should == '12'
@@ -207,7 +207,7 @@ describe Adyen::API::RecurringService do
     it "includes the ELV details" do
       xpath('./recurring:elv') do |elv|
         # there's no reason why Nokogiri should escape these characters, but as long as they're correct        
-        elv.text('./payment:accountHolderName').should == 'Simon &#x308F;&#x304F;&#x308F;&#x304F; Hopper'
+        elv.text('./payment:accountHolderName').should == 'Simon わくわく Hopper'
         elv.text('./payment:bankAccountNumber').should == '1234567890'
         elv.text('./payment:bankLocation').should == 'Berlin'
         elv.text('./payment:bankLocationId').should == '12345678'
