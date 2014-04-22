@@ -29,33 +29,36 @@ if File.exist?(API_SPEC_INITIALIZER)
       )
     end
 
-    it "performs a payment request" do
-      @payment_response.should be_authorized
-      @payment_response.psp_reference.should_not be_empty
-    end
+    # TODO disabled for now: https://github.com/wvanbergen/adyen/issues/29
+    # it "performs a payment request" do
+    #   @payment_response.should be_authorized
+    #   @payment_response.psp_reference.should_not be_empty
+    # end
 
-    it "performs a recurring payment request" do
-      response = Adyen::API.authorise_recurring_payment(
-        @order_id,
-        { :currency => 'EUR', :value => '1234' },
-        { :email => "#{@user_id}@example.com", :reference => @user_id }
-      )
-      response.should be_authorized
-      response.psp_reference.should_not be_empty
-    end
+    # TODO disabled for now: https://github.com/wvanbergen/adyen/issues/29
+    # it "performs a recurring payment request" do
+    #   response = Adyen::API.authorise_recurring_payment(
+    #     @order_id,
+    #     { :currency => 'EUR', :value => '1234' },
+    #     { :email => "#{@user_id}@example.com", :reference => @user_id }
+    #   )
+    #   response.should be_authorized
+    #   response.psp_reference.should_not be_empty
+    # end
 
-    it "performs a one-click payment request" do
-      detail   = Adyen::API.list_recurring_details(@user_id).references.last
-      response = Adyen::API.authorise_one_click_payment(
-        @order_id,
-        { :currency => 'EUR', :value => '1234' },
-        { :email => "#{@user_id}@example.com", :reference => @user_id },
-        '737',
-        detail
-      )
-      response.should be_authorized
-      response.psp_reference.should_not be_empty
-    end
+    # TODO disabled for now: https://github.com/wvanbergen/adyen/issues/29
+    # it "performs a one-click payment request" do
+    #   detail   = Adyen::API.list_recurring_details(@user_id).references.last
+    #   response = Adyen::API.authorise_one_click_payment(
+    #     @order_id,
+    #     { :currency => 'EUR', :value => '1234' },
+    #     { :email => "#{@user_id}@example.com", :reference => @user_id },
+    #     '737',
+    #     detail
+    #   )
+    #   response.should be_authorized
+    #   response.psp_reference.should_not be_empty
+    # end
 
     # TODO disabled for now: https://github.com/wvanbergen/adyen/issues/29
     #it "stores the provided ELV account details" do
@@ -95,11 +98,12 @@ if File.exist?(API_SPEC_INITIALIZER)
       response.should be_success
     end
 
-    it "disables a recurring contract" do
-      response = Adyen::API.disable_recurring_contract(@user_id)
-      response.should be_success
-      response.should be_disabled
-    end
+    # TODO disabled for now: https://github.com/wvanbergen/adyen/issues/29
+    # it "disables a recurring contract" do
+    #   response = Adyen::API.disable_recurring_contract(@user_id)
+    #   response.should be_success
+    #   response.should be_disabled
+    # end
   end
 
 else
