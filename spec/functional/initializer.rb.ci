@@ -1,0 +1,3 @@
+Adyen.configuration.default_api_params = { :merchant_account => ENV['ADYEN_MERCHANT_ACCOUNT'] }
+Adyen.configuration.api_username = ENV['ADYEN_API_USERNAME']
+Adyen.configuration.api_password = ENV['ADYEN_API_PASSWORD']
