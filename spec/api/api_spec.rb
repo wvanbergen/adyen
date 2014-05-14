@@ -32,6 +32,25 @@ describe Adyen::API do
         )
       end
 
+      it "performs a `authorise payment' request with browser info" do
+        should_map_shortcut_to(:authorise_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
+          :recurring => false,
+          :fraud_offset => nil,
+          browser_info: { accept_header: "hey", user_agent: "ho" }
+        )
+
+        Adyen::API.authorise_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
+          { browser_info: { accept_header: "hey", user_agent: "ho" } }
+        )
+      end
+
       it "performs a `authorise payment' request with additional :fraud_offset" do
         should_map_shortcut_to(:authorise_payment,
           :reference => 'order-id',

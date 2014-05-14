@@ -129,6 +129,7 @@ module Adyen
     # @param          [Hash]           amount         A hash describing the money to charge.
     # @param          [Hash]           shopper        A hash describing the shopper.
     # @param          [Hash]           card           A hash describing the credit card details.
+    # @param          [Hash]           options        A hash for browser_info, recurring and fraud_offset.
     #
     # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
     # @option amount  [Integer]        :value         The value of the payment in discrete cents,
@@ -145,6 +146,12 @@ module Adyen
     # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
     # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
     #
+    # @option options [Hash]           :browser_info  Key value of user agent and accept header for 3d secure
+    # @option options [Boolean]        :recurring     Store the payment details at Adyen for
+    #                                                 future recurring or one-click payments.
+    # @option options [Numeric]        :fraud_offset  Modify Adyen's fraud check by supplying
+    #                                                 an offset for their calculation.
+    #
     # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
     #                                                 future recurring or one-click payments.
     #
@@ -153,15 +160,27 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil, instant_capture = false)
+    def authorise_payment(reference, amount, shopper, card, *args)
+      options = if args.first.is_a? Hash
+                  {
+                    :recurring => false,
+                    :fraud_offset => nil,
+                    :instant_capture => false
+                  }.merge!(args.first)
+                else
+                  {
+                    :recurring => args[0] || false,
+                    :fraud_offset => args[1],
+                    :instant_capture => args[2] || false
+                  }
+                end
+
       params = { :reference    => reference,
                  :amount       => amount,
                  :shopper      => shopper,
-                 :card         => card,
-                 :recurring    => enable_recurring_contract,
-                 :fraud_offset => fraud_offset,
-                 :instant_capture => instant_capture }
-      PaymentService.new(params).authorise_payment
+                 :card         => card }
+
+      PaymentService.new(params.merge(options)).authorise_payment
     end
 
     # Authorise a recurring payment. The contract detail will default to the ‘+latest+’, which
