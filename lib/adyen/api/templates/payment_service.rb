@@ -154,6 +154,14 @@ module Adyen
 
       # @private
       CAPTURE_DELAY_PARTIAL = '<payment:captureDelayHours>%s</payment:captureDelayHours>'
+
+      # @private
+      BROWSER_INFO_PARTIAL = <<EOS
+        <payment:browserInfo>
+          <payment:acceptHeader>%s</payment:acceptHeader>
+          <payment:userAgent>%s</payment:userAgent>
+        </payment:browserInfo>
+EOS
     end
   end
 end

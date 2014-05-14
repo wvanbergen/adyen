@@ -111,11 +111,13 @@ module Adyen
 
       def payment_request_body(content)
         validate_parameters!(:merchant_account, :reference, :amount => [:currency, :value])
+
         content << amount_partial
         content << installments_partial if @params[:installments]
         content << shopper_partial if @params[:shopper]
         content << fraud_offset_partial if @params[:fraud_offset]
         content << capture_delay_partial if @params[:instant_capture]
+        content << browser_info_partial if @params[:browser_info]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
@@ -213,6 +215,10 @@ module Adyen
       def fraud_offset_partial
         validate_parameters!(:fraud_offset)
         FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
+      end
+
+      def browser_info_partial
+        BROWSER_INFO_PARTIAL % @params[:browser_info].values_at(:accept_header, :user_agent)
       end
 
       def capture_delay_partial(delay = 0)
