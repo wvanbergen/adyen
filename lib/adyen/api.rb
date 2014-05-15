@@ -183,6 +183,15 @@ module Adyen
       PaymentService.new(params.merge(options)).authorise_payment
     end
 
+    def authorise3d_payment(md, pa_response, shopper_ip, browser_info)
+      params = { :md    => md,
+                 :pa_response  => pa_response,
+                 :shopper_ip   => shopper_ip,
+                 :browser_info => browser_info }
+
+      PaymentService.new(params).authorise3d_payment
+    end
+
     # Authorise a recurring payment. The contract detail will default to the ‘+latest+’, which
     # is generally what you’d want.
     #

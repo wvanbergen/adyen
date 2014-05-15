@@ -50,6 +50,11 @@ module Adyen
         make_payment_request(authorise_payment_request_body, AuthorisationResponse)
       end
 
+      # @see API.authorise_payment
+      def authorise3d_payment
+        make_payment_request(authorise3d_payment_request_body, AuthorisationResponse)
+      end
+
       # @see API.authorise_recurring_payment
       def authorise_recurring_payment
         make_payment_request(authorise_recurring_payment_request_body, AuthorisationResponse)
@@ -93,6 +98,13 @@ module Adyen
           content << ENABLE_RECURRING_CONTRACTS_PARTIAL
         end
         payment_request_body(content)
+      end
+
+      def authorise3d_payment_request_body
+        content = browser_info_partial
+        content << ENROLLED_3D_PARTIAL % [@params[:md], @params[:pa_response]]
+
+        LAYOUT_3D % [@params[:merchant_account], @params[:shopper_ip], content]
       end
 
       def authorise_recurring_payment_request_body
@@ -308,7 +320,8 @@ module Adyen
         end
 
         def params
-          @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+          xpath = "//payment:authoriseResponse/payment:paymentResult | //payment:authorise3dResponse/payment:paymentResult"
+          @params ||= xml_querier.xpath(xpath) do |result|
             initial = {
               :psp_reference  => result.text('./payment:pspReference'),
               :result_code    => result.text('./payment:resultCode'),
