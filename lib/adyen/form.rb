@@ -119,6 +119,10 @@ module Adyen
         parameters[:billing_address_sig] = calculate_billing_address_signature(parameters, shared_secret)
       end
 
+      if parameters[:shopper]
+        parameters[:shopper_sig] = calculate_shopper_signature(parameters, shared_secret)
+      end
+
       return parameters
     end
 
@@ -264,6 +268,20 @@ module Adyen
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate billing address request signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Encoding.hmac_base64(shared_secret, calculate_billing_address_signature_string(parameters[:billing_address]))
+    end
+
+    # shopperSig: shopper.firstName + shopper.infix + shopper.lastName + shopper.gender + shopper.dateOfBirthDayOfMonth + shopper.dateOfBirthMonth + shopper.dateOfBirthYear + shopper.telephoneNumber
+    # (Note that you can send only shopper.firstName and shopper.lastName if you like. Do NOT include shopperSocialSecurityNumber in the shopperSig!)
+    def calculate_shopper_signature_string(parameters)
+      %w(first_name infix last_name gender date_of_birth_day_of_month date_of_birth_month date_of_birth_year telephone_number).map do |key|
+        parameters[key.to_sym]
+      end.join
+    end
+
+    def calculate_shopper_signature(parameters, shared_secret = nil)
+      shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate shopper request signature with empty shared_secret" if shared_secret.to_s.empty?
+      Adyen::Encoding.hmac_base64(shared_secret, calculate_shopper_signature_string(parameters[:shopper]))
     end
 
     ######################################################
