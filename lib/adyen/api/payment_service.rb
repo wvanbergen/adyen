@@ -260,9 +260,10 @@ module Adyen
 
         AUTHORISED = 'Authorised'
         REFUSED    = 'Refused'
+        ENROLLED_3D = 'RedirectShopper'
 
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference,
-          :additional_data
+          :additional_data, :pa_request, :md, :issuer_url
 
         def success?
           super && params[:result_code] == AUTHORISED
@@ -270,6 +271,10 @@ module Adyen
 
         def refused?
           params[:result_code] == REFUSED
+        end
+
+        def enrolled_3d?
+          params[:result_code] == ENROLLED_3D
         end
 
         alias_method :authorised?, :success?
@@ -304,13 +309,23 @@ module Adyen
 
         def params
           @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
-            {
+            initial = {
               :psp_reference  => result.text('./payment:pspReference'),
               :result_code    => result.text('./payment:resultCode'),
               :auth_code      => result.text('./payment:authCode'),
               :additional_data => parse_additional_data(result.xpath('.//payment:additionalData')),
               :refusal_reason => (invalid_request? ? fault_message : result.text('./payment:refusalReason'))
             }
+
+            if initial[:result_code] == ENROLLED_3D
+              initial.merge!({
+                :pa_request     => result.text('./payment:paRequest'),
+                :md             => result.text('./payment:md'),
+                :issuer_url     => result.text('./payment:issuerUrl'),
+              })
+            end
+
+            initial
           end
         end
 
