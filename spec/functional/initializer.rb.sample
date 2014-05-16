@@ -1,3 +1,18 @@
 Adyen.configuration.default_api_params = { :merchant_account => 'SuperShopperCOM' }
 Adyen.configuration.api_username = 'ws@company.SuperShopper'
 Adyen.configuration.api_password = '$ecret'
+
+# You can grab these values after authorising on the issuer site on the 3D
+# Secure flow. Here's a quote from Adyen api manual:
+#
+#   After the shopper authenticates at the issuer they will be returned to your
+#   site by sending a HTTP POST request to the TermUrl containing the MD parameter
+#   as explained previously and a new parameter called PaRes. These will be needed
+#   to complete the payment.
+#
+# Once you grab those values the PaRes param should be sent back as PaResponse
+# on the authorise3d call
+
+
+ENROLLED_3D_MD = "crazy insane string"
+ENROLLED_3D_PA_RESPONSE = "some other craze insane string"

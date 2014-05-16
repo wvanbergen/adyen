@@ -50,7 +50,7 @@ module Adyen
         make_payment_request(authorise_payment_request_body, AuthorisationResponse)
       end
 
-      # @see API.authorise_payment
+      # @see API.authorise3d_payment
       def authorise3d_payment
         make_payment_request(authorise3d_payment_request_body, AuthorisationResponse)
       end

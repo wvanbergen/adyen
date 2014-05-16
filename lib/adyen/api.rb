@@ -183,6 +183,34 @@ module Adyen
       PaymentService.new(params.merge(options)).authorise_payment
     end
 
+    # Authorise a payment after 3D redirect.
+    #
+    # @see capture_payment
+    #
+    # All parameters are required.
+    #
+    # @example
+    #   response = Adyen::API.authorise3d_payment(
+    #     md,
+    #     pa_response,
+    #     request.ip,
+    #     {
+    #       user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:29.0) Gecko/20100101 Firefox/29.0",
+    #       accept_header: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    #     }
+    #   )
+    #   response.authorised? # => true
+    #
+    # @param          [String]         md             MD parameter returned by Adyen on redirect after issuer 3-D secure auth.
+    # @param          [String]         pa_response    PaRes parameter returned by Adyen on redirect after issuer 3-D secure auth.
+    # @param          [String]         shopper_ip     Shopper IP address.
+    # @param          [Hash]           browser_info   Key value of user agent and accept header for 3d secure.
+    #
+    # @option browser_info [String]    :user_agent    Request User Agent.
+    # @option browser_info [String]    :accept_header Request Accept Header.
+    #
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
+    #                                                 authorisation status.
     def authorise3d_payment(md, pa_response, shopper_ip, browser_info)
       params = { :md    => md,
                  :pa_response  => pa_response,
