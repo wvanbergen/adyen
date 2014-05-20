@@ -110,6 +110,8 @@ module Adyen
         content << installments_partial if @params[:installments]
         content << shopper_partial if @params[:shopper]
         content << fraud_offset_partial if @params[:fraud_offset]
+        content << bank_account_partial if @params[:bank_account]
+
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
@@ -164,6 +166,11 @@ module Adyen
       def fraud_offset_partial
         validate_parameters!(:fraud_offset)
         FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
+      end
+
+      def bank_account_partial
+        validate_parameters!(:bank_account)
+        BANK_ACCOUNT_PARTIAL % @params[:bank_account].values_at(:bic, :iban, :selected_brand)
       end
 
       class AuthorisationResponse < Response
