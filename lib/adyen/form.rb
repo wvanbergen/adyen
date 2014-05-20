@@ -169,6 +169,20 @@ module Adyen
       }.join('&')
     end
 
+    # @see Adyen::Form.redirect_url
+    #
+    # Returns an absolute URL very similar to the one returned by Adyen::Form.redirect_url
+    # except that it uses the directory.shtml call which returns a list of all available
+    # payment methods
+    #
+    # @param [Hash] parameters The payment parameters to include in the payment request.
+    # @return [String] An absolute URL to redirect to the Adyen payment system.
+    def payment_methods_url(parameters = {})
+      url(nil, :directory) + '?' + flat_payment_parameters(parameters).map { |(k, v)|
+        "#{k}=#{CGI.escape(v)}"
+      }.join('&')
+    end
+
     # Returns a HTML snippet of hidden INPUT tags with the provided payment parameters.
     # The snippet can be included in a payment form that POSTs to the Adyen payment system.
     #
