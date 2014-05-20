@@ -88,6 +88,12 @@ module Adyen
     # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
     # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
     #
+    # @option elv     [String]         :bank_location        The city in which the bank (branch) is located.
+    # @option elv     [String]         :bank_name            The name of the bank.
+    # @option elv     [String]         :bank_location_id     The location ID of the bank
+    # @option elv     [String]         :account_holder_name  The name of the account holder.
+    # @option elv     [String]         :bank_account_number  The account number.
+    #
     # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
     #                                                 future recurring or one-click payments.
     #
@@ -96,11 +102,12 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil)
+    def authorise_payment(reference, amount, shopper, card, elv, enable_recurring_contract = false, fraud_offset = nil)
       params = { :reference    => reference,
                  :amount       => amount,
                  :shopper      => shopper,
                  :card         => card,
+                 :elv          => elv,
                  :recurring    => enable_recurring_contract,
                  :fraud_offset => fraud_offset }
       PaymentService.new(params).authorise_payment
