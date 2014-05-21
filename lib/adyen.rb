@@ -13,6 +13,10 @@ module Adyen
   def self.configuration
     @configuration ||= Adyen::Configuration.new
   end
+
+  def self.configuration=(configuration)
+    @configuration = configuration
+  end
 end
 
 require 'adyen/version'
