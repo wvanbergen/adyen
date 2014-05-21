@@ -3,7 +3,6 @@ require 'spec_helper'
 
 require 'adyen/api'
 
-require 'rubygems'
 require 'nokogiri'
 require 'rexml/document'
 
