@@ -55,6 +55,10 @@ module Adyen
         make_payment_request(authorise_one_click_payment_request_body, AuthorisationResponse)
       end
 
+      def authorise_sepa_direct_debit_payment
+        make_payment_request(authorise_sepa_payment_request_body, AuthorisationResponse)
+      end
+
       # @see API.capture_payment
       def capture
         make_payment_request(capture_request_body, CaptureResponse)
@@ -104,13 +108,22 @@ module Adyen
         payment_request_body(content)
       end
 
+      def authorise_sepa_payment_request_body
+        validate_parameters!(:reference,
+                             :amount => [:currency, :value],
+                             :shopper => [:email, :reference],
+                             :bank_account => [:bic, :iban])
+        content = BANK_ACCOUNT_PARTIAL % [@params[:bank_account][:bic], @params[:bank_account][:iban], 'sepadirectdebit']
+        content << RECURRING_PAYMENT_BODY_PARTIAL % 'LATEST' if @params[:recurring]
+        payment_request_body(content)
+      end
+
       def payment_request_body(content)
         validate_parameters!(:merchant_account, :reference, :amount => [:currency, :value])
         content << amount_partial
         content << installments_partial if @params[:installments]
         content << shopper_partial if @params[:shopper]
         content << fraud_offset_partial if @params[:fraud_offset]
-        content << bank_account_partial if @params[:bank_account]
 
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
@@ -166,11 +179,6 @@ module Adyen
       def fraud_offset_partial
         validate_parameters!(:fraud_offset)
         FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
-      end
-
-      def bank_account_partial
-        validate_parameters!(:bank_account)
-        BANK_ACCOUNT_PARTIAL % @params[:bank_account].values_at(:bic, :iban, :selected_brand)
       end
 
       class AuthorisationResponse < Response
