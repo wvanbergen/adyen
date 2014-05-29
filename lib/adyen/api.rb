@@ -214,7 +214,7 @@ module Adyen
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
-    #     { :bic => 'RABONL2U', :iban => 'NL48RABO0132394782', :owner_name => 'Simon Hopper', :country_code => 'NL' }
+    #     { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' }
     #   )
     #   response.authorised? # => true
     #
