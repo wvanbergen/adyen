@@ -113,7 +113,7 @@ module Adyen
                              :amount => [:currency, :value],
                              :shopper => [:email, :reference],
                              :bank_account => [:bic, :iban])
-        content = BANK_ACCOUNT_PARTIAL % [@params[:bank_account][:bic], @params[:bank_account][:iban], 'sepadirectdebit']
+        content = BANK_ACCOUNT_PARTIAL % [@params[:bank_account][:bic], @params[:bank_account][:iban], @params[:bank_account][:owner_name], @params[:bank_account][:country_code], 'sepadirectdebit']
         content << RECURRING_PAYMENT_BODY_PARTIAL % 'LATEST' if @params[:recurring]
         payment_request_body(content)
       end
@@ -192,6 +192,7 @@ module Adyen
 
         AUTHORISED = 'Authorised'
         REFUSED    = 'Refused'
+        RECEIVED = 'Received'
 
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference
 
@@ -201,6 +202,10 @@ module Adyen
 
         def refused?
           params[:result_code] == REFUSED
+        end
+
+        def received?
+          params[:result_code] == RECEIVED
         end
 
         alias_method :authorised?, :success?
