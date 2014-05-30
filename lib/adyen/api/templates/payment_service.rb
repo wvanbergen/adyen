@@ -100,6 +100,15 @@ EOS
 EOS
 
       # @private
+      RECURRING_SEPA_PAYMENT_BODY_PARTIAL = <<EOS
+        <payment:recurring>
+          <payment:contract>RECURRING</payment:contract>
+        </payment:recurring>
+        <payment:selectedRecurringDetailRetail>%s</payment:selectedRecurringDetailRetail>
+        <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
+EOS
+
+      # @private
       ONE_CLICK_PAYMENT_BODY_PARTIAL = <<EOS
         <payment:recurring>
           <payment:contract>ONECLICK</payment:contract>
