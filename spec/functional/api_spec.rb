@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'api/spec_helper'
 require 'nokogiri'
-require 'pry'
 
 API_SPEC_INITIALIZER = File.expand_path("../initializer.rb", __FILE__)
 
