@@ -107,11 +107,23 @@ module Adyen
       EOXML
 
       # @private
+      RECURRING_SEPA_PAYMENT_BODY_PARTIAL = <<-EOXML
+        <payment:recurring>
+          <payment:contract>RECURRING</payment:contract>
+        </payment:recurring>
+        <payment:selectedRecurringDetailRetail>%s</payment:selectedRecurringDetailRetail>
+        <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
+      EOXML
+
+      # @private
       ONE_CLICK_PAYMENT_BODY_PARTIAL = <<-EOXML
         <payment:recurring>
           <payment:contract>ONECLICK</payment:contract>
         </payment:recurring>
         <payment:selectedRecurringDetailReference>%s</payment:selectedRecurringDetailReference>
+        <payment:card>
+          <payment:cvc>%s</payment:cvc>
+        </payment:card>
       EOXML
 
       # @private
@@ -126,7 +138,7 @@ module Adyen
       FRAUD_OFFSET_PARTIAL = '<payment:fraudOffset>%s</payment:fraudOffset>'
 
       # @private
-      BANK_ACCOUNT_PARTIAL = <<EOS
+      BANK_ACCOUNT_PARTIAL = <<-EOXML
         <payment:bankAccount>
           <payment:bic>%s</payment:bic>
           <payment:iban>%s</payment:iban>
@@ -134,7 +146,7 @@ module Adyen
           <payment:countryCode>%s</payment:countryCode>
         </payment:bankAccount>
         <payment:selectedBrand>%s</payment:selectedBrand>
-EOS
+      EOXML
     end
   end
 end
