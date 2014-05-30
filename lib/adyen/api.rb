@@ -49,6 +49,14 @@ module Adyen
   # @see http://usa.visa.com/merchants/risk_management/cisp_merchants.html
   module API
     extend self
+    def generate_billet(reference, amount, shopper_name, social_security_number, selected_brand)
+      params = { :reference              => reference,
+                 :amount                 => amount,
+                 :shopper_name           => shopper_name,
+                 :social_security_number => social_security_number,
+                 :selected_brand         => selected_brand }
+      PaymentService.new(params).generate_billet
+    end
 
     # Authorise a payment.
     #

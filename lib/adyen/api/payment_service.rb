@@ -40,6 +40,11 @@ module Adyen
       # The Adyen Payment SOAP service endpoint uri.
       ENDPOINT_URI = 'https://pal-%s.adyen.com/pal/servlet/soap/Payment'
 
+      # @see API.generate_billet
+      def generate_billet
+        make_payment_request(generate_billet_request_body, BilletResponse)
+      end
+
       # @see API.authorise_payment
       def authorise_payment
         make_payment_request(authorise_payment_request_body, AuthorisationResponse)
@@ -113,6 +118,15 @@ module Adyen
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
+      def generate_billet_request_body
+        validate_parameters!(:merchant_account, :reference, :amount => [:currency, :value])
+        content  =  amount_partial
+        content << social_security_number_partial if @params[:social_security_number]
+        content << shopper_name_partial if @params[:shopper_name]
+        content << selected_brand_partial if @params[:selected_brand]
+        LAYOUT % [@params[:merchant_account], @params[:reference], content]
+      end
+
       def capture_request_body
         CAPTURE_LAYOUT % capture_and_refund_params
       end
@@ -150,6 +164,10 @@ module Adyen
         end
       end
 
+      def shopper_name_partial
+        SHOPPER_NAME_PARTIAL % @params[:shopper_name].values_at(:first_name, :last_name)
+      end
+
       def card_partial
         if @params[:card] && @params[:card][:encrypted] && @params[:card][:encrypted][:json]
           ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
@@ -167,6 +185,18 @@ module Adyen
         end
       end
 
+      def social_security_number_partial
+        if @params[:social_security_number]
+          SOCIAL_SECURITY_NUMBER_PARTIAL % @params[:social_security_number]
+        end
+      end
+
+      def selected_brand_partial
+        if @params[:selected_brand]
+          SELECTED_BRAND_PARTIAL % @params[:selected_brand]
+        end
+      end
+
       def shopper_partial
         @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
       end
@@ -174,6 +204,28 @@ module Adyen
       def fraud_offset_partial
         validate_parameters!(:fraud_offset)
         FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
+      end
+
+      class BilletResponse < Response
+        RECEIVED = "Received"
+
+        def success?
+          super && params[:result_code] == RECEIVED
+        end
+
+        def params
+          @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+            {
+              :psp_reference  => result.text('./payment:pspReference'),
+              :result_code    => result_code = result.text('./payment:resultCode'),
+              :billet_url     => (result_code == RECEIVED) ? result.children[0].children[0].children[1].text : ""
+            }
+          end
+        end
+
+        def invalid_request?
+          !fault_message.nil?
+        end
       end
 
       class AuthorisationResponse < Response

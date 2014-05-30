@@ -79,6 +79,23 @@ module Adyen
         </payment:installments>
       EOXML
 
+      SOCIAL_SECURITY_NUMBER_PARTIAL = <<-EOXML
+        <payment:socialSecurityNumber>%s</payment:socialSecurityNumber>
+      EOXML
+
+      # @private
+      SELECTED_BRAND_PARTIAL = <<-EOXML
+        <payment:selectedBrand>%s</payment:selectedBrand>
+      EOXML
+
+      # @private
+      SHOPPER_NAME_PARTIAL = <<-EOXML
+        <payment:shopperName>
+          <common:firstName>%s</common:firstName>
+          <common:lastName>%s</common:lastName>
+        </payment:shopperName>
+      EOXML
+
       # @private
       ENCRYPTED_CARD_PARTIAL = <<-EOXML
         <additionalAmount xmlns="http://payment.services.adyen.com" xsi:nil="true" />
