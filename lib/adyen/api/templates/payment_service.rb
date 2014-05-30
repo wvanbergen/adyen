@@ -124,6 +124,15 @@ module Adyen
 
       # @private
       FRAUD_OFFSET_PARTIAL = '<payment:fraudOffset>%s</payment:fraudOffset>'
+
+      # @private
+      BANK_ACCOUNT_PARTIAL = <<EOS
+        <payment:bankAccount>
+          <payment:bic>%s</payment:bic>
+          <payment:iban>%s</payment:iban>
+        </payment:bankAccount>
+        <payment:selectedBrand>%s</payment:selectedBrand>
+EOS
     end
   end
 end
