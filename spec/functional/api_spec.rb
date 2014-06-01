@@ -137,6 +137,16 @@ else
         payment_response.should be_success
       end
 
+      # Once you authorise a 3-D enrolled card Adyen will respond with a url.
+      # You will have to redirect the customer to that url so that aonther
+      # authentication process occurs outsite of your application.
+      #
+      # After the customer authenticates again on the card issuer he will be
+      # redirected back to your store via a POST. Through that resquest you can
+      # grab the MD and PaResponse values that should be used for the authorise3d
+      # call. For local development and testing purposes you can use a service like
+      # https://putsreq.herokuapp.com/ that allows you to record that POST request
+      # copy the MD and PaResponse values and test them locally.
       context "authorise with 3-D enrolled credit card" do
         let(:card_number) { '4212345678901237' }
 
