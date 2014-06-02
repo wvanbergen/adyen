@@ -111,46 +111,46 @@ else
       before :all do
         require API_SPEC_INITIALIZER
         Net::HTTP.stubbing_enabled = false
-        @reference_id = Time.now.to_i
-        perform_payment_request
       end
 
       after :all do
         Net::HTTP.stubbing_enabled = true
       end
 
-      def perform_payment_request
-        @payment_response = Adyen::API.authorise_sepa_direct_debit_payment(
-          @reference_id,
-          { :currency => 'EUR', :value => '1234' },
-          { :reference => @reference_id, :email => "#{@reference_id}@example.com"},
-          { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => "Simon #{@reference_id} Hopper", :country_code => 'DE' },
-          true
-        )
-      end
+      context "for a recurring payment" do
+        let(:amount) { { :currency => 'EUR', :value => '1234' } }
+        let(:shopper) { { :reference => @reference_id, :email => "#{@reference_id}@example.com" } }
+        let(:bank_account) { { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => "Simon #{@reference_id} Hopper", :country_code => 'DE' } }
+        let(:recurring) { true }
 
-      it "should be received" do
-        expect(@payment_response).to be_received
-      end
+        before do
+          @reference_id = Time.now.to_i
+          @payment_response = Adyen::API.authorise_sepa_direct_debit_payment(@reference_id, amount, shopper, bank_account, recurring)
+        end
 
-      it "captures a payment" do
-        response = Adyen::API.capture_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
-        expect(response).to be_success
-      end
+        it "should be received" do
+          expect(@payment_response).to be_received
+        end
+        
+        it "captures a payment" do
+          response = Adyen::API.capture_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
+          expect(response).to be_success
+        end
 
-      it "refunds a payment" do
-        response = Adyen::API.refund_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
-        expect(response).to be_success
-      end
+        it "refunds a payment" do
+          response = Adyen::API.refund_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
+          expect(response).to be_success
+        end
 
-      it "cancels or refunds a payment" do
-        response = Adyen::API.cancel_or_refund_payment(@payment_response.psp_reference)
-        expect(response).to be_success
-      end
+        it "cancels or refunds a payment" do
+          response = Adyen::API.cancel_or_refund_payment(@payment_response.psp_reference)
+          expect(response).to be_success
+        end
 
-      it "cancels a payment" do
-        response = Adyen::API.cancel_payment(@payment_response.psp_reference)
-        expect(response).to be_success
+        it "cancels a payment" do
+          response = Adyen::API.cancel_payment(@payment_response.psp_reference)
+          expect(response).to be_success
+        end
       end
     end
   end
