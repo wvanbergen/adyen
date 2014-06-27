@@ -209,6 +209,8 @@ module Adyen
       class BilletResponse < Response
         RECEIVED = "Received"
 
+        response_attrs :result_code, :billet_url, :psp_reference
+
         def success?
           super && params[:result_code] == RECEIVED
         end
