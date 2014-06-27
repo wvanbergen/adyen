@@ -162,6 +162,34 @@ describe Adyen::API::PaymentService do
     end
   end
 
+  describe_response_from :generate_billet, BILLET_RECEIVED_RESPONSE do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => "8814038837489129",
+      :result_code => "Received",
+      :billet_url => "https://test.adyen.com/hpp/generationBoleto.shtml?data=AgABAQBdYDe9OqdseA79Rfexm2Lz8fRQ1bWqkLhBCf1fHhQEif7bsRKi0otq%2B1ekMAdMIZUiVXeR3QFrAOA8Zy4tpiNLhkMq6f7W2zFqYhVWrByqxQnbQTYuX2FWI7tsu7Vb0MnyOvFfFdFtaxzImZYCli%2BMrqaAJ5HI9ap3egeqBQIsRI%2Fj0zWsu2EGN16lGbwFOLyxl%2By0Pc5jazTo8rnBA7OVPGDIu7Qt%2F2DYIMcB6PXou5W3aJoTC4SldhNdobVqgWUtES8NsWdOYbLGa6I%2BjSwEFXvxyTXwtw4J2E%2BE7ux1UhBiZRj66lMbcvaYlfnR2xWbA%2BKmdLrVvuXTroEHKQ%2B1C%2FuyGuiOk3SmGq6TMgOyCEt%2BmG%2Bq6z5jDi%2BnYLtlLQU4ccMOujgWMfGkViC%2FXDUlqYjKbn8NHwPwoPcelpf1zCDCe%2Fvu6NBTVQbEXbE0oV0j2MT1tLlMdf08iUsDThuQ3MlJbE8VbTMlttOFqoyXhBjepQ42C1eXfswSz1gsZlHanBCTiw1pB69vkvfWPf5IdUSx1cpEr9LJ9PSz%2FeHxEhq%2B8ZdWzrybXqRbEl2mUjLeyhMNuiE%3D"
+    })
+
+    describe "with a received billet" do
+      it "returns that the request was successful" do
+        @response.should be_success
+      end
+    end
+  end
+
+  describe_response_from :generate_billet, BILLET_REFUSED_RESPONSE do
+    it_should_return_params_for_each_xml_backend({
+      :psp_reference => "8514038928235061",
+      :result_code => "Refused",
+      :billet_url => ""
+    })
+
+    describe "with a received billet" do
+      it "returns that the request was successful" do
+        @response.should_not be_success
+      end
+    end
+  end
+
   describe_response_from :authorise_payment, AUTHORISE_RESPONSE do
     it_should_return_params_for_each_xml_backend({
       :psp_reference => '9876543210987654',
