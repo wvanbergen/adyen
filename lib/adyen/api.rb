@@ -49,6 +49,37 @@ module Adyen
   # @see http://usa.visa.com/merchants/risk_management/cisp_merchants.html
   module API
     extend self
+
+    # Generate a Billet
+    #
+    # @example
+    #   response = Adyen::API.generate_billet(
+    #     invoice.id
+    #     { currency: "BRL", value: (invoice.amount).to_i },
+    #     { first_name: "Simon", last_name: "Hopper" },
+    #     document_number,
+    #     selected_brand
+    #   )
+    #   response.success? # => true
+    #
+    #
+    # @param          [Numeric,String] reference        Your reference (ID) for this payment.
+    # @param          [Hash]           amount           A hash describing the money to charge.
+    # @param          [Hash]           shopper          A hash describing the shopper.
+    # @param          [String]         document_number  Social Security
+    # number(CPF in Brazil)
+    # @param          [String]         selected_brand   Billet brand
+    #
+    # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
+    # @option amount  [Integer]        :value         The value of the payment in discrete cents,
+    #                                                 unless the currency does not have cents.
+    #
+    # @option shopper_name [String]    :first_name    The shopper’s first name
+    # @option shopper_name [String]    :last_name     The shopper’s last name
+    #
+    #
+    # @return [PaymentService::BilletResponse] The response object which holds the billet url.
+    #
     def generate_billet(reference, amount, shopper_name, social_security_number, selected_brand)
       params = { :reference              => reference,
                  :amount                 => amount,
