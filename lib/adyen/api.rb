@@ -50,7 +50,16 @@ module Adyen
   module API
     extend self
 
-    # Generate a Billet
+    # Generate a Billet - *Brazian users only*
+    #
+    #Billet (Boleto Bancário), often simply referred to as Boleto, is an ofine
+    #payment method used in Brazil . The consumer will take the Boleto form to
+    #an ATM, bank, an approved facility, or access their online banking system
+    #to complete the payment. Once the Boleto is paid, the bank will send Adyen
+    #a fle confrming that the payment was made, this usually takes one day, but
+    #it may occur up to 6 days after the payment. If a Boleto is not paid, the
+    #transaction will expire once the expirationDate is reached. For more
+    #information check the Adyen API Manual - 7 - Boleto Bancário(page 30)
     #
     # @example
     #   response = Adyen::API.generate_billet(
