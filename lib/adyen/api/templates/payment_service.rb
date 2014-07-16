@@ -83,6 +83,11 @@ module Adyen
         <payment:socialSecurityNumber>%s</payment:socialSecurityNumber>
       EOXML
 
+     # @private
+      DELIVERY_DATE_PARTIAL = <<-EOXML
+        <deliveryDate xmlns="http://payment.services.adyen.com">%s</deliveryDate>
+      EOXML
+
       # @private
       SELECTED_BRAND_PARTIAL = <<-EOXML
         <payment:selectedBrand>%s</payment:selectedBrand>
