@@ -100,6 +100,16 @@ if File.exist?(API_SPEC_INITIALIZER)
       response = Adyen::API.cancel_payment(@payment_response.psp_reference)
       response.should be_success
     end
+
+    it "generates a billet" do
+      response = Adyen::API.generate_billet("{\"user_id\":66722,\"order_id\":6863}#signup",
+                                            { currency: "BRL", value: 1000 },
+                                            { first_name: "Jow", last_name: "Silver" },
+                                            "19762003691",
+                                            "boletobancario_santander",
+                                            "2014-07-16T18:16:11Z")
+      response.should be_success
+    end
   end
 
 else
