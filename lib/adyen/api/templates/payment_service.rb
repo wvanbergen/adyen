@@ -100,6 +100,15 @@ EOS
 EOS
 
       # @private
+      RECURRING_SEPA_PAYMENT_BODY_PARTIAL = <<EOS
+        <payment:recurring>
+          <payment:contract>RECURRING</payment:contract>
+        </payment:recurring>
+        <payment:selectedRecurringDetailRetail>%s</payment:selectedRecurringDetailRetail>
+        <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
+EOS
+
+      # @private
       ONE_CLICK_PAYMENT_BODY_PARTIAL = <<EOS
         <payment:recurring>
           <payment:contract>ONECLICK</payment:contract>
@@ -120,6 +129,17 @@ EOS
 
       # @private
       FRAUD_OFFSET_PARTIAL = '<payment:fraudOffset>%s</payment:fraudOffset>'
+
+      # @private
+      BANK_ACCOUNT_PARTIAL = <<EOS
+        <payment:bankAccount>
+          <payment:bic>%s</payment:bic>
+          <payment:iban>%s</payment:iban>
+          <payment:ownerName>%s</payment:ownerName>
+          <payment:countryCode>%s</payment:countryCode>
+        </payment:bankAccount>
+        <payment:selectedBrand>%s</payment:selectedBrand>
+EOS
     end
   end
 end

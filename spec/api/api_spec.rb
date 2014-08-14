@@ -146,6 +146,38 @@ describe Adyen::API do
         )
       end
 
+      it "performs a non-recurring `SEPA direct debit payment' request" do
+        should_map_shortcut_to(:authorise_sepa_direct_debit_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :bank_account => { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          :recurring => false
+        )
+        Adyen::API.authorise_sepa_direct_debit_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          false
+        )
+      end
+
+      it "performs a recurring `SEPA direct debit payment' request" do
+        should_map_shortcut_to(:authorise_sepa_direct_debit_payment,
+          :reference => 'order-id',
+          :amount => { :currency => 'EUR', :value => 1234 },
+          :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
+          :bank_account => { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          :recurring => true
+        )
+        Adyen::API.authorise_sepa_direct_debit_payment('order-id',
+          { :currency => 'EUR', :value => 1234 },
+          { :reference => 'user-id', :email => 's.hopper@example.com' },
+          { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          true
+        )
+      end
+
       it "performs a `capture' request" do
         should_map_shortcut_to(:capture, :psp_reference => 'original-psp-reference', :amount => { :currency => 'EUR', :value => '1234' })
         Adyen::API.capture_payment('original-psp-reference', { :currency => 'EUR', :value => '1234' })
