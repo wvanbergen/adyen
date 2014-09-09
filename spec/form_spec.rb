@@ -138,6 +138,30 @@ describe Adyen::Form do
     end
   end
 
+  describe 'payment methods available URL' do
+    let(:payment_methods_url) do
+      @attributes = { :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
+        :merchant_reference => 'Internet Order 12345', :skin => :testing,
+        :session_validity => Time.now + 3600 }
+
+      Adyen::Form.payment_methods_url(@attributes)
+    end
+
+    it "should return an directory URL" do
+      payment_methods_url.should =~ %r[^#{Adyen::Form.url(nil, :directory)}]
+    end
+
+    it "should include all provided attributes" do
+      params = payment_methods_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
+      params.should include(*(@attributes.keys.map { |k| Adyen::Form.camelize(k) }))
+    end
+
+    it "should include the merchant signature" do
+      params = payment_methods_url.split('?', 2).last.split('&').map { |param| param.split('=', 2).first }
+      params.should include('merchantSig')
+    end
+  end
+
   describe 'hidden fields generation' do
     include APISpecHelper
     subject { %Q'<form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">#{Adyen::Form.hidden_fields(@attributes)}</form>' }
