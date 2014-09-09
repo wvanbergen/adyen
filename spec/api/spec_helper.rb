@@ -222,7 +222,12 @@ AUTHORISE_RESPONSE = <<EOS
   <soap:Body>
     <ns1:authoriseResponse xmlns:ns1="http://payment.services.adyen.com">
       <ns1:paymentResult>
-        <additionalData xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
+        <additionalData xmlns="http://payment.services.adyen.com">
+          <entry>
+            <key xsi:type="xsd:string">cardSummary</key>
+            <value xsi:type="xsd:string">1111</value>
+          </entry>
+        </additionalData>
         <authCode xmlns="http://payment.services.adyen.com">1234</authCode>
         <dccAmount xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
         <dccSignature xmlns="http://payment.services.adyen.com" xsi:nil="true"/>
