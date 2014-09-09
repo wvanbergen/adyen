@@ -5,17 +5,18 @@ rvm:
 - 2.0.0
 - 2.1.1
 - ruby-head
-- rbx-2.2.6
+- rbx-2
 - jruby-19mode
 - jruby-head
 matrix:
   allow_failures:
   - rvm: jruby-head
   - rvm: ruby-head
+  - rvm: rbx-2
 before_script:
 - cp spec/functional/initializer.rb.ci spec/functional/initializer.rb
 env:
   global:
-  - secure: u4xMIq2Pis4qeWPZhN0x0OLfZ9QjTxaL+ZSWrQvWkKMNbR2TmcI1emtp6fW+ljhTuyV5LLQCLKQV5w8jV6Qvy0g41/mkwH5Z6hRgmJme+pnl5ffTO7n6eyithjCWj8njAVJ4H3uALtAFOHGroAradhkLar+ZL1Qr2JR84PEKyB0=
-  - secure: lfkfxNOP5MUfjcgxESHQBm993nby0lszeS977P/nUxxn+4hauBxkapRg2NHI6vxgtIBZXfzm2E1fCOcIU4eEgx2sGDCWUHXo9GOoczXiS7CpiETL3XTAJvEGx56YMXOe0zGvhrx57InJq0n97B1fc0HIc0ZO1d1pmqLcHKtNvG4=
-  - secure: QIkLEY9fTwFMMxNBaqQuEPk1Vpn+pLVLaXfM2Rgi2dVRWidOk+8SKlAqNd6NtiP0s+2x+3TU987Po2o8G/WJcSk9lm8+KOaNvIDW16FIB90elh0DJL86CkWJwVoAelzI9Hbwf620LKtxbb6Zk91otq0DhdeNPee5WE3CvOxWpgQ=
+  - ADYEN_MERCHANT_ACCOUNT: "VanBergenORG"
+  - ADYEN_API_USERNAME: "ws_052255@Company.VanBergen"
+  - ADYEN_API_PASSWORD: "xoYyauhxwsgAqs3vNr3h"
