@@ -141,7 +141,7 @@ module Adyen
       end
 
       def one_click_card_partial
-        if @params[:card] and @params[:card][:encrypted] and @params[:card][:encrypted][:json]
+        if @params[:card] && @params[:card][:encrypted] && @params[:card][:encrypted][:json]
           ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
         else
           validate_parameters!(:card => [:cvc])
@@ -151,7 +151,7 @@ module Adyen
       end
 
       def card_partial
-        if @params[:card] and @params[:card][:encrypted] and @params[:card][:encrypted][:json]
+        if @params[:card] && @params[:card][:encrypted] && @params[:card][:encrypted][:json]
           ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
         else
           validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
@@ -162,7 +162,7 @@ module Adyen
       end
 
       def installments_partial
-        if @params[:installments] and @params[:installments][:value]
+        if @params[:installments] && @params[:installments][:value]
           INSTALLMENTS_PARTIAL % @params[:installments].values_at(:value)
         end
       end
