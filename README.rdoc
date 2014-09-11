@@ -22,7 +22,7 @@ RDoc documentation for the project can be found on http://rdoc.info/projects/wva
 
 * For more information about Adyen, see http://www.adyen.com
 * For more information about integrating Adyen, see their manuals at
-  http://support.adyen.com/links/documentation
+  https://www.adyen.com/home/support/manuals.html, primarily the HPP integration manual for Adyen::Form, and the API integration manual for Adyen::API.
 
 The library doesn't have any dependencies, but making Nokogiri available in your environment 
 will greatly improve the speed of XML and HTML processing.
