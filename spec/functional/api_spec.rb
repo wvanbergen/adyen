@@ -12,7 +12,7 @@ if File.exist?(API_SPEC_INITIALIZER)
       require API_SPEC_INITIALIZER
       Net::HTTP.stubbing_enabled = false
       @order_id = @user_id = Time.now.to_i
-      perform_payment_request
+      @payment_response = perform_payment_request
     end
 
     after :all do
@@ -20,7 +20,7 @@ if File.exist?(API_SPEC_INITIALIZER)
     end
 
     def perform_payment_request
-      @payment_response = Adyen::API.authorise_payment(
+      Adyen::API.authorise_payment(
         @order_id,
         { :currency => 'EUR', :value => '1234' },
         { :email => "#{@user_id}@example.com", :reference => @user_id },
