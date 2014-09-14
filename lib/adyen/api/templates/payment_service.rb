@@ -66,6 +66,13 @@ EOS
 EOS
 
       # @private
+      ONE_CLICK_CARD_PARTIAL = <<EOS
+        <payment:card>
+          <payment:cvc>%s</payment:cvc>
+        </payment:card>
+EOS
+
+      # @private
       INSTALLMENTS_PARTIAL = <<EOS
         <payment:installments>
           <common:value>%s</common:value>
@@ -105,9 +112,6 @@ EOS
           <payment:contract>ONECLICK</payment:contract>
         </payment:recurring>
         <payment:selectedRecurringDetailReference>%s</payment:selectedRecurringDetailReference>
-        <payment:card>
-          <payment:cvc>%s</payment:cvc>
-        </payment:card>
 EOS
 
       # @private

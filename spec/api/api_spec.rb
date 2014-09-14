@@ -123,7 +123,7 @@ describe Adyen::API do
         Adyen::API.authorise_one_click_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
-          '737',
+          { :cvc => '737' },
           'recurring-detail-reference'
         )
       end
@@ -140,7 +140,7 @@ describe Adyen::API do
         Adyen::API.authorise_one_click_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
-          '737',
+          { :cvc => '737' },
           'recurring-detail-reference',
           -10
         )

@@ -30,8 +30,8 @@ module Adyen
   #     config.adyen.default_api_params = { :merchant_account => 'MerchantAccount' }
   #
   # Note that you'll need an Adyen notification PSP reference for some of the calls. Because of
-  # this, store all notifications that Adyen sends to you. Moreover, the responses to these calls 
-  # do *not* tell you whether or not the requested action was successful. For this you will also 
+  # this, store all notifications that Adyen sends to you. Moreover, the responses to these calls
+  # do *not* tell you whether or not the requested action was successful. For this you will also
   # have to check the notification.
   #
   # = Authorising payments
@@ -165,7 +165,7 @@ module Adyen
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
-    #     '737',
+    #     { :cvc => '737' }
     #     detail
     #   )
     #   payment.authorised? # => true
@@ -173,7 +173,7 @@ module Adyen
     # @param          [Numeric,String] reference      Your reference (ID) for this payment.
     # @param          [Hash]           amount         A hash describing the money to charge.
     # @param          [Hash]           shopper        A hash describing the shopper.
-    # @param          [String]         card_cvc       The card’s verification code.
+    # @param          [Hash]           card           A hash describing the credit card details.
     #
     # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
     # @option amount  [Integer]        :value         The value of the payment in discrete cents,
@@ -184,6 +184,8 @@ module Adyen
     # @option shopper [String]         :ip            The shopper’s IP address.
     # @option shopper [String]         :statement     The shopper's statement
     #
+    # @option card    [String]         :cvc           The card’s verification code.
+    #
     # @param [String] recurring_detail_reference      The recurring contract reference to use.
     # @see list_recurring_details
     #
@@ -192,11 +194,11 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_one_click_payment(reference, amount, shopper, card_cvc, recurring_detail_reference, fraud_offset = nil)
+    def authorise_one_click_payment(reference, amount, shopper, card, recurring_detail_reference, fraud_offset = nil)
       params = { :reference => reference,
                  :amount    => amount,
                  :shopper   => shopper,
-                 :card      => { :cvc => card_cvc },
+                 :card      => card,
                  :recurring_detail_reference => recurring_detail_reference,
                  :fraud_offset => fraud_offset }
       PaymentService.new(params).authorise_one_click_payment

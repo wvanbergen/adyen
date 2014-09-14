@@ -98,9 +98,9 @@ module Adyen
 
       def authorise_one_click_payment_request_body
         validate_parameters!(:recurring_detail_reference,
-                             :shopper => [:email, :reference],
-                             :card    => [:cvc])
-        content = ONE_CLICK_PAYMENT_BODY_PARTIAL % [@params[:recurring_detail_reference], @params[:card][:cvc]]
+                             :shopper => [:email, :reference])
+        content = one_click_card_partial
+        content << ONE_CLICK_PAYMENT_BODY_PARTIAL % [@params[:recurring_detail_reference]]
         payment_request_body(content)
       end
 
@@ -140,8 +140,18 @@ module Adyen
         AMOUNT_PARTIAL % @params[:amount].values_at(:currency, :value)
       end
 
+      def one_click_card_partial
+        if @params[:card] && @params[:card][:encrypted] && @params[:card][:encrypted][:json]
+          ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
+        else
+          validate_parameters!(:card => [:cvc])
+          card  = @params[:card].values_at(:cvc)
+          ONE_CLICK_CARD_PARTIAL % card
+        end
+      end
+
       def card_partial
-        if @params[:card] and @params[:card][:encrypted] and @params[:card][:encrypted][:json]
+        if @params[:card] && @params[:card][:encrypted] && @params[:card][:encrypted][:json]
           ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
         else
           validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
@@ -152,7 +162,7 @@ module Adyen
       end
 
       def installments_partial
-        if @params[:installments] and @params[:installments][:value]
+        if @params[:installments] && @params[:installments][:value]
           INSTALLMENTS_PARTIAL % @params[:installments].values_at(:value)
         end
       end
