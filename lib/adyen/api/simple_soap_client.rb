@@ -8,14 +8,14 @@ module Adyen
     # The base class of the API classes that map to Adyen SOAP services.
     class SimpleSOAPClient
       # @private
-      ENVELOPE = <<EOS
-<?xml version="1.0"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    %s
-  </soap:Body>
-</soap:Envelope>
-EOS
+      ENVELOPE = <<-EOXML.strip.freeze
+        <?xml version="1.0"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <soap:Body>
+            %s
+          </soap:Body>
+        </soap:Envelope>
+      EOXML
 
       # A CA file used to verify certificates when connecting to Adyen.
       #

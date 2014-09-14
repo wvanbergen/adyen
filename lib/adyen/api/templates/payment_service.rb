@@ -5,24 +5,24 @@ module Adyen
         private
 
         def modification_request(method, body = nil)
-          return <<EOS
-    <payment:#{method} xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
-      <payment:modificationRequest>
-        <payment:merchantAccount>%s</payment:merchantAccount>
-        <payment:originalReference>%s</payment:originalReference>
-        #{body}
-      </payment:modificationRequest>
-    </payment:#{method}>
-EOS
+          <<-EOXML
+            <payment:#{method} xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+              <payment:modificationRequest>
+                <payment:merchantAccount>%s</payment:merchantAccount>
+                <payment:originalReference>%s</payment:originalReference>
+                #{body}
+              </payment:modificationRequest>
+            </payment:#{method}>
+          EOXML
         end
 
         def modification_request_with_amount(method)
-          modification_request(method, <<EOS)
-        <payment:modificationAmount>
-          <common:currency>%s</common:currency>
-          <common:value>%s</common:value>
-        </payment:modificationAmount>
-EOS
+          modification_request(method, <<-EOXML)
+            <payment:modificationAmount>
+              <common:currency>%s</common:currency>
+              <common:value>%s</common:value>
+            </payment:modificationAmount>
+          EOXML
         end
       end
 
@@ -36,26 +36,26 @@ EOS
       CANCEL_OR_REFUND_LAYOUT = modification_request(:cancelOrRefund)
 
       # @private
-      LAYOUT = <<EOS
-    <payment:authorise xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
-      <payment:paymentRequest>
-        <payment:merchantAccount>%s</payment:merchantAccount>
-        <payment:reference>%s</payment:reference>
-%s
-      </payment:paymentRequest>
-    </payment:authorise>
-EOS
+      LAYOUT = <<-EOXML
+        <payment:authorise xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+          <payment:paymentRequest>
+            <payment:merchantAccount>%s</payment:merchantAccount>
+            <payment:reference>%s</payment:reference>
+            %s
+          </payment:paymentRequest>
+        </payment:authorise>
+      EOXML
 
       # @private
-      AMOUNT_PARTIAL = <<EOS
+      AMOUNT_PARTIAL = <<-EOXML
         <payment:amount>
           <common:currency>%s</common:currency>
           <common:value>%s</common:value>
         </payment:amount>
-EOS
+      EOXML
 
       # @private
-      CARD_PARTIAL = <<EOS
+      CARD_PARTIAL = <<-EOXML
         <payment:card>
           <payment:holderName>%s</payment:holderName>
           <payment:number>%s</payment:number>
@@ -63,24 +63,24 @@ EOS
           <payment:expiryYear>%s</payment:expiryYear>
           <payment:expiryMonth>%02d</payment:expiryMonth>
         </payment:card>
-EOS
+      EOXML
 
       # @private
-      ONE_CLICK_CARD_PARTIAL = <<EOS
+      ONE_CLICK_CARD_PARTIAL = <<-EOXML
         <payment:card>
           <payment:cvc>%s</payment:cvc>
         </payment:card>
-EOS
+      EOXML
 
       # @private
-      INSTALLMENTS_PARTIAL = <<EOS
+      INSTALLMENTS_PARTIAL = <<-EOXML
         <payment:installments>
           <common:value>%s</common:value>
         </payment:installments>
-EOS
+      EOXML
 
       # @private
-      ENCRYPTED_CARD_PARTIAL = <<EOS
+      ENCRYPTED_CARD_PARTIAL = <<-EOXML
         <additionalAmount xmlns="http://payment.services.adyen.com" xsi:nil="true" />
         <additionalData xmlns="http://payment.services.adyen.com">
           <entry>
@@ -88,31 +88,31 @@ EOS
             <value xsi:type="xsd:string">%s</value>
           </entry>
         </additionalData>
-EOS
+      EOXML
 
       # @private
-      ENABLE_RECURRING_CONTRACTS_PARTIAL = <<EOS
+      ENABLE_RECURRING_CONTRACTS_PARTIAL = <<-EOXML
         <payment:recurring>
           <payment:contract>RECURRING,ONECLICK</payment:contract>
         </payment:recurring>
-EOS
+      EOXML
 
       # @private
-      RECURRING_PAYMENT_BODY_PARTIAL = <<EOS
+      RECURRING_PAYMENT_BODY_PARTIAL = <<-EOXML
         <payment:recurring>
           <payment:contract>RECURRING</payment:contract>
         </payment:recurring>
         <payment:selectedRecurringDetailReference>%s</payment:selectedRecurringDetailReference>
         <payment:shopperInteraction>ContAuth</payment:shopperInteraction>
-EOS
+      EOXML
 
       # @private
-      ONE_CLICK_PAYMENT_BODY_PARTIAL = <<EOS
+      ONE_CLICK_PAYMENT_BODY_PARTIAL = <<-EOXML
         <payment:recurring>
           <payment:contract>ONECLICK</payment:contract>
         </payment:recurring>
         <payment:selectedRecurringDetailReference>%s</payment:selectedRecurringDetailReference>
-EOS
+      EOXML
 
       # @private
       SHOPPER_PARTIALS = {

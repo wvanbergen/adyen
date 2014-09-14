@@ -104,15 +104,15 @@ module Adyen
       #
       # This module extends the {RecurringService} class and thus these methods are callable on it.
       module TestHelpers
-        DISABLE_RESPONSE = SimpleSOAPClient::ENVELOPE % <<EOS
-    <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
-      <ns1:result>
-        <response xmlns="http://recurring.services.adyen.com">
-          %s
-        </response>
-      </ns1:result>
-    </ns1:disableResponse>
-EOS
+        DISABLE_RESPONSE = SimpleSOAPClient::ENVELOPE % <<-EOXML
+          <ns1:disableResponse xmlns:ns1="http://recurring.services.adyen.com">
+            <ns1:result>
+              <response xmlns="http://recurring.services.adyen.com">
+                %s
+              </response>
+            </ns1:result>
+          </ns1:disableResponse>
+        EOXML
 
         # @return [DisableResponse] A ‘disable succeeded’ response instance.
         def disabled_stub
