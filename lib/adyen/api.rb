@@ -204,6 +204,54 @@ module Adyen
       PaymentService.new(params).authorise_one_click_payment
     end
 
+    # Authorise a SEPA Direct Debit payment.
+    #
+    # @see capture_payment
+    #
+    # Of all options, the shopper’s IP address, owner_name and country code are optional. But since the IP
+    # address is used in various risk checks, it’s a good idea to supply it anyway.
+    #
+    # @example
+    #   response = Adyen::API.authorise_sepa_direct_debit_payment(
+    #     invoice.id,
+    #     { :currency => 'EUR', :value => invoice.amount },
+    #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
+    #     { :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' }
+    #   )
+    #   response.authorised? # => true
+    #
+    # @param               [Numeric,String] reference      Your reference (ID) for this payment.
+    # @param               [Hash]           amount         A hash describing the money to charge.
+    # @param               [Hash]           shopper        A hash describing the shopper.
+    # @param               [Hash]           bank_account   A hash containing elements for a SEPA Direct Debit payment request.
+    #
+    # @option amount       [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
+    # @option amount       [Integer]        :value         The value of the payment in discrete cents,
+    #                                                      unless the currency does not have cents.
+    #
+    # @option shopper      [Numeric,String] :reference     The shopper’s reference (ID).
+    # @option shopper      [String]         :email         The shopper’s email address.
+    # @option shopper      [String]         :ip            The shopper’s IP address.
+    # @option shopper      [String]         :statement     The shopper's statement
+    #
+    # @option bank_account [String]         :iban          The IBAN.
+    # @option bank_account [String]         :owner_name    The name of the account holder (optional).
+    # @option bank_account [String]         :country_code  The country code.
+    #
+    # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
+    #                                                 future recurring or one-click payments.
+    #
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
+    #                                                 authorisation status.
+    def authorise_sepa_direct_debit_payment(reference, amount, shopper, bank_account, enable_recurring_contract = false)
+      params = { :reference => reference,
+                 :amount => amount,
+                 :shopper => shopper,
+                 :bank_account => bank_account,
+                 :recurring => enable_recurring_contract }
+      PaymentService.new(params).authorise_sepa_direct_debit_payment
+    end
+
     # Capture an authorised payment.
     #
     # You can also configure your merchant account to automatically capture authorised payments
