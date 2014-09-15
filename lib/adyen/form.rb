@@ -103,6 +103,7 @@ module Adyen
     # @return [Hash] The payment parameters with the +:merchant_signature+ parameter set.
     # @raise [ArgumentError] Thrown if some parameter health check fails.
     def payment_parameters(parameters = {}, shared_secret = nil)
+      raise ArgumentError, "Cannot generate form: parameters should be a hash!" unless parameters.is_a?(Hash)
       do_parameter_transformations!(parameters)
 
       raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
@@ -356,6 +357,8 @@ module Adyen
     #     using the {Adyen::Configuration#register_form_skin} method.
     # @return [true, false] Returns true only if the signature in the parameters is correct.
     def redirect_signature_check(params, shared_secret = nil)
+      raise ArgumentError, "params should be a Hash" unless params.is_a?(Hash)
+      raise ArgumentError, "params should contain :merchantSig" unless params.key?(:merchantSig)
       params[:merchantSig] == redirect_signature(params, shared_secret)
     end
 
