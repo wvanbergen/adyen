@@ -131,7 +131,7 @@ else
         it "should be received" do
           expect(@payment_response).to be_received
         end
-        
+
         it "captures a payment" do
           response = Adyen::API.capture_payment(@payment_response.psp_reference, { :currency => 'EUR', :value => '1234' })
           expect(response).to be_success
