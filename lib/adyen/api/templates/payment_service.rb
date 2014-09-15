@@ -140,7 +140,6 @@ module Adyen
       # @private
       BANK_ACCOUNT_PARTIAL = <<-EOXML
         <payment:bankAccount>
-          <payment:bic>%s</payment:bic>
           <payment:iban>%s</payment:iban>
           <payment:ownerName>%s</payment:ownerName>
           <payment:countryCode>%s</payment:countryCode>

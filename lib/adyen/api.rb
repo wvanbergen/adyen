@@ -216,7 +216,7 @@ module Adyen
     #     invoice.id,
     #     { :currency => 'EUR', :value => invoice.amount },
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
-    #     { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' }
+    #     { :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' }
     #   )
     #   response.authorised? # => true
     #
@@ -234,7 +234,6 @@ module Adyen
     # @option shopper      [String]         :ip            The shopper’s IP address.
     # @option shopper      [String]         :statement     The shopper's statement
     #
-    # @option bank_account [String]         :bic           The unique identification code for both financial and non-financial institutions.
     # @option bank_account [String]         :iban          The IBAN.
     # @option bank_account [String]         :owner_name    The name of the account holder (optional).
     # @option bank_account [String]         :country_code  The country code.

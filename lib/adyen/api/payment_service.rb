@@ -112,8 +112,8 @@ module Adyen
         validate_parameters!(:reference,
                              :amount => [:currency, :value],
                              :shopper => [:email, :reference],
-                             :bank_account => [:bic, :iban])
-        content = BANK_ACCOUNT_PARTIAL % [@params[:bank_account][:bic], @params[:bank_account][:iban], @params[:bank_account][:owner_name], @params[:bank_account][:country_code], 'sepadirectdebit']
+                             :bank_account => [:iban])
+        content = BANK_ACCOUNT_PARTIAL % [@params[:bank_account][:iban], @params[:bank_account][:owner_name], @params[:bank_account][:country_code], 'sepadirectdebit']
         content << RECURRING_SEPA_PAYMENT_BODY_PARTIAL % 'LATEST' if @params[:recurring]
         payment_request_body(content)
       end

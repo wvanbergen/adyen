@@ -151,13 +151,13 @@ describe Adyen::API do
           :reference => 'order-id',
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :bank_account => { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          :bank_account => { :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
           :recurring => false
         )
         Adyen::API.authorise_sepa_direct_debit_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
-          { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          { :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
           false
         )
       end
@@ -167,13 +167,13 @@ describe Adyen::API do
           :reference => 'order-id',
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
-          :bank_account => { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          :bank_account => { :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
           :recurring => true
         )
         Adyen::API.authorise_sepa_direct_debit_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
-          { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
+          { :iban => 'DE87123456781234567890', :owner_name => 'Simon Hopper', :country_code => 'DE' },
           true
         )
       end

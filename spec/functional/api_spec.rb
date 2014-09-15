@@ -120,7 +120,7 @@ else
       context "for a recurring payment" do
         let(:amount) { { :currency => 'EUR', :value => '1234' } }
         let(:shopper) { { :reference => @reference_id, :email => "#{@reference_id}@example.com" } }
-        let(:bank_account) { { :bic => 'TESTDE01', :iban => 'DE87123456781234567890', :owner_name => "Simon #{@reference_id} Hopper", :country_code => 'DE' } }
+        let(:bank_account) { { :iban => 'DE87123456781234567890', :owner_name => "Simon #{@reference_id} Hopper", :country_code => 'DE' } }
         let(:recurring) { true }
 
         before do
