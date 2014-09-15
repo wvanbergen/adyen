@@ -202,7 +202,7 @@ module Adyen
 
         AUTHORISED = 'Authorised'
         REFUSED    = 'Refused'
-        RECEIVED = 'Received'
+        RECEIVED   = 'Received'
 
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference,
           :additional_data
