@@ -51,7 +51,7 @@ module Adyen
         end
 
         def perform_xpath(query, root_node)
-          REXML::XPath.match(root_node, query, NS)
+          REXML::XPath.match(root_node, query, NS)          
         end
 
         def stringify_nodeset(nodeset)

@@ -21,7 +21,7 @@ module Adyen
 
         # Add a check for all the other fields specified
         checks.each do |key, value|
-          condition  = "descendant::input[@type='hidden'][@name='#{Adyen::Form.camelize(key)}']"
+          condition  = "\n  descendant::input[@type='hidden'][@name='#{Adyen::Form.camelize(key)}']"
           condition << "[@value='#{value}']" unless value == :anything
           xpath_query << "[#{condition}]"
         end
@@ -30,12 +30,9 @@ module Adyen
       end
 
       def self.check(subject, checks = {})
-        found = false
         document = Adyen::API::XMLQuerier.html(subject)
-        document.xpath(build_xpath_query(checks)) do |result|
-          found = true
-        end
-        return found
+        result = document.xpath(build_xpath_query(checks))
+        !result.empty?
       end
     end
 
@@ -91,6 +88,5 @@ module Adyen
       recurring_checks = { :recurring => false }
       assert_adyen_payment_form(subject, recurring_checks.merge(checks))
     end
-
   end
 end
