@@ -13,6 +13,7 @@ if File.exist?(API_SPEC_INITIALIZER)
       Net::HTTP.stubbing_enabled = false
       @order_id = @user_id = Time.now.to_i
       @payment_response = perform_payment_request
+      raise "Initial payment authorisation failed" unless @payment_response.success?
     end
 
     after :all do
