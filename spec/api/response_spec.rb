@@ -41,7 +41,7 @@ describe Adyen::API::Response do
     end
 
     it "`server_error?` returns that the (HTTP) request did cause a server error" do
-      @response.server_error?.should be_true
+      @response.server_error?.should be true
     end
   end
 
@@ -53,7 +53,7 @@ describe Adyen::API::Response do
     end
 
     it "`server_error?` returns that the (HTTP) request did not cause a server error" do
-      @response.server_error?.should be_false
+      @response.server_error?.should be false
     end
   end
 end

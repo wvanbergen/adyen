@@ -48,7 +48,7 @@ describe Adyen::API::SimpleSOAPClient do
     end
 
     it "makes a request over SSL" do
-      @request.use_ssl?.should be_true
+      @request.use_ssl?.should be true
     end
 
     it "verifies certificates" do
