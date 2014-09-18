@@ -73,7 +73,7 @@ module Adyen
         content << card_partial unless @params[:card].nil?
         content << elv_partial  unless @params[:elv].nil?    
         raise ArgumentError, "The required parameter 'card' or 'elv' is missing." if content.empty?    
-        STORE_TOKEN_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], @params[:shopper][:email], content]
+        STORE_TOKEN_LAYOUT % [@params[:merchant_account], @params[:shopper][:reference], @params[:shopper][:email], content.join]
       end
 
       class DisableResponse < Response
