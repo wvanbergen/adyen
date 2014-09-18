@@ -41,6 +41,10 @@ Contributions are welcomed; this is very much a scratch your own itch project. S
 * All functionality must include tests and preferably documentation.
 * New SOAP API calls should include functional tests that actually test if the call is working. 
   Adyen has a nasty tendency to switch things up every now and then, so this is vital.
+  Note: we use a test account to run the functional specs on CI. Some API calls have to be 
+  enabled on Adyen's side before our test account can use them. If you receive failures with
+  "010 Not allowed" on CI while it works fine with your owen test account, please let us know on
+  the pull request, so I can ask Adyen to enable the feature on the test account as well.
 
 Please visit the changelog at https://github.com/wvanbergen/adyen/wiki/Changelog to see the 
 changes in the different releases.
