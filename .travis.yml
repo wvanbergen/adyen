@@ -18,5 +18,5 @@ before_script:
 env:
   global:
   - ADYEN_MERCHANT_ACCOUNT: "VanBergenORG"
-  - ADYEN_API_USERNAME: "ws_052255@Company.VanBergen"
-  - ADYEN_API_PASSWORD: "xoYyauhxwsgAqs3vNr3h"
+  - ADYEN_API_USERNAME: "ws@Company.VanBergen"
+  - ADYEN_API_PASSWORD: "7phtHzbfnzsp"
