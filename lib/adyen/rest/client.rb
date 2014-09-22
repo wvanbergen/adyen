@@ -20,7 +20,7 @@ module Adyen
       end
     end
 
-		class Client
+    class Client
       attr_reader :environment
 
       def initialize(environment, username, password, options = {})
@@ -53,6 +53,6 @@ module Adyen
           raise Adyen::REST::Error.new("Unexpected HTTP response: #{response.code}")
         end
       end
-		end
+    end
   end
 end
