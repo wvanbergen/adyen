@@ -86,9 +86,9 @@ module Adyen
       end
 
       parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
-      parameters[:order_data]         = Adyen::Encoding.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
-      parameters[:ship_before_date]   = Adyen::Formatter::DateTime.fmt_date(parameters[:ship_before_date])
-      parameters[:session_validity]   = Adyen::Formatter::DateTime.fmt_time(parameters[:session_validity])
+      parameters[:order_data]         = Adyen::Util.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
+      parameters[:ship_before_date]   = Adyen::Util.format_date(parameters[:ship_before_date])
+      parameters[:session_validity]   = Adyen::Util.format_timestamp(parameters[:session_validity])
     end
 
     # Transforms the payment parameters to be in the correct format and calculates the merchant
@@ -133,7 +133,7 @@ module Adyen
     #    {Adyen::Configuration#default_form_params} hash will be included automatically.
     # @return [Hash] The payment parameters flatten, with camelized and prefixed key, stringified value
     def flat_payment_parameters(parameters = {})
-      flatten(payment_parameters(parameters))
+      Adyen::Util.flatten(payment_parameters(parameters))
     end
 
     # Returns an absolute URL to the Adyen payment system, with the payment parameters included
@@ -252,7 +252,7 @@ module Adyen
     def calculate_signature(parameters, shared_secret = nil)
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate payment request signature with empty shared_secret" if shared_secret.to_s.empty?
-      Adyen::Encoding.hmac_base64(shared_secret, calculate_signature_string(parameters))
+      Adyen::Util.hmac_base64(shared_secret, calculate_signature_string(parameters))
     end
 
     # Generates the string that is used to calculate the request signature. This signature
@@ -282,7 +282,7 @@ module Adyen
     def calculate_billing_address_signature(parameters, shared_secret = nil)
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate billing address request signature with empty shared_secret" if shared_secret.to_s.empty?
-      Adyen::Encoding.hmac_base64(shared_secret, calculate_billing_address_signature_string(parameters[:billing_address]))
+      Adyen::Util.hmac_base64(shared_secret, calculate_billing_address_signature_string(parameters[:billing_address]))
     end
 
     # shopperSig: shopper.firstName + shopper.infix + shopper.lastName + shopper.gender + shopper.dateOfBirthDayOfMonth + shopper.dateOfBirthMonth + shopper.dateOfBirthYear + shopper.telephoneNumber
@@ -296,7 +296,7 @@ module Adyen
     def calculate_shopper_signature(parameters, shared_secret = nil)
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate shopper request signature with empty shared_secret" if shared_secret.to_s.empty?
-      Adyen::Encoding.hmac_base64(shared_secret, calculate_shopper_signature_string(parameters[:shopper]))
+      Adyen::Util.hmac_base64(shared_secret, calculate_shopper_signature_string(parameters[:shopper]))
     end
 
     ######################################################
@@ -323,7 +323,7 @@ module Adyen
     def redirect_signature(params, shared_secret = nil)
       shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params[:skinCode])
       raise ArgumentError, "Cannot compute redirect signature with empty shared_secret" if shared_secret.to_s.empty?
-      Adyen::Encoding.hmac_base64(shared_secret, redirect_signature_string(params))
+      Adyen::Util.hmac_base64(shared_secret, redirect_signature_string(params))
     end
 
     # Checks the redirect signature for this request by calcultating the signature from
@@ -360,41 +360,6 @@ module Adyen
       raise ArgumentError, "params should be a Hash" unless params.is_a?(Hash)
       raise ArgumentError, "params should contain :merchantSig" unless params.key?(:merchantSig)
       params[:merchantSig] == redirect_signature(params, shared_secret)
-    end
-
-    # Returns the camelized version of a string.
-    # @param [:to_s] identifier The identifier to turn to camelcase
-    # @return [String] The camelcase version of the identifier provided.
-    def camelize(identifier)
-      identifier.to_s.gsub(/_(.)/) { $1.upcase }
-    end
-
-    # Transforms the nested parameters Hash into a 'flat' Hash which is understood by adyen. This is:
-    #  * all keys are camelized
-    #  * all keys are  stringified
-    #  * nested hash is flattened, keys are prefixed with root key
-    #
-    # @example
-    #    flatten {:billing_address => { :street => 'My Street'}}
-    #
-    #    # resolves in:
-    #    {'billingAddress.street' =>  'My Street'}
-    #
-    # @param [Hash] parameters The payment parameters which to transform
-    # @param [String] prefix The prefix to add to the key
-    # @param [Hash] return_hash The new hash which is retruned (needed for recursive calls)
-    # @return [Hash] The return_hash filled with camelized and prefixed key, stringified value
-    def flatten(parameters, prefix = "", return_hash = {})
-      parameters ||= {}
-      parameters.inject(return_hash) do |hash, (key, value)|
-        key = "#{prefix}#{camelize(key)}"
-        if value.is_a?(Hash)
-          flatten(value, "#{key}.", return_hash)
-        else
-          hash[key] = value.to_s
-        end
-        hash
-      end
     end
   end
 end

@@ -21,8 +21,7 @@ end
 
 require 'adyen/version'
 require 'adyen/configuration'
-require 'adyen/encoding'
-require 'adyen/formatter'
+require 'adyen/util'
 require 'adyen/form'
 require 'adyen/api'
 

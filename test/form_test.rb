@@ -90,7 +90,7 @@ class FormTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Form.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -107,7 +107,7 @@ class FormTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Form.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -177,12 +177,6 @@ class FormTest < Minitest::Test
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check(nil) }
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check({}) }
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check(params.delete(:skinCode)) }
-  end
-
-  def test_flatten
-    parameters = { 'billingAddress.street' => 'My Street' }
-    assert_equal parameters, Adyen::Form.flatten(:billing_address => { :street => 'My Street'})
-    assert_equal Hash.new, Adyen::Form.flatten(nil)
   end
 
   def test_hidden_payment_form_fields
