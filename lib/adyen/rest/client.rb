@@ -32,7 +32,7 @@ module Adyen
       end
 
       def api_request(action, attributes)
-        request = Net::HTTP::Post.new(endpoint)
+        request = Net::HTTP::Post.new(endpoint.path)
         request.basic_auth(@username, @password)
         request.set_form_data(Adyen::Util.flatten(attributes.merge(action: action)))
 
