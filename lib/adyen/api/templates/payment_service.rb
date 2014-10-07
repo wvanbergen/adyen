@@ -66,6 +66,16 @@ module Adyen
       EOXML
 
       # @private
+      CARD_PARTIAL_NO_CVC= <<-EOXML
+        <payment:card>
+          <payment:holderName>%s</payment:holderName>
+          <payment:number>%s</payment:number>
+          <payment:expiryYear>%s</payment:expiryYear>
+          <payment:expiryMonth>%02d</payment:expiryMonth>
+        </payment:card>
+      EOXML
+
+      # @private
       ONE_CLICK_CARD_PARTIAL = <<-EOXML
         <payment:card>
           <payment:cvc>%s</payment:cvc>
