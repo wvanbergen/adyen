@@ -6,6 +6,11 @@ require 'mocha/setup'
 require 'adyen'
 require 'adyen/matchers'
 
+require 'helpers/test_server'
+require 'helpers/test_cards'
+
+require 'pp'
+
 module Adyen::Test
   module EachXMLBackend
     XML_BACKENDS = [Adyen::API::XMLQuerier::NokogiriBackend, Adyen::API::XMLQuerier::REXMLBackend]
