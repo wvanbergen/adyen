@@ -1,0 +1,9 @@
+<h1> Payment authorized </h1>
+
+<ul>
+	<li> PSP reference: <span id="psp_reference"><%= @psp_reference %></span></li>
+	<li><a href="/capture/<%= @psp_reference %>"> Capture payment </a></li>
+	<li><a href="/cancel/<%= @psp_reference %>"> Cancel payment </a></li>
+	<li><a href="/refund/<%= @psp_reference %>"> Refund payment </a></li>
+	<li><a href="/refund/<%= @psp_reference %>"> Cancel or Refund payment </a></li>
+</ul>

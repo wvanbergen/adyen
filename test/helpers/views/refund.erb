@@ -1,0 +1,7 @@
+<h1> Refund payment </h1>
+
+<form action="/refund" method="post">
+	<input type="hidden" name="psp_reference" value="<%= @psp_reference %>" /><br />
+	<input type="text" name="value" value="1234" /><br />
+	<input type="submit" value="Refund" />
+</form>

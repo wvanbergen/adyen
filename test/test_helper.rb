@@ -27,3 +27,9 @@ module Adyen::Test
     end
   end
 end
+
+def setup_api_configuration
+  Adyen.configuration.default_api_params = { :merchant_account => 'VanBergenORG' }
+  Adyen.configuration.api_username = 'ws@Company.VanBergen'
+  Adyen.configuration.api_password = '7phtHzbfnzsp'
+end

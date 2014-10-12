@@ -2,10 +2,7 @@ require 'test_helper'
 
 class PaymentRestApiFunctionalTest < Minitest::Test
   def setup
-    Adyen.configuration.default_api_params = { :merchant_account => 'VanBergenORG' }
-    Adyen.configuration.api_username = 'ws@Company.VanBergen'
-    Adyen.configuration.api_password = '7phtHzbfnzsp'
-
+    setup_api_configuration
     @client = Adyen::REST.client
   end
 
@@ -38,7 +35,7 @@ class PaymentRestApiFunctionalTest < Minitest::Test
     assert response['payment_result'].key?('refusal_reason')
   end
 
-  def test_payment__with_3d_secure_api_request
+  def test_payment_with_3d_secure_api_request
     response = @client.api_request('Payment.authorise', 
       payment_request: {
         merchant_account: 'VanBergenORG',
