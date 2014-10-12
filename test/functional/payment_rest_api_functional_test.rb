@@ -53,5 +53,19 @@ class PaymentRestApiFunctionalTest < Minitest::Test
     assert response['payment_result'].key?('psp_reference')
     assert response['payment_result'].key?('md')
     assert_equal "https://test.adyen.com/hpp/3d/validate.shtml", response['payment_result']['issuer_url']
-  end  
+  end
+
+  # def test_authorise_3d_request
+  #   p response = @client.api_request('Payment.authorise3d', 
+  #     payment_request_3d: {
+  #       merchant_account: 'VanBergenORG',
+  #       md: "d7TGoKacIJmhT4HwJm7SexdWUByuhJuViUn+hH+Jjl+WG6MVtMUuAEriOZnzeBUaOpbjvGkL617CCaNZ//QpdCo4nnQaKorRgBti+1rwZswotAZOKFQPxl0VSOLuoMGXlXeF8ZOj6FCzCOqLUIiqBoJpmjioBDYjz4nCGKIQT91k7tDKUi9fi8l+kMOXUZalXRYl9hHUELa6yymCH8cLgEQlAFn4fmIZk9Arh1kBW8UMiDLCqwCOSZhLJnTkbzaBVqrW/yn2OWfTb0I86aWohjakvkQzseZ/RhsDF3x0QVAuuHu87mHgotABC1vCgnlfC8y8MFmGq8kycDcFTForoyp3OELh4S1eJ3kAREO5WJU=",
+  #       pa_response: 'foo',
+  #       browser_info: {
+  #         accept_header: "text/html;q=0.9,*/*",
+  #         user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1944.0 Safari/537.36"
+  #       }
+  #     }
+  #   )
+  # end
 end
