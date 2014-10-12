@@ -14,9 +14,11 @@ class HPPIntegrationTest < Minitest::Test
     visit("/hpp?merchant_reference=#{CGI.escape(order_uuid)}")
 
     click_button("Pay")
+    sleep(0.3)
     assert_equal 'https://test.adyen.com/hpp/select.shtml', page.current_url
 
     click_button('VISA')
+    sleep(0.3)
     assert_equal 'https://test.adyen.com/hpp/details.shtml', page.current_url
 
     fill_in('card.cardNumber',     :with => Adyen::TestCards::VISA[:number])
@@ -26,9 +28,11 @@ class HPPIntegrationTest < Minitest::Test
     select(Adyen::TestCards::VISA[:expiry_year],  :from => 'card.expiryYear')
 
     click_button('continue')
+    sleep(0.3)
     assert_equal 'https://test.adyen.com/hpp/completeCard.shtml', page.current_url
     
     click_button('pay')
+    sleep(0.3)
     follow_redirect_back
 
     assert_equal 200, page.status_code
