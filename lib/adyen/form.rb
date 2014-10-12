@@ -307,8 +307,8 @@ module Adyen
     # @param [Hash] params A hash of HTTP GET parameters for the redirect request.
     # @return [String] The signature string.
     def redirect_signature_string(params)
-      params[:authResult].to_s + params[:pspReference].to_s + params[:merchantReference].to_s +
-        params[:skinCode].to_s + params[:merchantReturnData].to_s
+      params['authResult'].to_s + params['pspReference'].to_s + params['merchantReference'].to_s +
+        params['skinCode'].to_s + params['merchantReturnData'].to_s
     end
 
     # Computes the redirect signature using the request parameters, so that the
@@ -321,7 +321,7 @@ module Adyen
     # @return [String] The redirect signature
     # @raise [ArgumentError] Thrown if shared_secret is empty
     def redirect_signature(params, shared_secret = nil)
-      shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params[:skinCode])
+      shared_secret ||= Adyen.configuration.form_skin_shared_secret_by_code(params['skinCode'])
       raise ArgumentError, "Cannot compute redirect signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Util.hmac_base64(shared_secret, redirect_signature_string(params))
     end
@@ -358,8 +358,8 @@ module Adyen
     # @return [true, false] Returns true only if the signature in the parameters is correct.
     def redirect_signature_check(params, shared_secret = nil)
       raise ArgumentError, "params should be a Hash" unless params.is_a?(Hash)
-      raise ArgumentError, "params should contain :merchantSig" unless params.key?(:merchantSig)
-      params[:merchantSig] == redirect_signature(params, shared_secret)
+      raise ArgumentError, "params should contain :merchantSig" unless params.key?('merchantSig')
+      params['merchantSig'] == redirect_signature(params, shared_secret)
     end
   end
 end
