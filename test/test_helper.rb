@@ -6,7 +6,7 @@ require 'mocha/setup'
 require 'adyen'
 require 'adyen/matchers'
 
-require 'helpers/test_server'
+require 'helpers/example_server'
 require 'helpers/test_cards'
 
 require 'pp'

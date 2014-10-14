@@ -1,6 +1,6 @@
 require 'sinatra'
 
-class Adyen::TestServer < Sinatra::Base
+class Adyen::ExampleServer < Sinatra::Base
   set :views,         File.join(File.dirname(__FILE__), 'views')
   set :public_folder, File.join(File.dirname(__FILE__), 'public')
 
@@ -15,11 +15,11 @@ class Adyen::TestServer < Sinatra::Base
 
   get '/hpp' do
    @payment = {
-      :skin => :testing, 
-      :currency_code => 'EUR', 
+      :skin => :testing,
+      :currency_code => 'EUR',
       :payment_amount => 4321,
       :merchant_reference => params[:merchant_reference] || 'HPP test order',
-      :ship_before_date => (Date.today + 1).strftime('%F'), 
+      :ship_before_date => (Date.today + 1).strftime('%F'),
       :session_validity => (Time.now.utc + 30*60).strftime('%FT%TZ'),
       :billing_address => {
         :street               => 'Alexanderplatz',
@@ -35,7 +35,7 @@ class Adyen::TestServer < Sinatra::Base
         :last_name              => 'Doe',
       }
     }
-    
+
     erb :hpp
   end
 
@@ -60,7 +60,7 @@ class Adyen::TestServer < Sinatra::Base
   end
 
   post '/pay' do
-    response = Adyen::REST.client.api_request('Payment.authorise', 
+    response = Adyen::REST.client.api_request('Payment.authorise',
       payment_request: {
         merchant_account: 'VanBergenORG',
         amount: { currency: 'EUR', value: 1234 },

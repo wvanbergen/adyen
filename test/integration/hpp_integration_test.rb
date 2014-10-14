@@ -5,7 +5,7 @@ class HPPIntegrationTest < Minitest::Test
   include Capybara::DSL
 
   def setup
-    Capybara.app = Adyen::TestServer
+    Capybara.app = Adyen::ExampleServer
     Capybara.default_driver = :poltergeist
     Capybara.default_wait_time = 5
   end
@@ -28,7 +28,7 @@ class HPPIntegrationTest < Minitest::Test
 
     click_button('continue')
     assert_equal 'https://test.adyen.com/hpp/completeCard.shtml', page.current_url
-    
+
     click_button('pay')
     follow_redirect_back
 

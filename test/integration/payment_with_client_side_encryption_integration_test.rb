@@ -5,9 +5,9 @@ class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
   include Capybara::DSL
 
   def setup
-    Capybara.app = Adyen::TestServer
+    Capybara.app = Adyen::ExampleServer
     Capybara.default_driver = :poltergeist
-  end  
+  end
 
   def teardown
     Capybara.reset_sessions!
@@ -26,7 +26,7 @@ class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
     fill_in('card[expiry_month]', :with => Adyen::TestCards::VISA[:expiry_month])
     fill_in('card[expiry_year]',  :with => Adyen::TestCards::VISA[:expiry_year])
     fill_in('card[cvc]',          :with => Adyen::TestCards::VISA[:cvc])
-    
+
     click_button('Pay')
 
     assert_equal 200, page.status_code
