@@ -39,7 +39,7 @@ def setup_api_configuration
 end
 
 Capybara.register_driver :poltergeist do |app|
-  Capybara::Poltergeist::Driver.new(app, phantomjs_options: ['--ssl-protocol=tlsv1', '--ignore-ssl-errors=true'])
+  Capybara::Poltergeist::Driver.new(app, phantomjs_options: ['--ssl-protocol=tlsv1'])
 end
 
 Capybara.default_driver = :poltergeist
