@@ -10,7 +10,7 @@ class HPPIntegrationTest < Minitest::Test
 
     click_button("Pay")
 
-    assert page.has_content?('Please select your payment method')
+    assert page.has_content?('Please select your payment method'), "Expected to arrive on Adyen's hoste dpayment pages."
     assert_equal 'https://test.adyen.com/hpp/select.shtml', page.current_url
 
     click_button('VISA')
