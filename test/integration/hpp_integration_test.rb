@@ -4,20 +4,18 @@ require 'capybara/poltergeist'
 class HPPIntegrationTest < Minitest::Test
   include Capybara::DSL
 
-  def setup
-    Capybara.app = Adyen::ExampleServer
-    Capybara.default_driver = :poltergeist
-    Capybara.default_wait_time = 5
-  end
-
   def test_hpp_payment_flow
     order_uuid = "HPP #{SecureRandom.uuid}"
     visit("/hpp?merchant_reference=#{CGI.escape(order_uuid)}")
 
     click_button("Pay")
+
+    assert page.has_content?('Please select your payment method')
     assert_equal 'https://test.adyen.com/hpp/select.shtml', page.current_url
 
     click_button('VISA')
+
+    assert page.has_content?('Enter your Payment Details')
     assert_equal 'https://test.adyen.com/hpp/details.shtml', page.current_url
 
     fill_in('card.cardNumber',     :with => Adyen::TestCards::VISA[:number])
@@ -27,12 +25,13 @@ class HPPIntegrationTest < Minitest::Test
     select(Adyen::TestCards::VISA[:expiry_year],  :from => 'card.expiryYear')
 
     click_button('continue')
+
+    assert page.has_content?('Please review and complete your payment')
     assert_equal 'https://test.adyen.com/hpp/completeCard.shtml', page.current_url
 
     click_button('pay')
     follow_redirect_back
 
-    assert_equal 200, page.status_code
     assert page.has_content?('Payment authorized')
     assert_match /\A\d+\z/, find("#psp_reference").text
     assert_equal order_uuid, find("#merchant_reference").text

@@ -2,6 +2,7 @@
 require 'minitest/autorun'
 require 'minitest/pride'
 require 'mocha/setup'
+require 'capybara/poltergeist'
 
 require 'adyen'
 require 'adyen/matchers'
@@ -36,3 +37,11 @@ def setup_api_configuration
 
   Adyen.configuration.register_form_skin(:testing, 'tifSfXeX', 'testing123', :merchant_account => 'VanBergenORG')
 end
+
+Capybara.register_driver :poltergeist do |app|
+  Capybara::Poltergeist::Driver.new(app, phantomjs_options: ['--ssl-protocol=tlsv1', '--ignore-ssl-errors=true'])
+end
+
+Capybara.default_driver = :poltergeist
+Capybara.javascript_driver = :poltergeist
+Capybara.app = Adyen::ExampleServer

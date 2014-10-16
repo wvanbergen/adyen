@@ -1,19 +1,7 @@
 require 'test_helper'
-require 'capybara/poltergeist'
 
 class PaymentUsing3DSecureIntegrationTest < Minitest::Test
   include Capybara::DSL
-
-  def setup
-    Capybara.app = Adyen::ExampleServer
-    Capybara.default_driver = :poltergeist
-    Capybara.default_wait_time = 5
-  end
-
-  def teardown
-    Capybara.reset_sessions!
-    Capybara.use_default_driver
-  end
 
   def test_3d_secure_flow
     page.driver.headers = {
@@ -31,20 +19,15 @@ class PaymentUsing3DSecureIntegrationTest < Minitest::Test
 
     click_button('Pay')
 
-    puts page.html
-    click_button('Continue')
-
-    puts page.html
-
+    assert page.has_content?('Authenticate a transaction')
     assert_equal 'https://test.adyen.com/hpp/3d/validate.shtml', page.current_url
 
     fill_in('username', :with => Adyen::TestCards::MASTERCARD_3DSECURE[:username])
     fill_in('password', :with => Adyen::TestCards::MASTERCARD_3DSECURE[:password])
 
-    assert_equal 'https://test.adyen.com/hpp/3d/validate.shtml', page.current_url
-
     click_button('Submit')
 
+    assert page.has_content?('Payment authorized')
     assert_match %r{/pay/3dsecure}, page.current_url
   end
 end

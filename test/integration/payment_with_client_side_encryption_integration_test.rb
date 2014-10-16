@@ -4,16 +4,6 @@ require 'capybara/poltergeist'
 class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
   include Capybara::DSL
 
-  def setup
-    Capybara.app = Adyen::ExampleServer
-    Capybara.default_driver = :poltergeist
-  end
-
-  def teardown
-    Capybara.reset_sessions!
-    Capybara.use_default_driver
-  end
-
   def test_authorisation_and_capture
     page.driver.headers = {
       "Accept" => "text/html;q=0.9,*/*",
@@ -29,7 +19,6 @@ class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
 
     click_button('Pay')
 
-    assert_equal 200, page.status_code
     assert page.has_content?('Payment authorized')
     assert_match /\A\d+\z/, find("#psp_reference").text
   end
