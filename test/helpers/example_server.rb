@@ -84,7 +84,7 @@ class Adyen::ExampleServer < Sinatra::Base
     }
 
     if response['payment_result']['result_code'] == 'RedirectShopper'
-      @term_url   = request.url.sub(%r{/pay\z}, '/3dsecure/return')
+      @term_url   = request.url.sub(%r{/pay\z}, '/pay/3dsecure')
       @issuer_url = response['payment_result']['issuer_url']
       @md         = response['payment_result']['md']
       @pa_request = response['payment_result']['pa_request']
@@ -100,7 +100,25 @@ class Adyen::ExampleServer < Sinatra::Base
     end
   end
 
-  post '/3dsecure/return' do
-    raise "still to do"
+  post '/pay/3dsecure' do
+    response = Adyen::REST.client.api_request('Payment.authorise3d',
+      payment_request_3d: {
+        merchant_account: 'VanBergenORG',
+        browser_info: {
+          acceptHeader: request['Accept'] || "text/html;q=0.9,*/*",
+          userAgent: request.user_agent
+        },
+        shopperIP: request.ip,
+        pa_response: params['PaRes'],
+        md: params['MD'],
+      }
+    )
+
+    @attributes = {
+      psp_reference: response['payment_result']['psp_reference'],
+      auth_code: response['payment_result']['auth_code'],
+    }
+
+    erb :authorized
   end
 end
