@@ -19,7 +19,7 @@ class PaymentUsing3DSecureIntegrationTest < Minitest::Test
 
     click_button('Pay')
 
-    assert page.has_content?('Authenticate a transaction')
+    assert page.has_content?('Authenticate a transaction'), "Expected to arrive on Adyen's hosted payment pages."
     assert_equal 'https://test.adyen.com/hpp/3d/validate.shtml', page.current_url
 
     fill_in('username', :with => Adyen::TestCards::MASTERCARD_3DSECURE[:username])
