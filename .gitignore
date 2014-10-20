@@ -1,3 +1,6 @@
+.idea
+.gems
+.rbenv-gemsets
 /tmp
 /pkg
 /doc

@@ -115,6 +115,7 @@ module Adyen
         content << installments_partial if @params[:installments]
         content << shopper_partial if @params[:shopper]
         content << fraud_offset_partial if @params[:fraud_offset]
+        content << capture_delay_partial if @params[:instant_capture]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
@@ -211,6 +212,10 @@ module Adyen
       def fraud_offset_partial
         validate_parameters!(:fraud_offset)
         FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
+      end
+
+      def capture_delay_partial(delay = 0)
+        CAPTURE_DELAY_PARTIAL % delay
       end
 
       class BilletResponse < Response

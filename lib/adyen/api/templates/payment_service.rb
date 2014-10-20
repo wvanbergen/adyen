@@ -146,6 +146,9 @@ module Adyen
 
       # @private
       FRAUD_OFFSET_PARTIAL = '<payment:fraudOffset>%s</payment:fraudOffset>'
+
+      # @private
+      CAPTURE_DELAY_PARTIAL = '<payment:captureDelayHours>%s</payment:captureDelayHours>'
     end
   end
 end

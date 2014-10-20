@@ -99,6 +99,14 @@ module Adyen
       PaymentService.new(params).generate_billet
     end
 
+    # Make an instant payment.
+    #
+    # Technically - authorisation with immediate (no delay) capture.
+    # @see authorise_payment
+    def pay_instantly(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil)
+      authorise_payment(reference, amount, shopper, card, enable_recurring_contract, fraud_offset, true)
+    end
+
     # Authorise a payment.
     #
     # @see capture_payment
@@ -145,13 +153,14 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil)
+    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil, instant_capture = false)
       params = { :reference    => reference,
                  :amount       => amount,
                  :shopper      => shopper,
                  :card         => card,
                  :recurring    => enable_recurring_contract,
-                 :fraud_offset => fraud_offset }
+                 :fraud_offset => fraud_offset,
+                 :instant_capture => instant_capture }
       PaymentService.new(params).authorise_payment
     end
 
@@ -192,12 +201,13 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST', fraud_offset = nil)
+    def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST', fraud_offset = nil, instant_capture = false)
       params = { :reference => reference,
                  :amount    => amount,
                  :shopper   => shopper,
                  :recurring_detail_reference => recurring_detail_reference,
-                 :fraud_offset => fraud_offset }
+                 :fraud_offset => fraud_offset,
+                 :instant_capture => instant_capture }
       PaymentService.new(params).authorise_recurring_payment
     end
 
@@ -243,13 +253,14 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_one_click_payment(reference, amount, shopper, card, recurring_detail_reference, fraud_offset = nil)
+    def authorise_one_click_payment(reference, amount, shopper, card, recurring_detail_reference, fraud_offset = nil, instant_capture = false)
       params = { :reference => reference,
                  :amount    => amount,
                  :shopper   => shopper,
                  :card      => card,
                  :recurring_detail_reference => recurring_detail_reference,
-                 :fraud_offset => fraud_offset }
+                 :fraud_offset => fraud_offset,
+                 :instant_capture => instant_capture }
       PaymentService.new(params).authorise_one_click_payment
     end
 
