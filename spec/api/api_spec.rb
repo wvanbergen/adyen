@@ -22,8 +22,8 @@ describe Adyen::API do
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
           :recurring => false,
-          :instant_capture => false,
-          :fraud_offset => nil
+          :fraud_offset => nil,
+          :instant_capture => false
         )
         Adyen::API.authorise_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -39,16 +39,16 @@ describe Adyen::API do
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
           :recurring => false,
-          :instant_capture => false,
-          :fraud_offset => -100
+          :fraud_offset => -100,
+          :instant_capture => false
         )
         Adyen::API.authorise_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
           false,
-          false,
-          -100
+          -100,
+          false
         )
       end
 
@@ -59,14 +59,15 @@ describe Adyen::API do
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
           :recurring => true,
+          :fraud_offset => nil,
           :instant_capture => false,
-          :fraud_offset => nil
         )
         Adyen::API.authorise_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
           true,
+          nil,
           false
         )
       end
@@ -108,15 +109,15 @@ describe Adyen::API do
           :amount => { :currency => 'EUR', :value => 1234 },
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :recurring_detail_reference => 'recurring-detail-reference',
-          :instant_capture => false,
-          :fraud_offset => 50
+          :fraud_offset => 50,
+          :instant_capture => false
         )
         Adyen::API.authorise_recurring_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           'recurring-detail-reference',
-          false,
-          50
+          50,
+          false
         )
       end
 
@@ -127,8 +128,8 @@ describe Adyen::API do
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :cvc => '737' },
           :recurring_detail_reference => 'recurring-detail-reference',
-          :instant_capture => false,
-          :fraud_offset => nil
+          :fraud_offset => nil,
+          :instant_capture => false
         )
         Adyen::API.authorise_one_click_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
@@ -145,16 +146,16 @@ describe Adyen::API do
           :shopper => { :reference => 'user-id', :email => 's.hopper@example.com' },
           :card => { :cvc => '737' },
           :recurring_detail_reference => 'recurring-detail-reference',
+          :fraud_offset => -10,
           :instant_capture => false,
-          :fraud_offset => -10
         )
         Adyen::API.authorise_one_click_payment('order-id',
           { :currency => 'EUR', :value => 1234 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           { :cvc => '737' },
           'recurring-detail-reference',
-          false,
-          -10
+          -10,
+          false
         )
       end
 
