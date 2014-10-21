@@ -172,15 +172,11 @@ module Adyen
       def card_partial
         if @params[:card] && @params[:card][:encrypted] && @params[:card][:encrypted][:json]
           ENCRYPTED_CARD_PARTIAL % [@params[:card][:encrypted][:json]]
-        elsif @params[:card][:cvc].blank?
+        else
           validate_parameters!(:card => [:holder_name, :number, :expiry_year, :expiry_month])
           card  = @params[:card].values_at(:holder_name, :number, :expiry_year)
           card << @params[:card][:expiry_month].to_i
-          CARD_PARTIAL_NO_CVC % card
-        else
-          validate_parameters!(:card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month])
-          card  = @params[:card].values_at(:holder_name, :number, :cvc, :expiry_year)
-          card << @params[:card][:expiry_month].to_i
+          card << (['', nil].include?(@params[:card][:cvc]) ? '' : (CARD_CVC_PARTIAL % @params[:card][:cvc]))
           CARD_PARTIAL % card
         end
       end
