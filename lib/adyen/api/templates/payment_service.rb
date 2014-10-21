@@ -59,10 +59,15 @@ module Adyen
         <payment:card>
           <payment:holderName>%s</payment:holderName>
           <payment:number>%s</payment:number>
-          <payment:cvc>%s</payment:cvc>
           <payment:expiryYear>%s</payment:expiryYear>
           <payment:expiryMonth>%02d</payment:expiryMonth>
+          %s
         </payment:card>
+      EOXML
+
+      # @private
+      CARD_CVC_PARTIAL = <<-EOXML
+        <payment:cvc>%s</payment:cvc>
       EOXML
 
       # @private
