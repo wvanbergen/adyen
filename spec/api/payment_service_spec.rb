@@ -121,7 +121,7 @@ describe Adyen::API::PaymentService do
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
                                           :amount => [:currency, :value],
-                                          :card => [:holder_name, :number, :cvc, :expiry_year, :expiry_month]
+                                          :card => [:holder_name, :number, :expiry_year, :expiry_month]
 
     it_should_validate_request_param(:shopper) do
       @payment.params[:recurring] = true
