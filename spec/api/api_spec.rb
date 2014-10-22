@@ -40,6 +40,7 @@ describe Adyen::API do
           :card => { :expiry_month => 12, :expiry_year => 2012, :holder_name => "Simon Hopper", :number => '4444333322221111', :cvc => '737' },
           :recurring => false,
           :fraud_offset => nil,
+          :instant_capture => false,
           browser_info: { accept_header: "hey", user_agent: "ho" }
         )
 
