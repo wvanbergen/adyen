@@ -26,10 +26,6 @@ module Adyen
         end
       end
 
-      def configure_http(&block)
-        @configure_http_block = block
-      end
-
       def close
         @http.finish if @http && @http.started?
         @http = nil
@@ -38,7 +34,6 @@ module Adyen
       def http
         @http ||= Net::HTTP.new(endpoint.host, endpoint.port).tap do |http|
           http.use_ssl = endpoint.scheme == 'https'
-          @configure_http_block.call(http) if @configure_http_block
         end
       end
 
