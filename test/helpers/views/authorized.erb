@@ -1,0 +1,7 @@
+<h1> Payment authorized </h1>
+
+<ul>
+<% @attributes.each do |key, value| %>
+	<li> <%= key %> : <span id="<%= key %>"><%= value %></span></li>
+<% end %>
+</ul>

@@ -1,0 +1,14 @@
+<html>
+<head>
+	<title> HPP Payment</title>
+</head>
+<body>
+	<form action="<%= Adyen::Form.url(:test) %>" method="post">
+		<p> Price: <strong>EUR 43.21</strong>. </p>
+		<p>
+			<%= Adyen::Form.hidden_fields(@payment) %>
+			<input type="submit" value="Pay" />
+		</p>
+	</form>
+</body>
+</html>

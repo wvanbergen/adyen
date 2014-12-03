@@ -27,6 +27,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rspec', '~> 2.14')
   s.add_development_dependency('minitest', '~> 5')
   s.add_development_dependency('mocha')
+  s.add_development_dependency('sinatra')
+  s.add_development_dependency('poltergeist')
   
   s.add_development_dependency('rails', '>= 3.2')
   s.add_development_dependency('nokogiri', '>= 1.6.1')

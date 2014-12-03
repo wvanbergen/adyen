@@ -21,7 +21,7 @@ module Adyen
 
         # Add a check for all the other fields specified
         checks.each do |key, value|
-          condition  = "\n  descendant::input[@type='hidden'][@name='#{Adyen::Form.camelize(key)}']"
+          condition  = "\n  descendant::input[@type='hidden'][@name='#{Adyen::Util.camelize(key)}']"
           condition << "[@value='#{value}']" unless value == :anything
           xpath_query << "[#{condition}]"
         end

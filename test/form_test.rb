@@ -29,7 +29,7 @@ class FormTest < Minitest::Test
         :state_or_province    => 'Berlin',
         :country              => 'Germany',
       },
-    :shopper => {
+      :shopper => {
         :telephone_number       => '1234512345',
         :first_name             => 'John',
         :last_name              => 'Doe',
@@ -90,7 +90,7 @@ class FormTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Form.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -107,7 +107,7 @@ class FormTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Form.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -158,9 +158,9 @@ class FormTest < Minitest::Test
 
   def test_redirect_signature_check
     params = { 
-      :authResult => 'AUTHORISED', :pspReference => '1211992213193029',
-      :merchantReference => 'Internet Order 12345', :skinCode => '4aD37dJA',
-      :merchantSig => 'ytt3QxWoEhAskUzUne0P5VA9lPw='
+      'authResult' => 'AUTHORISED', 'pspReference' => '1211992213193029',
+      'merchantReference' => 'Internet Order 12345', 'skinCode' => '4aD37dJA',
+      'merchantSig' => 'ytt3QxWoEhAskUzUne0P5VA9lPw='
     }
 
     assert_equal params[:merchantSig], Adyen::Form.redirect_signature(params)
@@ -179,10 +179,17 @@ class FormTest < Minitest::Test
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check(params.delete(:skinCode)) }
   end
 
-  def test_flatten
-    parameters = { 'billingAddress.street' => 'My Street' }
-    assert_equal parameters, Adyen::Form.flatten(:billing_address => { :street => 'My Street'})
-    assert_equal Hash.new, Adyen::Form.flatten(nil)
+  def test_redirect_signature_check
+    Adyen.configuration.register_form_skin(:testing, 'tifSfXeX', 'testing123', :merchant_account => 'VanBergenORG')
+
+# http://example.com/result?merchantReference=HPP+test+order+%25231&skinCode=tifSfXeX&shopperLocale=en_GB&paymentMethod=visa&authResult=AUTHORISED&pspReference=8814131153369759&merchantSig=il8cjgOiG4N9l2PlSf6h4EVQ6hk%253D
+    params = {
+      "merchantReference"=>CGI.unescape("HPP test order %231"), "skinCode"=>"tifSfXeX", 
+      "shopperLocale"=>"en_GB", "paymentMethod"=>"visa", "authResult"=>"AUTHORISED", 
+      "pspReference"=>"8814131148758652", "merchantSig"=> CGI.unescape("q8J9P%2Fp%2FYsbnnFn%2F83TFsv7Hais%3D")
+    }
+
+    assert_equal params['merchantSig'], Adyen::Form.redirect_signature(params)
   end
 
   def test_hidden_payment_form_fields

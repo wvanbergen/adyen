@@ -79,6 +79,12 @@ class Adyen::Configuration
   # @return [Hash]
   attr_accessor :default_api_params
 
+  # The client-side encryption public key that is used to encrypt payment forms. 
+  # You can find the key on the webservice user page in the Adyen settings.
+  #
+  # @return [String]
+  attr_accessor :cse_public_key
+
   # Default arguments that will be used for in every HTML form.
   #
   # @example
