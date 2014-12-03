@@ -50,6 +50,11 @@ module Adyen
         make_payment_request(authorise_payment_request_body, AuthorisationResponse)
       end
 
+      # @see API.authorise3d_payment
+      def authorise3d_payment
+        make_payment_request(authorise3d_payment_request_body, AuthorisationResponse)
+      end
+
       # @see API.authorise_recurring_payment
       def authorise_recurring_payment
         make_payment_request(authorise_recurring_payment_request_body, AuthorisationResponse)
@@ -95,6 +100,13 @@ module Adyen
         payment_request_body(content)
       end
 
+      def authorise3d_payment_request_body
+        content = browser_info_partial
+        content << ENROLLED_3D_PARTIAL % [@params[:md], @params[:pa_response]]
+
+        LAYOUT_3D % [@params[:merchant_account], @params[:shopper_ip], content]
+      end
+
       def authorise_recurring_payment_request_body
         validate_parameters!(:shopper => [:email, :reference])
         content = RECURRING_PAYMENT_BODY_PARTIAL % (@params[:recurring_detail_reference] || 'LATEST')
@@ -111,11 +123,13 @@ module Adyen
 
       def payment_request_body(content)
         validate_parameters!(:merchant_account, :reference, :amount => [:currency, :value])
+
         content << amount_partial
         content << installments_partial if @params[:installments]
         content << shopper_partial if @params[:shopper]
         content << fraud_offset_partial if @params[:fraud_offset]
         content << capture_delay_partial if @params[:instant_capture]
+        content << browser_info_partial if @params[:browser_info]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
@@ -215,6 +229,10 @@ module Adyen
         FRAUD_OFFSET_PARTIAL % @params[:fraud_offset]
       end
 
+      def browser_info_partial
+        BROWSER_INFO_PARTIAL % @params[:browser_info].values_at(:accept_header, :user_agent)
+      end
+
       def capture_delay_partial(delay = 0)
         CAPTURE_DELAY_PARTIAL % delay
       end
@@ -254,9 +272,10 @@ module Adyen
 
         AUTHORISED = 'Authorised'
         REFUSED    = 'Refused'
+        ENROLLED_3D = 'RedirectShopper'
 
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference,
-          :additional_data
+          :additional_data, :pa_request, :md, :issuer_url
 
         def success?
           super && params[:result_code] == AUTHORISED
@@ -264,6 +283,10 @@ module Adyen
 
         def refused?
           params[:result_code] == REFUSED
+        end
+
+        def enrolled_3d?
+          params[:result_code] == ENROLLED_3D
         end
 
         alias_method :authorised?, :success?
@@ -297,14 +320,25 @@ module Adyen
         end
 
         def params
-          @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
-            {
+          xpath = "//payment:authoriseResponse/payment:paymentResult | //payment:authorise3dResponse/payment:paymentResult"
+          @params ||= xml_querier.xpath(xpath) do |result|
+            initial = {
               :psp_reference  => result.text('./payment:pspReference'),
               :result_code    => result.text('./payment:resultCode'),
               :auth_code      => result.text('./payment:authCode'),
               :additional_data => parse_additional_data(result.xpath('.//payment:additionalData')),
               :refusal_reason => (invalid_request? ? fault_message : result.text('./payment:refusalReason'))
             }
+
+            if initial[:result_code] == ENROLLED_3D
+              initial.merge!({
+                :pa_request     => result.text('./payment:paRequest'),
+                :md             => result.text('./payment:md'),
+                :issuer_url     => result.text('./payment:issuerUrl'),
+              })
+            end
+
+            initial
           end
         end
 

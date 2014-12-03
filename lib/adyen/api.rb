@@ -129,6 +129,7 @@ module Adyen
     # @param          [Hash]           amount         A hash describing the money to charge.
     # @param          [Hash]           shopper        A hash describing the shopper.
     # @param          [Hash]           card           A hash describing the credit card details.
+    # @param          [Hash]           options        A hash for browser_info, recurring and fraud_offset.
     #
     # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
     # @option amount  [Integer]        :value         The value of the payment in discrete cents,
@@ -145,6 +146,12 @@ module Adyen
     # @option card    [Numeric,String] :expiry_month  The month in which the card expires.
     # @option card    [Numeric,String] :expiry_year   The year in which the card expires.
     #
+    # @option options [Hash]           :browser_info  Key value of user agent and accept header for 3d secure
+    # @option options [Boolean]        :recurring     Store the payment details at Adyen for
+    #                                                 future recurring or one-click payments.
+    # @option options [Numeric]        :fraud_offset  Modify Adyen's fraud check by supplying
+    #                                                 an offset for their calculation.
+    #
     # @param [Boolean] enable_recurring_contract      Store the payment details at Adyen for
     #                                                 future recurring or one-click payments.
     #
@@ -153,15 +160,64 @@ module Adyen
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_payment(reference, amount, shopper, card, enable_recurring_contract = false, fraud_offset = nil, instant_capture = false)
+    def authorise_payment(reference, amount, shopper, card, *args)
+      options = if args.first.is_a? Hash
+                  {
+                    :recurring => false,
+                    :fraud_offset => nil,
+                    :instant_capture => false
+                  }.merge!(args.first)
+                else
+                  {
+                    :recurring => args[0] || false,
+                    :fraud_offset => args[1],
+                    :instant_capture => args[2] || false
+                  }
+                end
+
       params = { :reference    => reference,
                  :amount       => amount,
                  :shopper      => shopper,
-                 :card         => card,
-                 :recurring    => enable_recurring_contract,
-                 :fraud_offset => fraud_offset,
-                 :instant_capture => instant_capture }
-      PaymentService.new(params).authorise_payment
+                 :card         => card }
+
+      PaymentService.new(params.merge(options)).authorise_payment
+    end
+
+    # Authorise a payment after 3D redirect.
+    #
+    # @see capture_payment
+    #
+    # All parameters are required.
+    #
+    # @example
+    #   response = Adyen::API.authorise3d_payment(
+    #     md,
+    #     pa_response,
+    #     request.ip,
+    #     {
+    #       user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:29.0) Gecko/20100101 Firefox/29.0",
+    #       accept_header: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    #     }
+    #   )
+    #   response.authorised? # => true
+    #
+    # @param          [String]         md             MD parameter returned by Adyen on redirect after issuer 3-D secure auth.
+    # @param          [String]         pa_response    PaRes parameter returned by Adyen on redirect after issuer 3-D secure auth.
+    # @param          [String]         shopper_ip     Shopper IP address.
+    # @param          [Hash]           browser_info   Key value of user agent and accept header for 3d secure.
+    #
+    # @option browser_info [String]    :user_agent    Request User Agent.
+    # @option browser_info [String]    :accept_header Request Accept Header.
+    #
+    # @return [PaymentService::AuthorisationResponse] The response object which holds the
+    #                                                 authorisation status.
+    def authorise3d_payment(md, pa_response, shopper_ip, browser_info)
+      params = { :md    => md,
+                 :pa_response  => pa_response,
+                 :shopper_ip   => shopper_ip,
+                 :browser_info => browser_info }
+
+      PaymentService.new(params).authorise3d_payment
     end
 
     # Authorise a recurring payment. The contract detail will default to the ‘+latest+’, which

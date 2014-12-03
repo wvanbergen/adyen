@@ -47,6 +47,17 @@ module Adyen
       EOXML
 
       # @private
+      LAYOUT_3D = <<EOS
+    <payment:authorise3d xmlns:payment="http://payment.services.adyen.com" xmlns:recurring="http://recurring.services.adyen.com" xmlns:common="http://common.services.adyen.com">
+      <payment:paymentRequest3d>
+        <payment:merchantAccount>%s</payment:merchantAccount>
+        <payment:shopperIP>%s</payment:shopperIP>
+%s
+      </payment:paymentRequest3d>
+    </payment:authorise3d>
+EOS
+
+      # @private
       AMOUNT_PARTIAL = <<-EOXML
         <payment:amount>
           <common:currency>%s</common:currency>
@@ -154,6 +165,20 @@ module Adyen
 
       # @private
       CAPTURE_DELAY_PARTIAL = '<payment:captureDelayHours>%s</payment:captureDelayHours>'
+
+      # @private
+      ENROLLED_3D_PARTIAL = <<EOS
+        <payment:md>%s</payment:md>
+        <payment:paResponse>%s</payment:paResponse>
+EOS
+
+      # @private
+      BROWSER_INFO_PARTIAL = <<EOS
+        <payment:browserInfo>
+          <payment:acceptHeader>%s</payment:acceptHeader>
+          <payment:userAgent>%s</payment:userAgent>
+        </payment:browserInfo>
+EOS
     end
   end
 end
