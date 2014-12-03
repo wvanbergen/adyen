@@ -18,11 +18,26 @@ module Adyen
         @environment, @username, @password, @options = environment, username, password, options
       end
 
+      # Closes the client.
+      #
+      # - This will terminate the HTTP connection.
+      # - After calling this method, the behavior of any further method calls against
+      #   this client instance is undefined.
+      #
+      # @return [void]
       def close
         @http.finish if @http && @http.started?
         @http = nil
       end
 
+      # The underlying <tt>Net::HTTP</tt> instance that is used to execute HTTP
+      # request against the API.
+      #
+      # You can use this to set options on the Net::HTTP instance, like <tt>read_timeout</tt>.
+      # Many of these options will only work if you set them before the HTTP connection is
+      # opened, i.e. before doing the first API call.
+      #
+      # @return [Net::HTTP] The underlying Net::HTTP instance the client uses to perform HTTP request.
       def http
         @http ||= Net::HTTP.new(endpoint.host, endpoint.port).tap do |http|
           http.use_ssl = endpoint.scheme == 'https'
