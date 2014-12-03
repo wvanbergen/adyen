@@ -24,7 +24,7 @@ end
 
 # Update the cacert.pem file before each release.
 task :build => :update_cacert do
-  sh "git commit #{CACERT_PATH} -m '[API] Update CA root certificates file.'"
+  sh "git diff-index --quiet HEAD #{CACERT_PATH} || (git add #{CACERT_PATH} && git commit -m '[API] Update CA root certificates file.')"
 end
 
 begin
