@@ -2,7 +2,8 @@ module Adyen
   module REST
 
     # The main exception class for error reporting when using the REST API Client.
-    Error = Class.new(StandardError)
+    class Error < ::StandardError
+    end
 
     # Exception class for error responses from the Adyen API.
     #

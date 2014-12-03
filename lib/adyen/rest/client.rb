@@ -16,14 +16,6 @@ module Adyen
 
       def initialize(environment, username, password, options = {})
         @environment, @username, @password, @options = environment, username, password, options
-
-        if block_given?
-          begin
-            yield(self)
-          ensure
-            finish
-          end
-        end
       end
 
       def close
