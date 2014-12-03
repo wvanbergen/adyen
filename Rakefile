@@ -7,6 +7,21 @@ Rake::TestTask.new do |t|
   t.test_files = FileList['test/**/*_test.rb']
 end
 
+Rake::TestTask.new('test:unit') do |t|
+  t.libs << "test"
+  t.test_files = FileList['test/*_test.rb']
+end
+
+Rake::TestTask.new('test:functional') do |t|
+  t.libs << "test"
+  t.test_files = FileList['test/functional/**/*_test.rb']
+end
+
+Rake::TestTask.new('test:integration') do |t|
+  t.libs << "test"
+  t.test_files = FileList['test/integration/**/*_test.rb']
+end
+
 RSpec::Core::RakeTask.new(:spec) do |task|
   task.pattern = "./spec/**/*_spec.rb"
   task.rspec_opts = ['--color']
