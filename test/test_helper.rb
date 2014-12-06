@@ -13,6 +13,21 @@ require 'helpers/test_cards'
 require 'pp'
 
 module Adyen::Test
+  module Flaky
+    def flaky_test(name, &block)
+      define_method("test_#{name}") do
+        attempt = 0
+        test_instance = self
+        begin
+          attempt += 1
+          test_instance.instance_eval(&block)
+        rescue Minitest::Assertion
+          attempt < 3 ? retry : raise
+        end
+      end
+    end
+  end
+
   module EachXMLBackend
     XML_BACKENDS = [Adyen::API::XMLQuerier::NokogiriBackend, Adyen::API::XMLQuerier::REXMLBackend]
 

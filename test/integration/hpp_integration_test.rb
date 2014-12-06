@@ -2,9 +2,10 @@ require 'test_helper'
 require 'capybara/poltergeist'
 
 class HPPIntegrationTest < Minitest::Test
+  extend Adyen::Test::Flaky
   include Capybara::DSL
 
-  def test_hpp_payment_flow
+  flaky_test "HPP payment flow" do
     order_uuid = "HPP #{SecureRandom.uuid}"
     visit("/hpp?merchant_reference=#{CGI.escape(order_uuid)}")
 
