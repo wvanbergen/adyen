@@ -2,6 +2,9 @@ require 'cgi'
 require 'net/http'
 
 require 'adyen/rest/errors'
+require 'adyen/rest/request'
+require 'adyen/rest/response'
+require 'adyen/rest/authorise_payment'
 
 module Adyen
   module REST
@@ -12,6 +15,8 @@ module Adyen
     #   The adyen environment to interact with. Either `live` or `test`.
     #   @return [String]
     class Client
+      include AuthorisePayment
+
       attr_reader :environment
 
       def initialize(environment, username, password, options = {})
@@ -44,31 +49,36 @@ module Adyen
         end
       end
 
+      def execute_api_call(request)
+        http_response = execute_http_request(request.flattened_attributes)
+        request.parse_response(http_response)
+      end
+
+      def execute_http_request(flattened_attributes)
+        request = Net::HTTP::Post.new(endpoint.path)
+        request.basic_auth(@username, @password)
+        request.set_form_data(flattened_attributes)
+
+        case response = http.request(request)
+        when Net::HTTPOK
+          return response
+        when Net::HTTPInternalServerError
+          raise Adyen::REST::ErrorResponse.new(response.body)
+        when Net::HTTPUnauthorized
+          raise Adyen::REST::Error.new("Webservice credentials are incorrect")
+        else
+          raise Adyen::REST::Error.new("Unexpected HTTP response: #{response.code}")
+        end
+      end
+
+      protected
+
       # The endpoint URI for this client.
       # @return [URI] The endpoint to use for the environment.
       def endpoint
         @endpoint ||= URI(ENDPOINT % [environment])
       end
 
-      def api_request(action, attributes)
-        request = Net::HTTP::Post.new(endpoint.path)
-        request.basic_auth(@username, @password)
-        request.set_form_data(Adyen::Util.flatten(attributes.merge(action: action)))
-        response = http.request(request)
-
-        case response
-        when Net::HTTPInternalServerError
-          raise Adyen::REST::ErrorResponse.new(response.body)
-        when Net::HTTPUnauthorized
-          raise Adyen::REST::Error.new("Webservice credentials are incorrect")
-        when Net::HTTPOK
-          attributes = CGI.parse(response.body)
-          attributes.each { |key, values| attributes[key] = values.first }
-          Adyen::Util.deflatten(attributes)
-        else
-          raise Adyen::REST::Error.new("Unexpected HTTP response: #{response.code}")
-        end
-      end
 
       # @see Adyen::REST::Client#endpoint
       ENDPOINT = 'https://pal-%s.adyen.com/pal/adapter/httppost'
