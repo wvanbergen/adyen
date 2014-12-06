@@ -56,15 +56,15 @@ module Adyen
     # @param [:to_s] identifier The identifier to turn to camelcase.
     # @return [String] The camelcase version of the identifier provided.
     def camelize(identifier)
-      identifier.to_s.gsub(/_+(.)/) { $1.upcase }
+      CAMELCASE_EXCEPTIONS[identifier.to_s] || identifier.to_s.gsub(/_+(.)/) { $1.upcase }
     end
 
     # Returns the underscore version of a string.
     # @param [:to_s] identifier The identifier to turn to underscore notation.
     # @return [String] The underscore version of the identifier provided.
     def underscore(identifier)
-      identifier.to_s
-        .gsub(/([A-Z]+)([A-Z])/) { "#{$1.downcase}#{$2}" }
+      UNDERSCORE_EXCEPTIONS[identifier.to_s] || identifier.to_s
+        .gsub(/([A-Z]{2,})([A-Z])/) { "#{$1.downcase}#{$2}" }
         .gsub(/(?!\A)([A-Z][a-z]*)/, '_\1')
         .downcase
     end
@@ -133,5 +133,15 @@ module Adyen
         deflatten_pair(rest, value, return_hash[key])
       end
     end
+
+    # This hash contains exceptions to the standard underscore to camelcase conversion rules.
+    CAMELCASE_EXCEPTIONS = {
+      'shopper_ip' => 'shopperIP'
+    }
+
+    # This hash contains exceptions to the standard camelcase to underscore conversion rules.
+    UNDERSCORE_EXCEPTIONS = CAMELCASE_EXCEPTIONS.invert
+
+    private_constant :CAMELCASE_EXCEPTIONS, :UNDERSCORE_EXCEPTIONS
   end
 end
