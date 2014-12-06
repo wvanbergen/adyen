@@ -32,11 +32,13 @@ class UtilTest < Minitest::Test
   def test_camelize
     assert_equal 'helloCruelWorld', Adyen::Util.camelize(:hello_cruel_world)
     assert_equal 'HelloWorld', Adyen::Util.camelize('_hello__world')
+    assert_equal 'shopperIP', Adyen::Util.camelize('shopper_ip')
   end
 
   def test_underscore
     assert_equal 'hello_cruel_world', Adyen::Util.underscore('HelloCruelWorld')
     assert_equal 'rest_api', Adyen::Util.underscore('RESTApi')
+    assert_equal 'shopper_ip', Adyen::Util.underscore('shopperIP')
   end
 
   def test_flatten
@@ -51,11 +53,11 @@ class UtilTest < Minitest::Test
     expected_hash = {
       "payment_details" => {
         "billing_address" => {
-          "street" => "Bell Street", 
-          "number" => 123, 
+          "street" => "Bell Street",
+          "number" => 123,
           "city" => "Ottawa"
-        }, 
-        "result" => "Authorized", 
+        },
+        "result" => "Authorized",
         "auth_code" => "A40B8"
       }
     }

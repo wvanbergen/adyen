@@ -66,10 +66,10 @@ class Adyen::ExampleServer < Sinatra::Base
         amount: { currency: 'EUR', value: 1234 },
         reference: 'Test order #1',
         browser_info: {
-          acceptHeader: request['Accept'] || "text/html;q=0.9,*/*",
-          userAgent: request.user_agent
+          accept_header: request['Accept'] || "text/html;q=0.9,*/*",
+          user_agent: request.user_agent
         },
-        additionalData: {
+        additional_data: {
           card: {
             encrypted: {
               json: params['adyen-encrypted-data']
@@ -105,10 +105,10 @@ class Adyen::ExampleServer < Sinatra::Base
       payment_request_3d: {
         merchant_account: 'VanBergenORG',
         browser_info: {
-          acceptHeader: request['Accept'] || "text/html;q=0.9,*/*",
-          userAgent: request.user_agent
+          accept_header: request['Accept'] || "text/html;q=0.9,*/*",
+          user_agent: request.user_agent
         },
-        shopperIP: request.ip,
+        shopper_ip: request.ip,
         pa_response: params['PaRes'],
         md: params['MD'],
       }
