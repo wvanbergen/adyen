@@ -81,8 +81,7 @@ class Adyen::ExampleServer < Sinatra::Base
       psp_reference: response.psp_reference
     }
 
-    case response.result_code
-    when 'RedirectShopper'
+    if response.redirect_shopper?
       @term_url   = request.url.sub(%r{/pay\z}, '/pay/3dsecure')
       @issuer_url = response[:issuer_url]
       @md         = response[:md]
@@ -90,7 +89,7 @@ class Adyen::ExampleServer < Sinatra::Base
 
       erb :redirect_shopper
 
-    when 'Authorised'
+    elsif response.authorised?
       erb :authorized
 
     else
