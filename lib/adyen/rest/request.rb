@@ -1,19 +1,22 @@
 module Adyen
   module REST
     class Request
-      attr_accessor :action, :request_prefix, :response_prefix, :request_attributes
+      attr_accessor :action, :attributes, :options
 
-      def initialize(action, request_prefix, response_prefix, request_attributes)
-        @action, @request_prefix, @response_prefix = action, request_prefix, response_prefix
-        @request_attributes = request_attributes
+      def initialize(action, attributes, options = {})
+        @action, @attributes, @options = action, attributes, options
+      end
+
+      def prefix
+        @prefix ||= options[:prefix].to_s
       end
 
       def flattened_attributes
-        Adyen::Util.flatten(request_prefix => request_attributes, :action => action)
-      end
-
-      def parse_response(http_response)
-        Adyen::REST::Response.new(response_prefix, http_response)
+        if prefix
+          Adyen::Util.flatten(prefix => attributes, :action => action)
+        else
+          Adyen::Util.flatten(attributes.merge(:action => action))
+        end
       end
     end
   end

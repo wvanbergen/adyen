@@ -1,20 +1,28 @@
 module Adyen
   module REST
     class Response
-      attr_reader :attribute_prefix, :http_response
+      attr_reader :http_response, :options
 
-      def initialize(attribute_prefix, http_response)
-        @attribute_prefix, @http_response = attribute_prefix.to_s, http_response
+      def initialize(http_response, options = {})
+        @http_response, @options = http_response, options
+      end
+
+      def prefix
+        @prefix ||= options[:prefix].to_s
       end
 
       def attributes
         @attributes ||= begin
           prefixed_attributes = parse_response_attributes
-          if Set.new(prefixed_attributes.keys) != Set[attribute_prefix]
-            raise "Unexpected response attribute_prefixes: #{prefixed_attributes.keys.join(', ')}"
-          end
+          if prefix
+            if Set.new(prefixed_attributes.keys) != Set[prefix]
+              raise "Unexpected response attribute_prefixes: #{prefixed_attributes.keys.join(', ')}"
+            end
 
-          prefixed_attributes[attribute_prefix]
+            prefixed_attributes[prefix]
+          else
+            prefixed_attributes
+          end
         end
       end
 

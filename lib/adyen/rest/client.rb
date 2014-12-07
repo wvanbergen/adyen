@@ -49,9 +49,9 @@ module Adyen
         end
       end
 
-      def execute_api_call(request)
+      def execute_api_call(request, response_type, response_options = {})
         http_response = execute_http_request(request.flattened_attributes)
-        request.parse_response(http_response)
+        response_type.new(http_response, response_options)
       end
 
       def execute_http_request(flattened_attributes)
