@@ -18,25 +18,21 @@ module Adyen
     # @see Adyen::REST::Client
     # @see Adyen::REST::Response
     class Request
-      attr_accessor :action, :attributes, :options
+      attr_reader :action, :prefix, :attributes
+      attr_accessor :response_class, :response_options
 
       def initialize(action, attributes, options = {})
-        @action, @attributes, @options = action, attributes, options
+        @action, @attributes = action, attributes
+
+        @prefix           = options.key?(:prefix) ? options[:prefix].to_s : nil
+        @response_class   = options[:response_class]   || Adyen::REST::Response
+        @response_options = options[:response_options] || {}
       end
 
       # Runs validations on the request before it is sent.
       # @return [void]
       # @raises [Adyen::REST::RequestError]
       def validate!
-      end
-
-      # The prefix to use for all attributes in this request.
-      #
-      # The prefix is set by setting the <tt>:prefix</tt> key in the
-      # {#options} hash.
-      # @return [String, nil] Returns the request attribute prefix, if any.
-      def prefix
-        @prefix ||= options[:prefix].to_s
       end
 
       # Flattens the {#attributes} hash and converts all the keys to camelcase.
@@ -54,8 +50,6 @@ module Adyen
       # @param http_response [Net::HTTPResponse] The HTTP response return for this request.
       # @return [Adyen::REST::Response] An instance of {Adyen::REST::Response}, or a subclass.
       def build_response(http_response)
-        response_class   = options[:response_class]   || Adyen::REST::Response
-        response_options = options[:response_options] || {}
         response_class.new(http_response, response_options)
       end
     end

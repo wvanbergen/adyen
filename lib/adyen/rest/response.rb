@@ -17,19 +17,11 @@ module Adyen
     # @see Adyen::REST::Client
     # @see Adyen::REST::Request
     class Response
-      attr_reader :http_response, :options
+      attr_reader :http_response, :prefix
 
       def initialize(http_response, options = {})
-        @http_response, @options = http_response, options
-      end
-
-      # The prefix that every response attribute names should have.
-      #
-      # The prefix is set by setting the <tt>:prefix</tt> key in the
-      # {#options} hash.
-      # @return [String, nil] Returns the response attribute prefix, if any.
-      def prefix
-        @prefix ||= options[:prefix].to_s
+        @http_response = http_response
+        @prefix = options.key?(:prefix) ? options[:prefix].to_s : nil
       end
 
       # Returns the attributes of the response as a nested hash.
