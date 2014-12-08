@@ -60,59 +60,46 @@ class Adyen::ExampleServer < Sinatra::Base
   end
 
   post '/pay' do
-    response = Adyen::REST.client.authorise_payment(
-      merchant_account: 'VanBergenORG',
-      amount: { currency: 'EUR', value: 1234 },
-      reference: 'Test order #1',
-      browser_info: {
-        accept_header: request['Accept'] || "text/html;q=0.9,*/*",
-        user_agent: request.user_agent
-      },
-      additional_data: {
-        card: {
-          encrypted: {
-            json: params['adyen-encrypted-data']
-          }
-        }
-      }
-    )
+    api_request = Adyen::REST.client.authorise_payment_request
+    api_request[:merchant_account] = 'VanBergenORG'
+    api_request[:reference] = 'Test order #1'
+    api_request.set_amount('EUR', 1234)
+    api_request.set_encrypted_card_data(request)
+    api_request.set_browser_info(request)
 
+    api_response = Adyen::REST.client.execute_request(api_request)
     @attributes = {
-      psp_reference: response.psp_reference
+      psp_reference: api_response.psp_reference
     }
 
-    if response.redirect_shopper?
+    if api_response.redirect_shopper?
       @term_url   = request.url.sub(%r{/pay\z}, '/pay/3dsecure')
-      @issuer_url = response[:issuer_url]
-      @md         = response[:md]
-      @pa_request = response[:pa_request]
+      @issuer_url = api_response[:issuer_url]
+      @md         = api_response[:md]
+      @pa_request = api_response[:pa_request]
 
       erb :redirect_shopper
 
-    elsif response.authorised?
+    elsif api_response.authorised?
       erb :authorized
 
     else
       status 400
-      body response[:refusal_reason]
+      body api_response[:refusal_reason]
     end
   end
 
   post '/pay/3dsecure' do
-    response = Adyen::REST.client.authorise_payment_3dsecure(
-      merchant_account: 'VanBergenORG',
-      browser_info: {
-        accept_header: request['Accept'] || "text/html;q=0.9,*/*",
-        user_agent: request.user_agent
-      },
-      shopper_ip: request.ip,
-      pa_response: params['PaRes'],
-      md: params['MD'],
-    )
+    api_request = Adyen::REST.client.authorise_payment_3dsecure_request
+    api_request[:merchant_account] = 'VanBergenORG'
+    api_request.set_browser_info(request)
+    api_request.set_3d_secure_parameters(request)
+
+    api_response = Adyen::REST.client.execute_request(api_request)
 
     @attributes = {
-      psp_reference: response.psp_reference,
-      auth_code: response[:auth_code],
+      psp_reference: api_response.psp_reference,
+      auth_code: api_response[:auth_code],
     }
 
     erb :authorized

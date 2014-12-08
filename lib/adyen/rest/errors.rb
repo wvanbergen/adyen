@@ -6,7 +6,7 @@ module Adyen
     end
 
     # Exception class for errors on requests
-    class RequestError < Error
+    class RequestValidationFailed < Error
     end
 
     # Exception class for error responses from the Adyen API.
@@ -17,7 +17,7 @@ module Adyen
     #    @return [Integer, nil]
     # @!attribute description
     #    @return [String, nil]
-    class ErrorResponse < Error
+    class ResponseError < Error
       attr_accessor :category, :code, :description
 
       def initialize(response_body)

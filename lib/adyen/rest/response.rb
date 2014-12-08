@@ -10,74 +10,53 @@ module Adyen
     # @!attribute http_response [r]
     #   The underlying net/http response.
     #   @return [Net::HTTPResponse]
-    # @!attribute options [r]
-    #   An options hash that is used to interpret the response.
-    #   @return [Hash]
+    # @!attribute prefix [r]
+    #   The prefix to use when reading attributes from the response
+    #   @return [String]
     #
     # @see Adyen::REST::Client
     # @see Adyen::REST::Request
     class Response
-      attr_reader :http_response, :options
+      attr_reader :http_response, :prefix, :attributes
 
       def initialize(http_response, options = {})
-        @http_response, @options = http_response, options
-      end
-
-      # The prefix that every response attribute names should have.
-      #
-      # The prefix is set by setting the <tt>:prefix</tt> key in the
-      # {#options} hash.
-      # @return [String, nil] Returns the response attribute prefix, if any.
-      def prefix
-        @prefix ||= options[:prefix].to_s
-      end
-
-      # Returns the attributes of the response as a nested hash.
-      #
-      # The HTTP response contains all attributes as a flatten dictionary.
-      # This method constructs a nested structure, and converts all the keys
-      # to underscore notation.
-      #
-      # @return [Hash] The nested hash of response attributes
-      def attributes
-        @attributes ||= begin
-          prefixed_attributes = parse_response_attributes
-          if prefix
-            if Set.new(prefixed_attributes.keys) != Set[prefix]
-              raise "Unexpected response attribute_prefixes: #{prefixed_attributes.keys.join(', ')}"
-            end
-
-            prefixed_attributes[prefix]
-          else
-            prefixed_attributes
-          end
-        end
+        @http_response = http_response
+        @prefix = options.key?(:prefix) ? options[:prefix].to_s : nil
+        @attributes = parse_response_attributes
       end
 
       # Looks up an attribute in the response.
       # @return [String, nil] The value of the attribute if it was included in the response.
-      def [](key)
-        attributes[key.to_s]
+      def [](name)
+        attributes[canonical_name(name)]
       end
 
-      def has_attribute?(key)
-        attributes.key?(key.to_s)
+      def has_attribute?(name)
+        attributes.has_key?(canonical_name(name))
       end
 
       def psp_reference
-        Integer(attributes['psp_reference'])
+        Integer(self[:psp_reference])
       end
 
       def result_code
-        attributes['result_code']
+        self[:result_code]
       end
 
       protected
 
+      def canonical_name(name)
+        Adyen::Util.camelize(apply_prefix(name))
+      end
+
+      def apply_prefix(name)
+        prefix ? name.to_s.sub(/\A(?!#{Regexp.quote(prefix)}\.)/, "#{prefix}.") : name.to_s
+      end
+
       def parse_response_attributes
         attributes = CGI.parse(http_response.body)
         attributes.each { |key, values| attributes[key] = values.first }
-        Adyen::Util.deflatten(attributes)
+        attributes
       end
     end
   end

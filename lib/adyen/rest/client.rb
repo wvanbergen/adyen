@@ -63,27 +63,26 @@ module Adyen
       # @return [Adyen::REST::Response] A response instance of the provided type
       # @see execute_http_request The <tt>execute_http_request</tt> takes care
       #   of  executing the underlying HTTP request.
-      def execute_api_call(request, response_type, response_options = {})
+      def execute_request(request)
         request.validate!
-        http_response = execute_http_request(request.flattened_attributes)
-        response_type.new(http_response, response_options)
+        http_response = execute_http_request(request)
+        request.build_response(http_response)
       end
 
       protected
 
       # Executes a HTTP request against Adyen's REST webservice.
-      # @param flattened_attributes [Hash] A dictionary of attributes to
-      #   include as POST form data.
+      # @param request [Adyen::REST::Request] The request to execute.
       # @return [Net::HTTPResponse] The response from the server.
       # @raise [Adyen::REST::Error] if the HTTP response code was not 200.
       # @see #http Use the <tt>http</tt> method to set options on the underlying
       #   <tt>Net::HTTP</tt> object, like timeouts.
-      def execute_http_request(flattened_attributes)
-        request = Net::HTTP::Post.new(endpoint.path)
-        request.basic_auth(@username, @password)
-        request.set_form_data(flattened_attributes)
+      def execute_http_request(request)
+        http_request = Net::HTTP::Post.new(endpoint.path)
+        http_request.basic_auth(@username, @password)
+        http_request.set_form_data(request.form_data)
 
-        case response = http.request(request)
+        case response = http.request(http_request)
         when Net::HTTPOK
           return response
         when Net::HTTPInternalServerError
