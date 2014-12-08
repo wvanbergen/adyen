@@ -24,6 +24,12 @@ module Adyen
         @action, @attributes, @options = action, attributes, options
       end
 
+      # Runs validations on the request before it is sent.
+      # @return [void]
+      # @raises [Adyen::REST::RequestError]
+      def validate!
+      end
+
       # The prefix to use for all attributes in this request.
       #
       # The prefix is set by setting the <tt>:prefix</tt> key in the

@@ -24,12 +24,11 @@ module Adyen
     # @param options [Hash] (see Adyen::REST::Client#initialize)
     # @return [Adyen::REST::Client] A configured client instance
     # @see .session
-    def self.client(options = {})
+    def self.client
       Adyen::REST::Client.new(
         Adyen.configuration.environment,
         Adyen.configuration.api_username,
-        Adyen.configuration.api_password,
-        options
+        Adyen.configuration.api_password
       )
     end
 

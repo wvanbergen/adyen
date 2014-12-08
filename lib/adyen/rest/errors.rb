@@ -5,6 +5,10 @@ module Adyen
     class Error < ::StandardError
     end
 
+    # Exception class for errors on requests
+    class RequestError < Error
+    end
+
     # Exception class for error responses from the Adyen API.
     #
     # @!attribute category
