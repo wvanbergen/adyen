@@ -1,9 +1,10 @@
 require 'test_helper'
 
 class PaymentUsing3DSecureIntegrationTest < Minitest::Test
+  extend Adyen::Test::Flaky
   include Capybara::DSL
 
-  def test_3d_secure_flow
+  flaky_test "3D Secure payment flow" do
     page.driver.headers = {
       "Accept" => "text/html;q=0.9,*/*",
       "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1944.0 Safari/537.36" #  UUID/#{SecureRandom.uuid}
@@ -19,7 +20,7 @@ class PaymentUsing3DSecureIntegrationTest < Minitest::Test
 
     click_button('Pay')
 
-    assert page.has_content?('Authenticate a transaction'), "Expected to arrive on Adyen's hosted payment pages."
+    assert page.has_content?('Authenticate a transaction'), "Expected to arrive on the 3Dsecure aithentication page"
     assert_equal 'https://test.adyen.com/hpp/3d/validate.shtml', page.current_url
 
     fill_in('username', :with => Adyen::TestCards::MASTERCARD_3DSECURE[:username])
@@ -27,7 +28,13 @@ class PaymentUsing3DSecureIntegrationTest < Minitest::Test
 
     click_button('Submit')
 
-    assert page.has_content?('Payment authorized')
+    unless page.has_content?('Payment authorized')
+      if page.has_content?("You will now be redirected back")
+        page.execute_script("document.getElementById('pageform').submit()")
+      end
+    end
+
+    assert page.has_content?('Payment authorized'), "Expected to be returned back on our own hosted pages."
     assert_match %r{/pay/3dsecure}, page.current_url
   end
 end
