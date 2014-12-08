@@ -49,6 +49,15 @@ module Adyen
           Adyen::Util.flatten(attributes.merge(:action => action))
         end
       end
+
+      # Builds a Adyen::REST::Response instnace for a given Net::HTTP response.
+      # @param http_response [Net::HTTPResponse] The HTTP response return for this request.
+      # @return [Adyen::REST::Response] An instance of {Adyen::REST::Response}, or a subclass.
+      def build_response(http_response)
+        response_class   = options[:response_class]   || Adyen::REST::Response
+        response_options = options[:response_options] || {}
+        response_class.new(http_response, response_options)
+      end
     end
   end
 end
