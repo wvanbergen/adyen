@@ -6,6 +6,38 @@ module Adyen
     module AuthorisePayment
 
       class Request < Adyen::REST::Request
+
+        def set_amount(currency, value)
+          self['amount'] = { currency: 'EUR', value: 1234 }
+        end
+
+        def set_encrypted_card_data(source)
+          encrypted_json = if source.respond_to?(:params)
+            source.params['adyen-encrypted-data']
+          elsif source.respond_to?(:[]) && source.key?('adyen-encrypted-data')
+            source['adyen-encrypted-data']
+          else
+            source
+          end
+
+          self['additional_data.card.encrypted.json'] = encrypted_json
+        end
+
+        def set_browser_info(request)
+          self['shopper_ip']                 = request.ip
+          self['browser_info.accept_header'] = request['Accept'] || "text/html;q=0.9,*/*",
+          self['browser_info.user_agent']    = request.user_agent
+        end
+
+        def set_3d_secure_parameters(request)
+          set_browser_info(request)
+          self['pa_response'] = request.params['PaRes']
+          self['md']          = request.params['MD']
+        end
+
+        def reference=(reference)
+          self['reference'] = reference
+        end
       end
 
       # The Response class implements some extensions for the authorise payment call.
