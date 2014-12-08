@@ -72,7 +72,7 @@ module Adyen
       protected
 
       # Executes a HTTP request against Adyen's REST webservice.
-      # @param flattened_attributes [Adyen::REST::Request] The request to execute.
+      # @param request [Adyen::REST::Request] The request to execute.
       # @return [Net::HTTPResponse] The response from the server.
       # @raise [Adyen::REST::Error] if the HTTP response code was not 200.
       # @see #http Use the <tt>http</tt> method to set options on the underlying
@@ -80,7 +80,7 @@ module Adyen
       def execute_http_request(request)
         http_request = Net::HTTP::Post.new(endpoint.path)
         http_request.basic_auth(@username, @password)
-        http_request.set_form_data(request.flattened_attributes)
+        http_request.set_form_data(request.form_data)
 
         case response = http.request(http_request)
         when Net::HTTPOK
