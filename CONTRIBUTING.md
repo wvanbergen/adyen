@@ -70,6 +70,9 @@ So follow good engineering practices:
 - Eugene Pimenov
 - Michael Grosser
 - Lukasz Lazewski
+- Thibaut Assus
+- Vinicius Ferriani
+- Timo Rößner
 
 ## Release process
 

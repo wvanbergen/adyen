@@ -4,9 +4,54 @@ The following changes have been made to the library over the years. Pleae add an
 
 #### Unrelease changes
 
+#### Version 1.6.0
+
+- Make the credit card's CVC not required for authorise calls.
+- Add support for instant payments: authorise & capture in one call.
+- Add support for Billet payments.
+- Fix functional tests in CI, and move to Minitest for unit tests.
+
+#### Version 1.5.0
+
+- Drop support for Ruby 1.8.
+- Add support for SEPA Direct Debit payments
+- Add support for payment in installments.
+- Enable client-side encryption support to one click payments.
+- Add `Adyen::Form.payments_method_url`.
+- Parse additional data in authorisation responses.
+- Add support sending for shopper details as part of `Adyen::Form`.
+- Fxied some XML encoding issues on different Ruby versions.
+
+#### Version 1.4.1
+
+- Improve form matchers for testing
+- Fix some deprecation warnings
+
+#### Version 1.4.0
+
+- Add support for client-side encryption
+- Add support for `fraud_offset`.
+
+#### Version 1.3.2
+
+- Add support sending for billing details as part of `Adyen::Form`.
+- Allow setting a custom domain for the HPP payment flow.
+- Allow setting default parameters on a `Adyen::Form` skin.
+- Fix: recurring contracts without references.
+- Several improvement sin the notification handler template.
+
+#### Version 1.3.1
+
+- Allow sending a shipper's statement as part of the API.
+
+#### Version 1.3.0
+
+- Add support for ELV direct debit payments.
+- Improved error handling on SOAP errors.
+
 #### Version 1.2.0
 
-- Implemented the <code>RecurringService#store_token</code> API call to store credit cards for recurring billing.
+- Implemented the `RecurringService#store_token` API call to store credit cards for recurring billing.
 - Other fixes in recurring API dure to changes in Adyen backend.
 - Added some new parameters to the signature string calculations.
 - Add support for storing the HTTP basic authentication credentials Adyen uses for notifications in the configuration object. Note that this gem will currently never use these, but you can refer to them when building your integration, and store your configuration in one location.
@@ -21,34 +66,34 @@ The following changes have been made to the library over the years. Pleae add an
 - Complete rewrite of the SOAP client.
 - Rails 3 integration for configuration and generators.
 - Removed all dependencies; Nokogiri and Rails 3 are optional.
-- Configuration variables are now integrated in <code>Adyen.configuration</code>.
+- Configuration variables are now integrated in `Adyen.configuration`.
 - Better documentation and improved testsuite.
 
 #### Version 0.3.2
 
 - Fixed Rails 3 ActiveRecord deprecation notice.
-- Implemented the @cancelOrRefund@ call for the payment SOAP service as @Adyen::SOAP::PaymentService.cancel_or_refund@
+- Implemented the `cancelOrRefund` call for the payment SOAP service as `Adyen::SOAP::PaymentService.cancel_or_refund`
 
-Thanks to "tibastral":http://github.com/tibastral  for implementing this SOAP call.
+Thanks to [tibastral](https://github.com/tibastral) for implementing this SOAP call.
 
 #### Version 0.3.1
 
-- Implemented the @authorise@ call for the payment SOAP service as @Adyen::SOAP::PaymentService.authorise@
-- Implemented the @disable@ call for the recurring payment SOAP service as @Adyen::SOAP::RecurringService.disable@
+- Implemented the `authorise` call for the payment SOAP service as `Adyen::SOAP::PaymentService.authorise`
+- Implemented the `disable` call for the recurring payment SOAP service as `Adyen::SOAP::RecurringService.disable`
 
-Thanks again to "sborsje":http://github.com/sborsje for implementing the SOAP calls.
+Thanks again to [Stefan Borsje](http://github.com/sborsje) for implementing the SOAP calls.
 
 #### Version 0.3.0
 
-- Switched to Yard for code documentation, which is served on "rdoc.info":http://rdoc.info/projects/wvanbergen/adyen
+- Switched to Yard for code documentation, which is served on [rdoc.info](http://rdoc.info/projects/wvanbergen/adyen)
 - Authentication now compatible with the latest *handsoap* version 1.1.4. Please update handsoap to this version.
-- Implemented the @listRecurringDetails@ call for the recurring payment SOAP service as @Adyen::SOAP::RecurringService.list@
+- Implemented the `listRecurringDetails` call for the recurring payment SOAP service as `Adyen::SOAP::RecurringService.list`
 
-Thanks to "sborsje":http://github.com/sborsje for fixing handsoap authentication and implementing the SOAP call.
+Thanks to [Stefan Borsje](http://github.com/sborsje) for fixing handsoap authentication and implementing the SOAP call.
 
 #### Version  0.2.3
 
-- Implemented @Adyen.load_config@ to load configuration values from a Hash or YAML file.
+- Implemented `Adyen.load_config` to load configuration values from a Hash or YAML file.
 
 #### Version 0.2.2
 
@@ -56,19 +101,9 @@ Thanks to "sborsje":http://github.com/sborsje for fixing handsoap authentication
 
 #### Version 0.2.1
 
-- Added @Adyen::Form.default_arguments@ to store arguments that should be used in every payment form or redirect.
+- Added `Adyen::Form.default_arguments` to store arguments that should be used in every payment form or redirect.
 
 #### Version 0.2.0
 
 - Switched to gemcutter.org for gem releases.
-- Added support for automatically handling skins and their shared secrets by registering them using @Adyen::Form.register_skin@
-
-h2. Contributing
-
-We gladly accept patches and additional specs for this project. Please honor the coding style of the project when writing patches:
- * Use soft tabs of two spaces, and no trailing whitespace.
- * Add documentation to your methods in "yardoc format":http://yardoc.org/docs/yard/file:GettingStarted.md
- * Make sure that all the current specs are still running.
- * Write additional specs for your new functionality.
-
-We also like to receive documentation contributions in the project wiki. :-)
+- Added support for automatically handling skins and their shared secrets by registering them using `Adyen::Form.register_skin`
