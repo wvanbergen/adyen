@@ -8,7 +8,7 @@ module Adyen
       class Request < Adyen::REST::Request
 
         def set_amount(currency, value)
-          self['amount'] = { currency: 'EUR', value: 1234 }
+          self['amount'] = { currency: currency, value: value }
         end
 
         def set_encrypted_card_data(source)
@@ -34,10 +34,6 @@ module Adyen
           self['pa_response'] = request.params['PaRes']
           self['md']          = request.params['MD']
         end
-
-        def reference=(reference)
-          self['reference'] = reference
-        end
       end
 
       # The Response class implements some extensions for the authorise payment call.
@@ -53,6 +49,12 @@ module Adyen
 
         alias_method :authorized?, :authorised?
 
+        # Check whether the payment was refused.
+        # @return [Boolean] <tt>true</tt> iff the authorisation was not successful.
+        def refused?
+          result_code == REFUSED
+        end
+
         # Checks whether the result of the authorization call was RedirectShopper,
         # which means that the customer has to be redirected away from your site to
         # complete the 3Dsecure transaction.
@@ -62,11 +64,21 @@ module Adyen
           result_code == REDIRECT_SHOPPER
         end
 
+        # Returns the result code from the transaction.
+        # @return [String] The result code.
+        # @see #authorised?
+        # @see #refused?
+        # @see #redirect_shopper?
+        def result_code
+          self[:result_code]
+        end
+
         private
 
         AUTHORISED       = 'Authorised'.freeze
+        REFUSED          = 'Refused'.freeze
         REDIRECT_SHOPPER = 'RedirectShopper'.freeze
-        private_constant :AUTHORISED, :REDIRECT_SHOPPER
+        private_constant :AUTHORISED, :REFUSED, :REDIRECT_SHOPPER
       end
 
       # Generates <tt>Payment.authorise</tt> request for Adyen's webservice.
