@@ -5,6 +5,7 @@ require 'adyen/rest/errors'
 require 'adyen/rest/request'
 require 'adyen/rest/response'
 require 'adyen/rest/authorise_payment'
+require 'adyen/rest/modify_payment'
 
 module Adyen
   module REST
@@ -16,6 +17,7 @@ module Adyen
     #   @return [String]
     class Client
       include AuthorisePayment
+      include ModifyPayment
 
       attr_reader :environment
 
@@ -86,7 +88,7 @@ module Adyen
         when Net::HTTPOK
           return response
         when Net::HTTPInternalServerError
-          raise Adyen::REST::ErrorResponse.new(response.body)
+          raise Adyen::REST::ResponseError.new(response.body)
         when Net::HTTPUnauthorized
           raise Adyen::REST::Error.new("Webservice credentials are incorrect")
         else

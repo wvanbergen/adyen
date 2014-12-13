@@ -39,10 +39,6 @@ module Adyen
         Integer(self[:psp_reference])
       end
 
-      def result_code
-        self[:result_code]
-      end
-
       protected
 
       def canonical_name(name)

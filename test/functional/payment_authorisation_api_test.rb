@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class PaymentRestApiFunctionalTest < Minitest::Test
+class PaymentAuthorisationAPITest < Minitest::Test
   def setup
     setup_api_configuration
     @client = Adyen::REST.client
@@ -18,7 +18,7 @@ class PaymentRestApiFunctionalTest < Minitest::Test
       card: Adyen::TestCards::VISA
     )
 
-    assert_equal 'Authorised', response[:result_code]
+    assert response.authorised?
     assert response.psp_reference
   end
 
@@ -30,7 +30,7 @@ class PaymentRestApiFunctionalTest < Minitest::Test
       card: Adyen::TestCards::VISA.merge(cvc: '123')
     )
 
-    assert_equal 'Refused', response[:result_code]
+    assert response.refused?
     assert response.psp_reference
     assert response.has_attribute?(:refusal_reason)
   end
@@ -47,7 +47,7 @@ class PaymentRestApiFunctionalTest < Minitest::Test
       }
     )
 
-    assert_equal 'RedirectShopper', response.result_code
+    assert response.redirect_shopper?
     assert response.psp_reference
     assert response.has_attribute?(:md)
     assert_equal "https://test.adyen.com/hpp/3d/validate.shtml", response['issuer_url']
