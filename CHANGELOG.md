@@ -4,6 +4,12 @@ The following changes have been made to the library over the years. Pleae add an
 
 #### Unrelease changes
 
+- Add `Adyen::REST` to intereact with Adyen's webservices.
+- Add `Adyen::HPP` to integrate with Adyen's Hosted Payment Pages.
+- Add integration test suite that uses a functional example app.
+- Deprecate `Adyen::API` and `Adyen::Form`.
+- DOcumentation updates and improvements.
+
 #### Version 1.6.0
 
 - Make the credit card's CVC not required for authorise calls.
@@ -20,7 +26,7 @@ The following changes have been made to the library over the years. Pleae add an
 - Add `Adyen::Form.payments_method_url`.
 - Parse additional data in authorisation responses.
 - Add support sending for shopper details as part of `Adyen::Form`.
-- Fxied some XML encoding issues on different Ruby versions.
+- Fixed some XML encoding issues on different Ruby versions.
 
 #### Version 1.4.1
 
