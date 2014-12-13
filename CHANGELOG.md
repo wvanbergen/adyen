@@ -6,6 +6,7 @@ The following changes have been made to the library over the years. Pleae add an
 
 - Add `Adyen::REST` to intereact with Adyen's webservices.
 - Add `Adyen::HPP` to integrate with Adyen's Hosted Payment Pages.
+- Make client-side encryption a first class citizen.
 - Add integration test suite that uses a functional example app.
 - Deprecate `Adyen::API` and `Adyen::Form`.
 - DOcumentation updates and improvements.
