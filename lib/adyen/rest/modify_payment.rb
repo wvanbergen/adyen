@@ -5,9 +5,11 @@ module Adyen
     # previously authorised payments.
     module ModifyPayment
       class Request < Adyen::REST::Request
-        def set_amount(currency, value)
+        def set_modification_amount(currency, value)
           self['modification_amount'] = { currency: currency, value: value }
         end
+
+        alias_method :set_amount, :set_modification_amount
       end
 
       class Response < Adyen::REST::Response
