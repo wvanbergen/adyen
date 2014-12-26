@@ -2,7 +2,6 @@ require 'test_helper'
 
 class PaymentModificationAPITest < Minitest::Test
   def setup
-    setup_api_configuration
     @client = Adyen::REST.client
   end
 

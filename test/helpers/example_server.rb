@@ -1,13 +1,11 @@
+require 'adyen'
 require 'sinatra'
+
+require 'helpers/configure_adyen'
 
 class Adyen::ExampleServer < Sinatra::Base
   set :views,         File.join(File.dirname(__FILE__), 'views')
   set :public_folder, File.join(File.dirname(__FILE__), 'public')
-
-  def initialize
-    super
-    setup_api_configuration
-  end
 
   get '/' do
     erb :index
