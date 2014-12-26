@@ -67,11 +67,10 @@ module Minitest::CapybaraScreenshot
     if self.class.ancestors.include?(Capybara::DSL)
       if Capybara::Screenshot.autosave_on_failure && !passed?
         Capybara.using_session(Capybara::Screenshot.final_session_name) do
-          filename_prefix = self.location.gsub('#', '-')
+          filename_prefix = self.location
 
           saver = Capybara::Screenshot::Saver.new(Capybara, Capybara.page, true, filename_prefix)
           saver.save
-          saver.output_screenshot_path
         end
       end
     end
