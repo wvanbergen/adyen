@@ -2,10 +2,9 @@ require 'test_helper'
 require 'capybara/poltergeist'
 
 class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
-  extend Adyen::Test::Flaky
   include Capybara::DSL
 
-  flaky_test "client-side encryption payment flow" do
+  def test_client_side_encryption_payment_flow
     page.driver.headers = {
       "Accept" => "text/html;q=0.9,*/*",
       "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1944.0 Safari/537.36" #  UUID/#{SecureRandom.uuid}
