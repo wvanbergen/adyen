@@ -3,6 +3,7 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require 'mocha/setup'
 require 'capybara/poltergeist'
+require 'capybara-screenshot'
 
 require 'adyen'
 require 'adyen/matchers'
@@ -46,7 +47,6 @@ module Adyen::Test
 end
 
 
-
 Capybara.register_driver :poltergeist do |app|
   Capybara::Poltergeist::Driver.new(app, phantomjs_options: ['--ssl-protocol=any'])
 end
@@ -54,3 +54,30 @@ end
 Capybara.default_driver = :poltergeist
 Capybara.javascript_driver = :poltergeist
 Capybara.app = Adyen::ExampleServer
+Capybara.save_and_open_page_path = 'screenshots'
+
+module Minitest::CapybaraScreenshot
+  def before_setup
+    super
+    Capybara::Screenshot.final_session_name = nil
+  end
+
+  def after_teardown
+    super
+    if self.class.ancestors.include?(Capybara::DSL)
+      if Capybara::Screenshot.autosave_on_failure && !passed?
+        Capybara.using_session(Capybara::Screenshot.final_session_name) do
+          filename_prefix = self.location.gsub('#', '-')
+
+          saver = Capybara::Screenshot::Saver.new(Capybara, Capybara.page, true, filename_prefix)
+          saver.save
+          saver.output_screenshot_path
+        end
+      end
+    end
+  end
+end
+
+class Minitest::Test
+  include Minitest::CapybaraScreenshot
+end
