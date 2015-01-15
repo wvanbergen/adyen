@@ -37,10 +37,10 @@ task :update_cacert do
   cp tmp, CACERT_PATH
 end
 
-# Update the cacert.pem file before each release.
-task :build => :update_cacert do
-  sh "git diff-index --quiet HEAD #{CACERT_PATH} || (git add #{CACERT_PATH} && git commit -m '[API] Update CA root certificates file.')"
-end
+# # Update the cacert.pem file before each release.
+# task :build => :update_cacert do
+#   sh "git diff-index --quiet HEAD #{CACERT_PATH} || (git add #{CACERT_PATH} && git commit -m '[API] Update CA root certificates file.')"
+# end
 
 begin
   require 'rubygems'
