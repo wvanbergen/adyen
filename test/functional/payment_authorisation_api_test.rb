@@ -51,4 +51,31 @@ class PaymentAuthorisationAPITest < Minitest::Test
     assert response.has_attribute?(:md)
     assert_equal "https://test.adyen.com/hpp/3d/validate.shtml", response['issuer_url']
   end
+
+  def test_initial_recurring_payment_api_request
+    response = @client.authorise_recurring_payment(
+      merchant_account: 'VanBergenORG',
+      shopper_email: 'willem@van-bergen.org',
+      shopper_reference: 'willem42',
+      amount: { currency: 'EUR', value: 1234 },
+      reference: 'Test initial recurring payment order #1',
+      card: Adyen::TestCards::VISA
+    )
+
+    assert response.authorised?
+    assert response.psp_reference
+  end
+
+  def test_recurring_payment_api_request
+    response = @client.reauthorise_recurring_payment(
+      merchant_account: 'VanBergenORG',
+      shopper_email: 'willem@van-bergen.org',
+      shopper_reference: 'willem42',
+      amount: { currency: 'EUR', value: 1234 },
+      reference: 'Test recurring payment order #1'
+    )
+
+    assert response.authorised?
+    assert response.psp_reference
+  end
 end
