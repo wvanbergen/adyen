@@ -2,11 +2,11 @@ module Adyen
   module REST
 
     # The main exception class for error reporting when using the REST API Client.
-    class Error < ::StandardError
+    class Error < Adyen::Error
     end
 
     # Exception class for errors on requests
-    class RequestValidationFailed < Error
+    class RequestValidationFailed < Adyen::REST::Error
     end
 
     # Exception class for error responses from the Adyen API.
@@ -17,7 +17,7 @@ module Adyen
     #    @return [Integer, nil]
     # @!attribute description
     #    @return [String, nil]
-    class ResponseError < Error
+    class ResponseError < Adyen::REST::Error
       attr_accessor :category, :code, :description
 
       def initialize(response_body)
