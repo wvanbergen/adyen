@@ -139,10 +139,58 @@ module Adyen
         execute_request(request)
       end
 
+      # Generates <tt>Payment.authorise</tt> request with recurring for Adyen's webservice.
+      # @param (see #authorise_recurring_payment)
+      # @return [Adyen::REST::Request] The request to send
+      # @see #authorise_recurring_payment
+      def authorise_recurring_payment_request(attributes={})
+        Adyen::REST::AuthoriseRecurringPayment::Request.new('Payment.authorise', attributes,
+            prefix: 'payment_request',
+            response_class: Adyen::REST::AuthorisePayment::Response,
+            response_options: { prefix: 'payment_result' })
+      end
+
+      # Sends an authorise recurring payment request to Adyen's webservice.
+      # @param attributes [Hash] The attributes to include in the request.
+      # @return [Adyen::REST::AuthorisePayment::Response] The response from Adyen.
+      #   The response responds to <tt>.authorised?</tt> to check whether the
+      #   authorization was successful.
+      # @see Adyen::REST::AuthorisePayment::Response#authorised?
+      def authorise_recurring_payment(attributes)
+        request = authorise_recurring_payment_request(attributes)
+        execute_request(request)
+      end
+
+      # Generates <tt>Payment.authorise</tt> request with recurring for Adyen's webservice.
+      # This method can be called if a previous contract was established with #authorise_recurring_payment
+      # @param (see #authorise_recurring_payment)
+      # @return [Adyen::REST::Request] The request to send
+      # @see #authorise_recurring_payment
+      def reauthorise_recurring_payment_request(attributes={})
+        Adyen::REST::ReauthoriseRecurringPayment::Request.new('Payment.authorise', attributes,
+            prefix: 'payment_request',
+            response_class: Adyen::REST::AuthorisePayment::Response,
+            response_options: { prefix: 'payment_result' })
+      end
+
+      # Sends an authorise recurring payment request to Adyen's webservice.
+      # This method can be called if a previous contract was established with #authorise_recurring_payment
+      # @param attributes [Hash] The attributes to include in the request.
+      # @return [Adyen::REST::AuthorisePayment::Response] The response from Adyen.
+      #   The response responds to <tt>.authorised?</tt> to check whether the
+      #   authorization was successful.
+      # @see Adyen::REST::AuthorisePayment::Response#authorised?
+      def reauthorise_recurring_payment(attributes)
+        request = reauthorise_recurring_payment_request(attributes)
+        execute_request(request)
+      end
+
       alias_method :authorize_payment_request, :authorise_payment_request
       alias_method :authorize_payment, :authorise_payment
       alias_method :authorize_payment_3dsecure_request, :authorise_payment_3dsecure_request
       alias_method :authorize_payment_3dsecure, :authorise_payment_3dsecure
+      alias_method :reauthorize_recurring_payment_request, :reauthorise_recurring_payment_request
+      alias_method :reauthorize_recurring_payment, :reauthorise_recurring_payment
     end
   end
 end

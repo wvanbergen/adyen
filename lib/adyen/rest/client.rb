@@ -5,6 +5,7 @@ require 'adyen/rest/errors'
 require 'adyen/rest/request'
 require 'adyen/rest/response'
 require 'adyen/rest/authorise_payment'
+require 'adyen/rest/authorise_recurring_payment'
 require 'adyen/rest/modify_payment'
 
 module Adyen
