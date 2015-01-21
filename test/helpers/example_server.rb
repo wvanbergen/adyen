@@ -100,6 +100,12 @@ class Adyen::ExampleServer < Sinatra::Base
       auth_code: api_response[:auth_code],
     }
 
-    erb :authorized
+    if api_response.authorised?
+      erb :authorized
+
+    else
+      status 400
+      body api_response[:refusal_reason]
+    end
   end
 end
