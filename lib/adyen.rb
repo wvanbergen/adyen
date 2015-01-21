@@ -3,10 +3,8 @@
 # configuration methods.
 #
 # The most important submodules are:
-# * {Adyen::Form} for generating payment form fields, generating redirect URLs
-#   to the Adyen payment system, and generating and checking of signatures.
-# * {Adyen::API} for communicating with the Adyen SOAP services for issuing
-#   (recurring) payments and recurring contract maintenance.
+# * {Adyen::HPP} for interacting with Adyen's Hosted Payment Pages.
+# * {Adyen::REST} for communicating with the Adyen REST webservices.
 module Adyen
 
   # Basic exception class for Adyen
@@ -26,7 +24,7 @@ end
 require 'adyen/version'
 require 'adyen/configuration'
 require 'adyen/util'
-require 'adyen/hpp/signature'
+require 'adyen/hpp'
 require 'adyen/form'
 require 'adyen/api'
 require 'adyen/rest'
