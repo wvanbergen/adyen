@@ -51,11 +51,11 @@ So follow good engineering practices:
 
 ### Contributors
 
-- Willem van Bergen
-- Michel Barbosa
-- Stefan Borsje
-- Eloy Durán
-- Tobias Bielohlawek
+- [Willem van Bergen](https://github.com/wvanbergen)
+- [Michel Barbosa](https://github.com/mbarb0sa)
+- [Stefan Borsje](https://github.com/sborsje)
+- [Eloy Durán](https://github.com/alloy)
+- [Tobias Bielohlawek](https://github.com/rngtng)
 - Dimitri Sinitsa
 - Rinaldi Fonseca
 - Joost Hietbrink
@@ -73,6 +73,7 @@ So follow good engineering practices:
 - Thibaut Assus
 - Vinicius Ferriani
 - Timo Rößner
+- [Enzo Finidori](https://github.com/tiredenzo)
 
 ## Release process
 
