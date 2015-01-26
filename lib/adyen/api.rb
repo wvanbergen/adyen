@@ -222,7 +222,7 @@ module Adyen
     #   detail  = Adyen::API.list_recurring_details(user.id).details.last[:recurring_detail_reference]
     #   payment = Adyen::API.authorise_one_click_payment(
     #     invoice.id,
-    #     { :currency => 'EUR', :value => invoice.amount },
+    #     { :currency => 'EUR', :value => invoice.amount, :installments => 3 },
     #     { :reference => user.id, :email => user.email, :ip => '8.8.8.8', :statement => 'invoice number 123456' },
     #     { :cvc => '737' }
     #     detail
@@ -237,6 +237,7 @@ module Adyen
     # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
     # @option amount  [Integer]        :value         The value of the payment in discrete cents,
     #                                                 unless the currency does not have cents.
+    # @option amount  [Integer]        :installments  The number of installments (optional param).
     #
     # @option shopper [Numeric,String] :reference     The shopper’s reference (ID).
     # @option shopper [String]         :email         The shopper’s email address.
@@ -261,6 +262,9 @@ module Adyen
                  :recurring_detail_reference => recurring_detail_reference,
                  :fraud_offset => fraud_offset,
                  :instant_capture => instant_capture }
+
+      params.merge!(:installments => { :value => amount.delete(:installments) }) unless amount[:installments].nil?
+
       PaymentService.new(params).authorise_one_click_payment
     end
 

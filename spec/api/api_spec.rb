@@ -129,10 +129,11 @@ describe Adyen::API do
           :card => { :cvc => '737' },
           :recurring_detail_reference => 'recurring-detail-reference',
           :fraud_offset => nil,
-          :instant_capture => false
+          :instant_capture => false,
+          :installments => { :value => 3 }
         )
         Adyen::API.authorise_one_click_payment('order-id',
-          { :currency => 'EUR', :value => 1234 },
+          { :currency => 'EUR', :value => 1234, :installments => 3 },
           { :reference => 'user-id', :email => 's.hopper@example.com' },
           { :cvc => '737' },
           'recurring-detail-reference'
