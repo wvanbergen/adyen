@@ -48,7 +48,7 @@ if File.exist?(API_SPEC_INITIALIZER)
       detail   = Adyen::API.list_recurring_details(@user_id).references.last
       response = Adyen::API.authorise_one_click_payment(
         @order_id,
-        { :currency => 'EUR', :value => '1234' },
+        { :currency => 'EUR', :value => '1234', :installments => 3 },
         { :email => "#{@user_id}@example.com", :reference => @user_id },
         { :cvc => '737' },
         detail
