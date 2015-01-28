@@ -2,6 +2,7 @@ require 'adyen'
 require 'adyen/api/simple_soap_client'
 require 'adyen/api/payment_service'
 require 'adyen/api/recurring_service'
+require 'adyen/api/payout_service'
 
 module Adyen
   # The API module contains classes that interact with the Adyen SOAP API.
@@ -30,8 +31,8 @@ module Adyen
   #     config.adyen.default_api_params = { :merchant_account => 'MerchantAccount' }
   #
   # Note that you'll need an Adyen notification PSP reference for some of the calls. Because of
-  # this, store all notifications that Adyen sends to you. Moreover, the responses to these calls 
-  # do *not* tell you whether or not the requested action was successful. For this you will also 
+  # this, store all notifications that Adyen sends to you. Moreover, the responses to these calls
+  # do *not* tell you whether or not the requested action was successful. For this you will also
   # have to check the notification.
   #
   # = Authorising payments
@@ -358,6 +359,49 @@ module Adyen
           :shopper => shopper,
           payment_method => params
         }).store_token
+    end
+
+
+    #  Stores the Bank Details so that recurring payouts can be made in the future
+    #
+    #  @example
+    #  response = Adyen::API.store_bank_detail(
+    #    {
+    #      :email => "user@example.com",
+    #      :reference => "userref1"
+    #    },
+    #    {
+    #      :iban => "NL48RABO0132394782",
+    #      :bic => "RABONL2U",
+    #      :bank_name => 'Rabobank',
+    #      :country_code => 'NL',
+    #      :owner_name => 'Test Shopper'
+    #    }
+    #  )
+    #  response.detail_stored?             # => true
+    #
+    #  Now we can access the stored recurring_detail_reference to future Payouts
+    # 
+    #  response.psp_reference              # => "8814223560182875"
+    #  response.recurring_detail_reference # => "8914234560182875"
+    #  response.result_code                # => "success"
+    #
+    #
+    # @option shopper   [Numeric,String] :reference            The shopper’s reference (ID).
+    # @option shopper   [String]         :email                The shopper’s email address.
+    #
+    # @option bank    [String]         :iban                 The International Bank Account Number
+    # @option bank    [String]         :bic                  Business Identifier Code (SWIFT, Bank Code)
+    # @option bank    [String]         :bank_name            The Bank Name.
+    # @option bank    [String]         :country_code         The two letter Country Code
+    # @option bank    [String]         :owner_name           The name of the Account owner
+    #
+    def store_bank_detail(shopper, bank)
+      params = {
+        :shopper => shopper,
+        :bank    => bank
+      }
+      PayoutService.new(params).store_detail
     end
   end
 end

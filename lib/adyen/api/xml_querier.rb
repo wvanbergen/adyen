@@ -9,6 +9,7 @@ module Adyen
     class XMLQuerier
       # The namespaces used by Adyen.
       NS = {
+        'payout'    => 'http://payout.services.adyen.com',
         'soap'      => 'http://schemas.xmlsoap.org/soap/envelope/',
         'payment'   => 'http://payment.services.adyen.com',
         'recurring' => 'http://recurring.services.adyen.com',
@@ -85,7 +86,7 @@ module Adyen
           data
         elsif data.responds_to?(:body)
           data.body.to_s
-        else 
+        else
           data.to_s
         end
       end

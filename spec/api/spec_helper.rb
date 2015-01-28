@@ -333,7 +333,7 @@ LIST_RESPONSE = <<EOS
           </RecurringDetail>
           <RecurringDetail>
             <card xsi:nil="true"/>
-            <bank xsi:nil="true"/>            
+            <bank xsi:nil="true"/>
             <elv>
               <accountHolderName xmlns="http://payment.services.adyen.com">S. Hopper</accountHolderName>
               <bankAccountNumber xmlns="http://payment.services.adyen.com">1234567890</bankAccountNumber>
@@ -441,6 +441,21 @@ CAPTURE_RESPONSE = <<EOS
         <response xmlns="http://payment.services.adyen.com">%s</response>
       </ns1:captureResult>
     </ns1:captureResponse>
+  </soap:Body>
+</soap:Envelope>
+EOS
+
+STORE_DETAIL_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <ns1:storeDetailResponse xmlns:ns1="http://payout.services.adyen.com">
+      <ns1:response>
+        <pspReference xmlns="http://payout.services.adyen.com">9913134957760023</pspReference>
+        <recurringDetailReference xmlns="http://payout.services.adyen.com">2713134957760046</recurringDetailReference>
+        <resultCode xmlns="http://payout.services.adyen.com">Success</resultCode>
+      </ns1:response>
+    </ns1:storeDetailResponse>
   </soap:Body>
 </soap:Envelope>
 EOS
