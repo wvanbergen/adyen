@@ -63,31 +63,60 @@ module Adyen
       end
 
       class StoreDetailResponse < Response
+        ERRORS = {
+          "validation 111 Invalid BankCountryCode specified" => [:country_code, 'is not a valid country code'],
+          "validation 161 Invalid iban" => [:iban, 'is not a valid IBAN']
+        }
+
         class << self
           # @private
-          attr_accessor :request_received_value
-
           def base_xpath
             '//payout:storeDetailResponse/payout:response'
           end
         end
 
-        response_attrs :psp_reference, :result_code, :recurring_detail_reference
+        response_attrs :psp_reference, :result_code, :recurring_detail_reference, :refusal_reason
 
         # This only returns whether or not the request has been successfully received. Check the
         # subsequent notification to see if the payment was actually mutated.
         def success?
-          super && params[:response] == self.class.request_received_value
+          super && params[:result_code] == 'Success'
         end
 
         alias_method :detail_stored?, :success?
+
+        # @return [Boolean] Returns whether or not the request was valid.
+        def invalid_request?
+          !fault_message.nil?
+        end
+
+        # In the case of a validation error, or SOAP fault message, this method will return an
+        # array describing what attribute failed validation and the accompanying message. If the
+        # errors is not of the common user validation errors, then the attribute is +:base+ and the
+        # full original message is returned.
+        #
+        # An optional +prefix+ can be given so you can seamlessly integrate this in your
+        # ActiveRecord model and copy over errors.
+        #
+        # @param [String,Symbol] prefix A string that should be used to prefix the error key.
+        # @return [Array<Symbol, String>] A name-message pair of the attribute with an error.
+        def error(prefix = nil)
+          if error = ERRORS[fault_message]
+            prefix ? ["#{prefix}_#{error[0]}".to_sym, error[1]] : error
+          elsif fault_message
+            [:base, fault_message]
+          else
+            [:base, 'Request failed for unkown reasons.']
+          end
+        end
 
         def params
           @params ||= xml_querier.xpath(self.class.base_xpath) do |result|
             {
               :psp_reference              => result.text('./payout:pspReference'),
               :result_code                => result.text('./payout:resultCode'),
-              :recurring_detail_reference => result.text('./payout:recurringDetailReference')
+              :recurring_detail_reference => result.text('./payout:recurringDetailReference'),
+              :refusal_reason => (invalid_request? ? fault_message : '')
             }
           end
         end

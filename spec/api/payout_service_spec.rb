@@ -68,8 +68,45 @@ describe Adyen::API::PayoutService do
     it_should_return_params_for_each_xml_backend({
       :psp_reference => '9913134957760023',
       :result_code => 'Success',
-      :recurring_detail_reference => '2713134957760046'
+      :recurring_detail_reference => '2713134957760046',
+      :refusal_reason => ''
     })
+
+    describe "with a `invalid' response" do
+      before do
+        stub_net_http(STORE_DETAIL_INVALID_RESPONSE % 'validation 111 Invalid BankCountryCode specified')
+        @response = @payout.store_detail
+      end
+
+      it "returns that the request was not successful" do
+        @response.should_not be_success
+      end
+
+      it "it returns that the request was invalid" do
+        @response.should be_invalid_request
+      end
+
+      it "returns the fault message from #refusal_reason" do
+        @response.refusal_reason.should == 'validation 111 Invalid BankCountryCode specified'
+        @response.params[:refusal_reason].should == 'validation 111 Invalid BankCountryCode specified'
+      end
+
+      it "returns bank validation errors" do
+        [
+          ["validation 111 Invalid BankCountryCode specified", [:country_code, 'is not a valid country code']],
+          ["validation 161 Invalid iban", [:iban, 'is not a valid IBAN']]
+        ].each do |message, error|
+          response_with_fault_message(message).error.should == error
+        end
+      end
+
+      private
+
+      def response_with_fault_message(message)
+        stub_net_http(STORE_DETAIL_INVALID_RESPONSE % message)
+        @response = @payout.store_detail
+      end
+    end
   end
 
   private

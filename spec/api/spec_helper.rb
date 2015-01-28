@@ -459,3 +459,15 @@ STORE_DETAIL_RESPONSE = <<EOS
   </soap:Body>
 </soap:Envelope>
 EOS
+
+STORE_DETAIL_INVALID_RESPONSE = <<EOS
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns0="http://common.services.adyen.com">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>%s</faultstring>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>
+EOS
