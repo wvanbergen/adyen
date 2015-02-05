@@ -78,4 +78,15 @@ class PaymentAuthorisationAPITest < Minitest::Test
     assert response.authorised?
     assert response.psp_reference
   end
+
+  def test_list_recurring_details_api_request
+    response = @client.list_recurring_details(
+      recurring: { contract: "RECURRING" },
+      merchant_account: 'VanBergenORG',
+      shopper_reference: 'willem42',
+    )
+
+    assert response.references.any?
+    assert response.details.any?
+  end
 end
