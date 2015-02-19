@@ -191,23 +191,17 @@ module Adyen
         # Returns a list of recurring details
         # @return [Array] A not empty array if there is at least a recurring detail
         def details
-          list = []
-          index = 0
+          mapped_attributes = {
+            :recurring_detail_reference => "recurringDetailReference",
+            :creation_date => "creationDate",
+            :variant => "variant",
+            :card_holder_name => "card.holderName",
+            :card_expiry_month => "card.expiryMonth",
+            :card_expiry_year => "card.expiryYear",
+            :card_number => "card.number"
+          }
 
-          while !attributes["recurringDetailsResult.details.{%}.recurringDetailReference".gsub("{%}", index.to_s)].empty? do
-            response = { card: {} }
-            response[:recurring_detail_reference] = attributes["recurringDetailsResult.details.{%}.recurringDetailReference".gsub("{%}", index.to_s)]
-            response[:creation_date]              = attributes["recurringDetailsResult.details.{%}.creationDate".gsub("{%}", index.to_s)]
-            response[:variant]                    = attributes["recurringDetailsResult.details.{%}.variant".gsub("{%}", index.to_s)]
-            response[:card][:holder_name]         = attributes["recurringDetailsResult.details.{%}.card.holderName".gsub("{%}", index.to_s)]
-            response[:card][:expiry_month]        = attributes["recurringDetailsResult.details.{%}.card.expiryMonth".gsub("{%}", index.to_s)]
-            response[:card][:expiry_year]         = attributes["recurringDetailsResult.details.{%}.card.expiryYear".gsub("{%}", index.to_s)]
-            response[:card][:number]              = attributes["recurringDetailsResult.details.{%}.card.number".gsub("{%}", index.to_s)]
-            list << response
-            index += 1
-          end
-
-          list
+          map_response_list("recurringDetailsResult.details", mapped_attributes)
         end
 
         # Returns a list of recurring details references

@@ -41,6 +41,25 @@ module Adyen
 
       protected
 
+      def map_response_list(response_prefix, mapped_attributes)
+        list  = []
+        index = 0
+
+        loop do
+          response = {}
+          mapped_attributes.each do |key, value|
+            new_value = attributes["#{response_prefix}.#{index.to_s}.#{value}"]
+            response[key] = new_value unless new_value.empty?
+          end
+
+          index += 1
+          break unless response.any?
+          list << response
+        end
+
+        list
+      end
+
       def canonical_name(name)
         Adyen::Util.camelize(apply_prefix(name))
       end
