@@ -185,6 +185,54 @@ module Adyen
         execute_request(request)
       end
 
+      # The Response class implements some extensions for the list recurring details call.
+      # @see Adyen::REST::Response
+      class ListRecurringDetailsResponse < Adyen::REST::Response
+        # Returns a list of recurring details
+        # @return [Array] A not empty array if there is at least a recurring detail
+        def details
+          mapped_attributes = {
+            :recurring_detail_reference => "recurringDetailReference",
+            :creation_date => "creationDate",
+            :variant => "variant",
+            :card_holder_name => "card.holderName",
+            :card_expiry_month => "card.expiryMonth",
+            :card_expiry_year => "card.expiryYear",
+            :card_number => "card.number"
+          }
+
+          map_response_list("recurringDetailsResult.details", mapped_attributes)
+        end
+
+        # Returns a list of recurring details references
+        # @return [Array] A not empty array if there is at least a recurring detail reference
+        def references
+          details.map { |detail| detail[:recurring_detail_reference] }
+        end
+      end
+
+      # Generates <tt>Recurring.listRecurringDetails</tt> request for Adyen's webservice.
+      # @param (see #list_recurring_details)
+      # @return [Adyen::REST::ListRecurringDetailsPayment::Request] The request to send
+      # @see #list_recurring_details
+      def list_recurring_details_request(attributes = {})
+        Adyen::REST::ListRecurringDetailsPayment::Request.new('Recurring.listRecurringDetails', attributes,
+            prefix: 'recurring_details_request',
+            response_class: Adyen::REST::AuthorisePayment::ListRecurringDetailsResponse,
+            response_options: { prefix: 'recurring_details_result' })
+      end
+
+      # Sends an list recurring details request to Adyen's webservice.
+      # @param attributes [Hash] The attributes to include in the request.
+      # @return [Adyen::REST::AuthorisePayment::ListRecurringDetailsResponse] The response from Adyen.
+      # The response responds to <tt>.details</tt> and <tt>.references</tt> with recurring data.
+      # @see Adyen::REST::AuthorisePayment::ListRecurringDetailsResponse#references
+      # @see Adyen::REST::AuthorisePayment::ListRecurringDetailsResponse#details
+      def list_recurring_details(attributes)
+        request = list_recurring_details_request(attributes)
+        execute_request(request)
+      end
+
       alias_method :authorize_payment_request, :authorise_payment_request
       alias_method :authorize_payment, :authorise_payment
       alias_method :authorize_payment_3dsecure_request, :authorise_payment_3dsecure_request

@@ -31,5 +31,17 @@ module Adyen
         end
       end
     end
+
+    module ListRecurringDetailsPayment
+      class Request < Adyen::REST::Request
+        def initialize(action, attributes, options)
+          attributes[:recurring] ||= { contract: 'RECURRING' }
+          super(action, attributes, options)
+          @required_attributes += ['recurringDetailsRequest.merchantAccount',
+            'recurringDetailsRequest.recurring.contract',
+            'recurringDetailsRequest.shopperReference']
+        end
+      end
+    end
   end
 end

@@ -78,4 +78,29 @@ class PaymentAuthorisationAPITest < Minitest::Test
     assert response.authorised?
     assert response.psp_reference
   end
+
+  def test_list_recurring_details_api_request
+    response = @client.list_recurring_details(
+      recurring: { contract: "RECURRING" },
+      merchant_account: 'VanBergenORG',
+      shopper_reference: 'willem42',
+    )
+
+    assert !response.details.first[:recurring_detail_reference].empty?
+    assert_equal response.details.first[:card_holder_name], Adyen::TestCards::VISA[:holder_name]
+    assert_equal response.details.first[:card_expiry_month].to_i, Adyen::TestCards::VISA[:expiry_month].to_i
+    assert_equal response.details.first[:card_expiry_year], Adyen::TestCards::VISA[:expiry_year]
+    assert_equal response.details.first[:card_number], Adyen::TestCards::VISA[:number][-4..-1]
+  end
+
+
+  def test_list_recurring_references_api_request
+    response = @client.list_recurring_details(
+      recurring: { contract: "RECURRING" },
+      merchant_account: 'VanBergenORG',
+      shopper_reference: 'willem42',
+    )
+
+    assert_equal response.references.first, response.details.first[:recurring_detail_reference]
+  end
 end
