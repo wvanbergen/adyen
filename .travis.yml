@@ -2,7 +2,6 @@ language: ruby
 cache: bundler
 script: bundle exec rake
 rvm:
-- "1.9"
 - "2.0"
 - "2.1"
 - "2.2"
