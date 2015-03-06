@@ -14,7 +14,7 @@ module Adyen
         def set_encrypted_card_data(source)
           encrypted_json = if source.respond_to?(:params)
             source.params['adyen-encrypted-data']
-          elsif source.respond_to?(:[]) && source.key?('adyen-encrypted-data')
+          elsif source.is_a?(Hash) && source.key?('adyen-encrypted-data')
             source['adyen-encrypted-data']
           else
             source
