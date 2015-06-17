@@ -20,7 +20,7 @@ class CreateAdyenNotifications < ActiveRecord::Migration
       t.timestamps
     end
      
-    add_index :adyen_notifications, [:psp_reference, :event_code, :success], :unique => true, :name => 'adyen_notification_uniqueness'
+    add_index :adyen_notifications, [:merchant_account_code, :psp_reference, :event_code, :success], :unique => true, :name => 'adyen_notification_uniqueness'
   end
 
   def self.down
