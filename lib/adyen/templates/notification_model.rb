@@ -16,7 +16,6 @@
 #      @invoice.set_paid!
 #    end
 class AdyenNotification < ActiveRecord::Base
-
   # A notification should always include an event_code
   validates_presence_of :event_code
 
@@ -37,8 +36,6 @@ class AdyenNotification < ActiveRecord::Base
   # @raise This method will raise an exception if the notification cannot be stored.
   # @see Adyen::Notification::HttpPost.log
   def self.log(params)
-    converted_params = {}
-
     # Assign explicit each attribute from CamelCase notation to notification
     # For example, merchantReference will be converted to merchant_reference
     self.new.tap do |notification|
@@ -46,6 +43,7 @@ class AdyenNotification < ActiveRecord::Base
         setter = "#{key.to_s.underscore}="
         notification.send(setter, value) if notification.respond_to?(setter)
       end
+
       notification.save!
     end
   end
