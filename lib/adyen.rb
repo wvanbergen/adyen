@@ -26,6 +26,7 @@ end
 require 'adyen/version'
 require 'adyen/configuration'
 require 'adyen/util'
+require 'adyen/hpp/signature'
 require 'adyen/form'
 require 'adyen/api'
 require 'adyen/rest'
