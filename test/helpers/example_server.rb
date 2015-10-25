@@ -13,7 +13,6 @@ class Adyen::ExampleServer < Sinatra::Base
 
   get '/hpp' do
     @payment = {
-      :skin => :testing,
       :currency_code => 'EUR',
       :payment_amount => 4321,
       :merchant_reference => params[:merchant_reference] || 'HPP test order',
@@ -64,7 +63,7 @@ class Adyen::ExampleServer < Sinatra::Base
   end
 
   get '/hpp/result' do
-    raise "Forgery!" unless Adyen::Form.redirect_signature_check(params)
+    raise "Forgery!" unless Adyen::HPP::Response(params).redirect_signature_check
 
     case params['authResult']
     when 'AUTHORISED'

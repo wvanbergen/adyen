@@ -3,10 +3,11 @@
 	<title> HPP Payment</title>
 </head>
 <body>
-	<form action="<%= Adyen::Form.url(:test) %>" method="post">
+  <% hpp_client = Adyen::HPP::Client.new(:test, :testing) %>
+	<form action="<%= hpp_client.url %>" method="post">
 		<p> Price: <strong>EUR 43.21</strong>. </p>
 		<p>
-			<%= Adyen::Form.hidden_fields(@payment) %>
+			<%= hpp_client.new_request.hidden_fields(@payment) %>
 			<input type="submit" value="Pay" />
 		</p>
 	</form>
