@@ -150,18 +150,18 @@ class HppTest < Minitest::Test
       'merchantSig' => 'tjW9Tw2uVcoVHgz0g2ivjkgCd6IRqCNGMdTmx4yJSJE='
     }
 
-    assert Adyen::HPP::Response.new(params.dup).redirect_signature_check
-    assert Adyen::HPP::Response.new(params.dup, 'Kah942*$7sdp0)').redirect_signature_check # explicitly provided shared secret
+    assert Adyen::HPP::Response.new(params).redirect_signature_check
+    assert Adyen::HPP::Response.new(params, 'Kah942*$7sdp0)').redirect_signature_check # explicitly provided shared secret
 
-    refute Adyen::HPP::Response.new(params.dup.merge('skinCode' => 'sk1nC0de')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params.dup, 'wrong_shared_secret').redirect_signature_check
+    refute Adyen::HPP::Response.new(params.merge('skinCode' => 'sk1nC0de')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params, 'wrong_shared_secret').redirect_signature_check
 
-    refute Adyen::HPP::Response.new(params.dup.merge('pspReference' => 'tampered')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params.dup.merge('merchantSig' => 'tampered')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.merge('pspReference' => 'tampered')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.merge('merchantSig' => 'tampered')).redirect_signature_check
 
     assert_raises(ArgumentError) { Adyen::HPP::Response.new(nil).redirect_signature_check }
     assert_raises(ArgumentError) { Adyen::HPP::Response.new({}).redirect_signature_check }
-    assert_raises(ArgumentError) { Adyen::HPP::Response.new(params.dup.delete(:skinCode)).redirect_signature_check }
+    assert_raises(ArgumentError) { Adyen::HPP::Response.new(params.delete(:skinCode)).redirect_signature_check }
   end
 
   def test_hidden_payment_form_fields

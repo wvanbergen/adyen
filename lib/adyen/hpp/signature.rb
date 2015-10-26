@@ -27,6 +27,7 @@ module Adyen
       #   params hash with the `sharedSecret` key.
       # @return [Boolean] true if the `merchantSig` in the params matches our calculated signature
       def verify(params, shared_secret = nil)
+        params = params.dup
         param_shared_secret = params.delete('sharedSecret')
         shared_secret ||= param_shared_secret
         their_sig = params.delete('merchantSig')
