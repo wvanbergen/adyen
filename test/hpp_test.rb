@@ -81,54 +81,66 @@ class HppTest < Minitest::Test
 
   def test_redirect_url_generation
     attributes = {
-      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
-      :merchant_reference => 'Internet Order 12345', :skin => :testing, :session_validity => Time.now + 3600
+      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
+      :merchant_reference => 'Internet Order 12345', :skin => :testing, :session_validity => Time.parse('2015-10-26 10:30')
+    }
+
+    processed_attributes = {
+      'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
+      'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
+      'merchantAccount' => 'TestMerchant', 'skinCode' => '4aD37dJA', 'merchantSig' => 'HCpo0JhqV4PG/AUa+MxRFV7o9EtmJq9w8K6z8G+Pqy0='
     }
 
     redirect_uri = URI(@test_request.redirect_url(attributes))
     assert_match %r[^#{@test_client.url}], redirect_uri.to_s
 
     params = CGI.parse(redirect_uri.query)
-    attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first unless key == :shared_secret
+    processed_attributes.each do |key, value|
+      assert_equal value, params[key].first
     end
-
-    assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
   end
 
   def test_redirect_url_generation_with_direct_skin_details
     attributes = {
-      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
-      :merchant_reference => 'Internet Order 12345', :session_validity => Time.now + 3600,
+      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
+      :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30'),
       :merchant_account => 'OtherMerchant', :skin_code => 'sk1nC0de', :shared_secret => 'shared_secret',
+    }
+
+    processed_attributes = {
+      'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
+      'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
+      'merchantAccount' => 'OtherMerchant', 'skinCode' => 'sk1nC0de', 'merchantSig' => 'LhzF1G35uJumjNDJAv13u2Z2toJCr5D2Ge3569s4TJ4='
     }
 
     redirect_uri = URI(@test_request.redirect_url(attributes))
     assert_match %r[^#{@test_client.url}], redirect_uri.to_s
 
     params = CGI.parse(redirect_uri.query)
-    attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first unless key == :shared_secret
+    processed_attributes.each do |key, value|
+      assert_equal value, params[key].first
     end
-
-    assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
   end
 
   def test_payment_methods_url_generation
     attributes = {
-      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.today,
-      :merchant_reference => 'Internet Order 12345', :skin => :testing, :session_validity => Time.now + 3600
+      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
+      :merchant_reference => 'Internet Order 12345', :skin => :testing, :session_validity => Time.parse('2015-10-26 10:30')
     }
 
-    redirect_uri = URI(@test_request.payment_methods_url(attributes))
-    assert_match %r[^#{@test_client.url(:directory)}], redirect_uri.to_s
+    processed_attributes = {
+      'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
+      'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
+      'merchantAccount' => 'TestMerchant', 'skinCode' => '4aD37dJA', 'merchantSig' => 'HCpo0JhqV4PG/AUa+MxRFV7o9EtmJq9w8K6z8G+Pqy0='
+    }
 
-    params = CGI.parse(redirect_uri.query)
-    attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first unless key == :shared_secret
+    payment_methods_uri = URI(@test_request.payment_methods_url(attributes))
+    assert_match %r[^#{@test_client.url(:directory)}], payment_methods_uri.to_s
+
+    params = CGI.parse(payment_methods_uri.query)
+    processed_attributes.each do |key, value|
+      assert_equal value, params[key].first
     end
-
-    assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
   end
 
   def test_redirect_signature_check

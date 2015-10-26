@@ -24,44 +24,34 @@ module Adyen
       # of the skin that is set, unless the skin code and the shared secret are supplied
       # directly in the parameters.
       #
-      # @private
-      # @param [Hash] parameters The payment parameters hash to transform
-      def do_parameter_transformations!(parameters = {})
-        parameters.replace(Adyen.configuration.default_form_params.merge(parameters))
-
-        unless parameters[:skin_code] && parameters[:shared_secret]
-          if parameters[:skin]
-            @skin = Adyen.configuration.form_skin_by_name(parameters.delete(:skin)) || {}
-          end
-          parameters[:skin_code] = skin[:skin_code]
-          parameters[:shared_secret] = skin[:shared_secret]
-          parameters.merge!(skin[:default_form_params] || {})
-        end
-
-        parameters[:recurring_contract] = 'RECURRING' if parameters.delete(:recurring) == true
-        parameters[:order_data]         = Adyen::Util.gzip_base64(parameters.delete(:order_data_raw)) if parameters[:order_data_raw]
-        parameters[:ship_before_date]   = Adyen::Util.format_date(parameters[:ship_before_date])
-        parameters[:session_validity]   = Adyen::Util.format_timestamp(parameters[:session_validity])
-      end
-
-      # Transforms the payment parameters to be in the correct format and calculates the merchant
-      # signature parameter. It also does some basic health checks on the parameters hash.
-      #
       # @param [Hash] parameters The payment parameters. The parameters set in the
       #    {Adyen::Configuration#default_form_params} hash will be included automatically.
-      # @return [Hash] Transformed (completed and formatted) payment parameters.
+      # @return [Hash] Completed and formatted payment parameters.
       # @raise [ArgumentError] Thrown if some parameter health check fails.
       def payment_parameters(parameters = {})
         raise ArgumentError, "Cannot generate form: parameters should be a hash!" unless parameters.is_a?(Hash)
-        do_parameter_transformations!(parameters)
+        formatted_parameters = Adyen.configuration.default_form_params.merge(parameters)
 
-        raise ArgumentError, "Cannot calculate payment request signature without shared secret!" unless parameters[:shared_secret]
-        raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless parameters[:currency_code]
-        raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless parameters[:payment_amount]
-        raise ArgumentError, "Cannot generate form: :merchant_account attribute not found!"      unless parameters[:merchant_account]
-        raise ArgumentError, "Cannot generate form: :skin_code attribute not found!"             unless parameters[:skin_code]
+        unless formatted_parameters[:skin_code] && formatted_parameters[:shared_secret]
+          if formatted_parameters[:skin]
+            @skin = Adyen.configuration.form_skin_by_name(formatted_parameters.delete(:skin)) || {}
+          end
+          formatted_parameters[:skin_code] = skin[:skin_code]
+          formatted_parameters[:shared_secret] = skin[:shared_secret]
+          formatted_parameters.merge!(skin[:default_form_params] || {})
+        end
 
-        return parameters
+        raise ArgumentError, "Cannot calculate payment request signature without shared secret!" unless formatted_parameters[:shared_secret]
+        raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless formatted_parameters[:currency_code]
+        raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless formatted_parameters[:payment_amount]
+        raise ArgumentError, "Cannot generate form: :merchant_account attribute not found!"      unless formatted_parameters[:merchant_account]
+        raise ArgumentError, "Cannot generate form: :skin_code attribute not found!"             unless formatted_parameters[:skin_code]
+
+        formatted_parameters[:recurring_contract] = 'RECURRING' if formatted_parameters.delete(:recurring) == true
+        formatted_parameters[:order_data]         = Adyen::Util.gzip_base64(formatted_parameters.delete(:order_data_raw)) if formatted_parameters[:order_data_raw]
+        formatted_parameters[:ship_before_date]   = Adyen::Util.format_date(formatted_parameters[:ship_before_date])
+        formatted_parameters[:session_validity]   = Adyen::Util.format_timestamp(formatted_parameters[:session_validity])
+        formatted_parameters
       end
 
       # Transforms and flattens payment parameters to be in the correct format which is understood and accepted by adyen
