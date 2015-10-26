@@ -15,6 +15,7 @@ module Adyen
       def sign(params, shared_secret = nil)
         param_shared_secret = params.delete('sharedSecret')
         shared_secret ||= param_shared_secret
+        params.delete('merchantSig')
         raise ArgumentError, "Cannot verify a signature without a shared secret" unless shared_secret
         sig = OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), Array(shared_secret).pack("H*"), string_to_sign(params))
         params.merge('merchantSig' => Base64.encode64(sig).strip)
