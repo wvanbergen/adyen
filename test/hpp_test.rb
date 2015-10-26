@@ -90,7 +90,7 @@ class HppTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first unless key == :shared_secret
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -108,7 +108,7 @@ class HppTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first unless key == :shared_secret
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -125,7 +125,7 @@ class HppTest < Minitest::Test
 
     params = CGI.parse(redirect_uri.query)
     attributes.each do |key, value|
-      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first
+      assert_equal value.to_s, params[Adyen::Util.camelize(key).to_s].first unless key == :shared_secret
     end
 
     assert params.key?('merchantSig'), "Expected a merchantSig parameter to be set"
@@ -135,36 +135,21 @@ class HppTest < Minitest::Test
     params = {
       'authResult' => 'AUTHORISED', 'pspReference' => '1211992213193029',
       'merchantReference' => 'Internet Order 12345', 'skinCode' => '4aD37dJA',
-      'merchantSig' => 'ytt3QxWoEhAskUzUne0P5VA9lPw='
+      'merchantSig' => 'tjW9Tw2uVcoVHgz0g2ivjkgCd6IRqCNGMdTmx4yJSJE='
     }
 
-    assert_equal params[:merchantSig], Adyen::HPP::Response.new(params).redirect_signature
+    assert Adyen::HPP::Response.new(params.dup).redirect_signature_check
+    assert Adyen::HPP::Response.new(params.dup, 'Kah942*$7sdp0)').redirect_signature_check # explicitly provided shared secret
 
-    assert Adyen::HPP::Response.new(params).redirect_signature_check(params) # shared secret from registered skin
-    assert Adyen::HPP::Response.new(params).redirect_signature_check(params, 'Kah942*$7sdp0)') # explicitly provided shared secret
+    refute Adyen::HPP::Response.new(params.dup.merge('skinCode' => 'sk1nC0de')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.dup, 'wrong_shared_secret').redirect_signature_check
 
-    refute Adyen::HPP::Response.new(params.merge(skinCode: 'sk1nC0de')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params).redirect_signature_check(params, 'wrong_shared_secret')
-
-    refute Adyen::HPP::Response.new(params.merge(pspReference: 'tampered')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params.merge(merchantSig: 'tampered')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.dup.merge('pspReference' => 'tampered')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.dup.merge('merchantSig' => 'tampered')).redirect_signature_check
 
     assert_raises(ArgumentError) { Adyen::HPP::Response.new(nil).redirect_signature_check }
     assert_raises(ArgumentError) { Adyen::HPP::Response.new({}).redirect_signature_check }
-    assert_raises(ArgumentError) { Adyen::HPP::Response.new(params.delete(:skinCode)).redirect_signature_check }
-  end
-
-  def test_redirect_signature_check
-    Adyen.configuration.register_form_skin(:testing, 'tifSfXeX', 'testing123', :merchant_account => 'VanBergenORG')
-
-# http://example.com/result?merchantReference=HPP+test+order+%25231&skinCode=tifSfXeX&shopperLocale=en_GB&paymentMethod=visa&authResult=AUTHORISED&pspReference=8814131153369759&merchantSig=il8cjgOiG4N9l2PlSf6h4EVQ6hk%253D
-    params = {
-      "merchantReference"=>CGI.unescape("HPP test order %231"), "skinCode"=>"tifSfXeX",
-      "shopperLocale"=>"en_GB", "paymentMethod"=>"visa", "authResult"=>"AUTHORISED",
-      "pspReference"=>"8814131148758652", "merchantSig"=> CGI.unescape("q8J9P%2Fp%2FYsbnnFn%2F83TFsv7Hais%3D")
-    }
-
-    assert_equal params['merchantSig'], Adyen::HPP::Response.new(params).redirect_signature
+    assert_raises(ArgumentError) { Adyen::HPP::Response.new(params.dup.delete(:skinCode)).redirect_signature_check }
   end
 
   def test_hidden_payment_form_fields

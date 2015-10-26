@@ -19,23 +19,6 @@ module Adyen
         @shared_secret = shared_secret || skin[:shared_secret]
       end
 
-      # Generates the string for which the redirect signature is calculated, using the request paramaters.
-      # @return [String] The signature string.
-      def redirect_signature_string
-        params['authResult'].to_s + params['pspReference'].to_s + params['merchantReference'].to_s +
-          params['skinCode'].to_s + params['merchantReturnData'].to_s
-      end
-
-      # Computes the SHA-1 redirect signature using the request parameters, so that the
-      # redirect can be checked for forgery.
-      #
-      # @return [String] The redirect signature
-      # @raise [ArgumentError] Thrown if shared_secret is empty
-      def redirect_signature
-        raise ArgumentError, "Cannot compute redirect signature with empty shared_secret" unless shared_secret
-        Adyen::Util.hmac_base64(shared_secret, redirect_signature_string)
-      end
-
       # Checks the redirect signature for this request by calculating the signature from
       # the provided parameters, and comparing it to the signature provided in the +merchantSig+
       # parameter.
@@ -62,7 +45,7 @@ module Adyen
       #
       # @return [true, false] Returns true only if the signature in the parameters is correct.
       def redirect_signature_check
-        params['merchantSig'] == redirect_signature
+        Adyen::HPP::Signature.verify(params, shared_secret)
       end
     end
   end

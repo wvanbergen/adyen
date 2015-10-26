@@ -66,12 +66,11 @@ module Adyen
 
       # Transforms and flattens payment parameters to be in the correct format which is understood and accepted by adyen
       #
-      # @param [Hash] parameters The payment parameters. The parameters set in the
-      #    {Adyen::Configuration#default_form_params} hash will be included automatically.
+      # @param [Hash] parameters Formatted payment parameters including shared secret.
       # @return [Hash] The payment parameters, with camelized and prefixed key, stringified values,
-      #    and the +:merchant_signature+ parameter set.
+      #    the +:merchant_signature+ parameter set and the shared secret removed.
       def flat_payment_parameters(parameters = {})
-        Adyen::HPP::Signature.sign(Adyen::Util.flatten(payment_parameters(parameters)), parameters[:shared_secret])
+        Adyen::HPP::Signature.sign(Adyen::Util.flatten(payment_parameters(parameters)))
       end
 
       # Returns an absolute URL to the Adyen payment system, with the payment parameters included
