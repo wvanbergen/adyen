@@ -20,7 +20,7 @@ module Adyen
       #
       # @return [String] The domain of the Adyen payment system that can be used
       #    for payment forms or redirects.
-      # @see Adyen::HPP::CLient.redirect_url
+      # @see Adyen::HPP::Request.redirect_url
       def domain
         (Adyen.configuration.payment_flow_domain || HPP_DOMAIN) % [environment.to_s]
       end

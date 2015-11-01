@@ -13,6 +13,7 @@ module Adyen
       #   params hash with the `sharedSecret` key.
       # @return [Hash] params The params that were passed in plus a new `merchantSig` param
       def sign(params, shared_secret = nil)
+        params = params.dup
         param_shared_secret = params.delete('sharedSecret')
         shared_secret ||= param_shared_secret
         params.delete('merchantSig')
