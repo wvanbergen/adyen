@@ -146,7 +146,7 @@ class HppTest < Minitest::Test
     end
   end
 
-  def test_redirect_signature_check
+  def test_has_valid_signature
     params = {
       'authResult' => 'AUTHORISED', 'pspReference' => '1211992213193029',
       'merchantReference' => 'Internet Order 12345', 'skinCode' => '4aD37dJA',
@@ -156,18 +156,18 @@ class HppTest < Minitest::Test
     correct_secret = @shared_secret1
     incorrect_secret = @shared_secret2
 
-    assert Adyen::HPP::Response.new(params).redirect_signature_check
-    assert Adyen::HPP::Response.new(params, correct_secret).redirect_signature_check
+    assert Adyen::HPP::Response.new(params).has_valid_signature?
+    assert Adyen::HPP::Response.new(params, correct_secret).has_valid_signature?
 
-    refute Adyen::HPP::Response.new(params.merge('skinCode' => 'sk1nC0de')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params, incorrect_secret).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.merge('skinCode' => 'sk1nC0de')).has_valid_signature?
+    refute Adyen::HPP::Response.new(params, incorrect_secret).has_valid_signature?
 
-    refute Adyen::HPP::Response.new(params.merge('pspReference' => 'tampered')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params.merge('merchantSig' => 'tampered')).redirect_signature_check
+    refute Adyen::HPP::Response.new(params.merge('pspReference' => 'tampered')).has_valid_signature?
+    refute Adyen::HPP::Response.new(params.merge('merchantSig' => 'tampered')).has_valid_signature?
 
-    assert_raises(ArgumentError) { Adyen::HPP::Response.new(nil).redirect_signature_check }
-    assert_raises(ArgumentError) { Adyen::HPP::Response.new({}).redirect_signature_check }
-    assert_raises(ArgumentError) { Adyen::HPP::Response.new(params.delete(:skinCode)).redirect_signature_check }
+    assert_raises(ArgumentError) { Adyen::HPP::Response.new(nil).has_valid_signature? }
+    assert_raises(ArgumentError) { Adyen::HPP::Response.new({}).has_valid_signature? }
+    assert_raises(ArgumentError) { Adyen::HPP::Response.new(params.delete(:skinCode)).has_valid_signature? }
   end
 
   def test_hidden_payment_form_fields

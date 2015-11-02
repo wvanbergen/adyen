@@ -39,12 +39,12 @@ module Adyen
       #     private
       #
       #     def check_signature
-      #       raise "Forgery!" unless Adyen::HPP::Response.new(params).redirect_signature_check
+      #       raise "Forgery!" unless Adyen::HPP::Response.new(params).has_valid_signature?
       #     end
       #   end
       #
       # @return [true, false] Returns true only if the signature in the parameters is correct.
-      def redirect_signature_check
+      def has_valid_signature?
         Adyen::HPP::Signature.verify(params, shared_secret)
       end
     end

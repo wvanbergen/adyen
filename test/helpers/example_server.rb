@@ -63,7 +63,7 @@ class Adyen::ExampleServer < Sinatra::Base
   end
 
   get '/hpp/result' do
-    raise "Forgery!" unless Adyen::HPP::Response(params).redirect_signature_check
+    raise "Forgery!" unless Adyen::HPP::Response(params).has_valid_signature?
 
     case params['authResult']
     when 'AUTHORISED'
