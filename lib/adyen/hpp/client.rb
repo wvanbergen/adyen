@@ -39,7 +39,13 @@ module Adyen
         HPP_URL % [domain, payment_flow.to_s]
       end
 
-      def new_request skin=nil
+      # Returns a new request object that can be used to generate a redirect URL or
+      # a set of hidden fields for an HPP request
+      #
+      # @param skin [Hash|String] A skin hash in the same format that is returned by
+      #    Adyen::Configuration.register_form_skin, or the name of a registered skin
+      # @return [Adyen::HPP::Request] A new request object for this client
+      def new_request(skin = nil)
         Adyen::HPP::Request.new(self, skin || self.skin)
       end
     end
