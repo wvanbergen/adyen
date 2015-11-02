@@ -153,11 +153,14 @@ class HppTest < Minitest::Test
       'merchantSig' => 'KJHViiWW07uQvL62iXbkwks3BMHjoXDLdXw0M4k63WY='
     }
 
+    correct_secret = @shared_secret1
+    incorrect_secret = @shared_secret2
+
     assert Adyen::HPP::Response.new(params).redirect_signature_check
-    assert Adyen::HPP::Response.new(params, @shared_secret1).redirect_signature_check # explicitly provided shared secret
+    assert Adyen::HPP::Response.new(params, correct_secret).redirect_signature_check
 
     refute Adyen::HPP::Response.new(params.merge('skinCode' => 'sk1nC0de')).redirect_signature_check
-    refute Adyen::HPP::Response.new(params, @shared_secret2).redirect_signature_check # wrong shared secret
+    refute Adyen::HPP::Response.new(params, incorrect_secret).redirect_signature_check
 
     refute Adyen::HPP::Response.new(params.merge('pspReference' => 'tampered')).redirect_signature_check
     refute Adyen::HPP::Response.new(params.merge('merchantSig' => 'tampered')).redirect_signature_check
