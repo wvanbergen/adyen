@@ -92,7 +92,7 @@ module Adyen
       # @return [String] An absolute URL to redirect to the Adyen payment system.
       def redirect_url(parameters = {})
         client.url + '?' + flat_payment_parameters(parameters).map { |(k, v)|
-          "#{k}=#{CGI.escape(v)}"
+          "#{CGI.escape(k)}=#{CGI.escape(v)}"
         }.join('&')
       end
 
@@ -106,7 +106,7 @@ module Adyen
       # @return [String] An absolute URL to redirect to the Adyen payment system.
       def payment_methods_url(parameters = {})
         client.url(:directory) + '?' + flat_payment_parameters(parameters).map { |(k, v)|
-          "#{k}=#{CGI.escape(v)}"
+          "#{CGI.escape(k)}=#{CGI.escape(v)}"
         }.join('&')
       end
 
