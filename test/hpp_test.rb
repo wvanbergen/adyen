@@ -5,12 +5,12 @@ class HppTest < Minitest::Test
   include Adyen::Test::EachXMLBackend
 
   def setup
-    @shared_secret1 = '4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48'
-    @shared_secret2 = '21F58626031F08A30F6BD07BB8AC12C19B56F6C99C6E1DA991A52A1C64A4C010'
+    @shared_secret_testing = '4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48'
+    @shared_secret_other = '21F58626031F08A30F6BD07BB8AC12C19B56F6C99C6E1DA991A52A1C64A4C010'
 
     Adyen.configuration.default_form_params[:merchant_account] = 'TestMerchant'
-    Adyen.configuration.register_form_skin(:testing, '4aD37dJA', @shared_secret1)
-    Adyen.configuration.register_form_skin(:other, 'sk1nC0de', @shared_secret2, merchant_account: 'OtherMerchant')
+    Adyen.configuration.register_form_skin(:testing, '4aD37dJA', @shared_secret_testing)
+    Adyen.configuration.register_form_skin(:other, 'sk1nC0de', @shared_secret_other, merchant_account: 'OtherMerchant')
 
     # Use autodetection for the environment unless otherwise specified
     Adyen.configuration.environment = nil
@@ -48,7 +48,6 @@ class HppTest < Minitest::Test
     )
 
     @test_client = Adyen::HPP::Client.new
-    @test_request = @test_client.new_request
   end
 
   def test_autodetected_redirect_url
@@ -83,9 +82,11 @@ class HppTest < Minitest::Test
   end
 
   def test_redirect_url_generation
+    request = @test_client.new_request(:testing)
+
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
-      :merchant_reference => 'Internet Order 12345', :skin => :testing, :session_validity => Time.parse('2015-10-26 10:30')
+      :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
     }
 
     processed_attributes = {
@@ -94,7 +95,7 @@ class HppTest < Minitest::Test
       'merchantAccount' => 'TestMerchant', 'skinCode' => '4aD37dJA', 'merchantSig' => 'wwTSfepCgntaoyolDuNoKObsN7HhvSiNxcqOZr3tV14='
     }
 
-    redirect_uri = URI(@test_request.redirect_url(attributes))
+    redirect_uri = URI(request.redirect_url(attributes))
     assert_match %r[^#{@test_client.url}], redirect_uri.to_s
 
     params = CGI.parse(redirect_uri.query)
@@ -104,10 +105,12 @@ class HppTest < Minitest::Test
   end
 
   def test_redirect_url_generation_with_direct_skin_details
+    request = @test_client.new_request(:other)
+
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
       :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30'),
-      :merchant_account => 'OtherMerchant', :skin_code => 'sk1nC0de', :shared_secret => @shared_secret2,
+      :merchant_account => 'OtherMerchant'
     }
 
     processed_attributes = {
@@ -116,7 +119,7 @@ class HppTest < Minitest::Test
       'merchantAccount' => 'OtherMerchant', 'skinCode' => 'sk1nC0de', 'merchantSig' => '3vYCvD4BMBWuFcotHzbkUPIZ0EF332cLKJKLyk2PRT8='
     }
 
-    redirect_uri = URI(@test_request.redirect_url(attributes))
+    redirect_uri = URI(request.redirect_url(attributes))
     assert_match %r[^#{@test_client.url}], redirect_uri.to_s
 
     params = CGI.parse(redirect_uri.query)
@@ -126,9 +129,11 @@ class HppTest < Minitest::Test
   end
 
   def test_payment_methods_url_generation
+    request = @test_client.new_request(:testing)
+
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
-      :merchant_reference => 'Internet Order 12345', :skin => :testing, :session_validity => Time.parse('2015-10-26 10:30')
+      :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
     }
 
     processed_attributes = {
@@ -137,7 +142,7 @@ class HppTest < Minitest::Test
       'merchantAccount' => 'TestMerchant', 'skinCode' => '4aD37dJA', 'merchantSig' => 'wwTSfepCgntaoyolDuNoKObsN7HhvSiNxcqOZr3tV14='
     }
 
-    payment_methods_uri = URI(@test_request.payment_methods_url(attributes))
+    payment_methods_uri = URI(request.payment_methods_url(attributes))
     assert_match %r[^#{@test_client.url(:directory)}], payment_methods_uri.to_s
 
     params = CGI.parse(payment_methods_uri.query)
@@ -153,8 +158,8 @@ class HppTest < Minitest::Test
       'merchantSig' => 'KJHViiWW07uQvL62iXbkwks3BMHjoXDLdXw0M4k63WY='
     }
 
-    correct_secret = @shared_secret1
-    incorrect_secret = @shared_secret2
+    correct_secret = @shared_secret_testing
+    incorrect_secret = @shared_secret_other
 
     assert Adyen::HPP::Response.new(params).has_valid_signature?
     assert Adyen::HPP::Response.new(params, correct_secret).has_valid_signature?
@@ -173,7 +178,7 @@ class HppTest < Minitest::Test
   def test_hidden_payment_form_fields
     payment_snippet = <<-HTML
       <form action="#{CGI.escapeHTML(@test_client.url)}" method="post">
-        #{@test_request.hidden_fields(@payment_attributes)}
+        #{@test_client.new_request(:testing).hidden_fields(@payment_attributes)}
       </form>
     HTML
 

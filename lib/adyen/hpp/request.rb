@@ -20,9 +20,7 @@ module Adyen
 
       # Transforms the payment parameters hash to be in the correct format. It will also
       # include the Adyen::Configuration#default_form_params hash and it will
-      # include the +:skin_code+ and +:shared_secret+ parameters and the default attributes
-      # of the skin that is set, unless the skin code and the shared secret are supplied
-      # directly in the parameters.
+      # include the +:skin_code+ parameter and the default attributes of the skin that is set
       #
       # @param [Hash] parameters The payment parameters. The parameters set in the
       #    {Adyen::Configuration#default_form_params} hash will be included automatically.
@@ -31,17 +29,9 @@ module Adyen
       def payment_parameters(parameters = {})
         raise ArgumentError, "Cannot generate form: parameters should be a hash!" unless parameters.is_a?(Hash)
         formatted_parameters = Adyen.configuration.default_form_params.merge(parameters)
+        formatted_parameters[:skin_code] = skin[:skin_code]
+        formatted_parameters.merge!(skin[:default_form_params] || {})
 
-        unless formatted_parameters[:skin_code] && formatted_parameters[:shared_secret]
-          if formatted_parameters[:skin]
-            @skin = Adyen.configuration.form_skin_by_name(formatted_parameters.delete(:skin)) || {}
-          end
-          formatted_parameters[:skin_code] = skin[:skin_code]
-          formatted_parameters[:shared_secret] = skin[:shared_secret]
-          formatted_parameters.merge!(skin[:default_form_params] || {})
-        end
-
-        raise ArgumentError, "Cannot calculate payment request signature without shared secret!" unless formatted_parameters[:shared_secret]
         raise ArgumentError, "Cannot generate form: :currency code attribute not found!"         unless formatted_parameters[:currency_code]
         raise ArgumentError, "Cannot generate form: :payment_amount code attribute not found!"   unless formatted_parameters[:payment_amount]
         raise ArgumentError, "Cannot generate form: :merchant_account attribute not found!"      unless formatted_parameters[:merchant_account]
@@ -56,11 +46,11 @@ module Adyen
 
       # Transforms and flattens payment parameters to be in the correct format which is understood and accepted by adyen
       #
-      # @param [Hash] parameters Formatted payment parameters including shared secret.
-      # @return [Hash] The payment parameters, with camelized and prefixed key, stringified values,
-      #    the +:merchant_signature+ parameter set and the shared secret removed.
+      # @param [Hash] parameters Formatted payment parameters
+      # @return [Hash] The payment parameters, with camelized and prefixed key, stringified values and
+      #    the +:merchant_signature+ parameter set.
       def flat_payment_parameters(parameters = {})
-        Adyen::HPP::Signature.sign(Adyen::Util.flatten(payment_parameters(parameters)))
+        Adyen::HPP::Signature.sign(Adyen::Util.flatten(payment_parameters(parameters)), skin[:shared_secret])
       end
 
       # Returns an absolute URL to the Adyen payment system, with the payment parameters included
