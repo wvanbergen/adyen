@@ -17,7 +17,7 @@ module Adyen
     # Provides a HPP client that is configured using the values in <tt>Adyen.configuration</tt>.
     # @return [Adyen::HPP::Client] A configured client instance
     def self.client
-      Adyen::REST::Client.new(
+      Adyen::HPP::Client.new(
         Adyen.configuration.environment,
         Adyen.configuration.default_skin
       )
