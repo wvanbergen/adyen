@@ -29,7 +29,7 @@ module Adyen
       #
       # @return [Hash] skin if set, configuration default otherwise
       def skin
-        @skin || Adyen.configuration.default_skin || {}
+        @skin || Adyen.configuration.form_skin_by_name(Adyen.configuration.default_skin) || {}
       end
 
       # Returns the Adyen environment the request will be directed to

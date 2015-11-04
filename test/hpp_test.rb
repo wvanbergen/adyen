@@ -50,10 +50,11 @@ class HppTest < Minitest::Test
   end
 
   def test_autodetected_redirect_url
-    assert_equal 'https://test.adyen.com/hpp/select.shtml', Adyen::HPP::Request.new(@payment_attributes).url
+    request = Adyen::HPP::Request.new(@payment_attributes)
+    assert_equal 'https://test.adyen.com/hpp/select.shtml', request.url
 
     Adyen.configuration.stubs(:autodetect_environment).returns('live')
-    assert_equal 'https://live.adyen.com/hpp/select.shtml', Adyen::HPP::Request.new(@payment_attributes, skin: :skin1).url
+    assert_equal 'https://live.adyen.com/hpp/select.shtml', request.url
   end
 
   def test_explicit_redirect_url
@@ -65,10 +66,14 @@ class HppTest < Minitest::Test
       Adyen::HPP::Request.new(@payment_attributes, skin: :skin2, environment: :test).url
     assert_equal 'https://live.adyen.com/hpp/select.shtml',
       Adyen::HPP::Request.new(@payment_attributes, skin: :skin2, environment: :live).url
+    assert_equal 'https://test.adyen.com/hpp/select.shtml',
+      Adyen::HPP::Request.new(@payment_attributes, environment: :test).url
+    assert_equal 'https://live.adyen.com/hpp/select.shtml',
+      Adyen::HPP::Request.new(@payment_attributes, environment: :live).url
   end
 
   def test_redirect_url_for_different_payment_flows
-    request = Adyen::HPP::Request.new(@payment_attributes, skin: :skin1, environment: :test)
+    request = Adyen::HPP::Request.new(@payment_attributes, environment: :test)
 
     Adyen.configuration.payment_flow = :select
     assert_equal 'https://test.adyen.com/hpp/select.shtml', request.url
@@ -81,7 +86,7 @@ class HppTest < Minitest::Test
   end
 
   def test_redirect_url_for_custom_domain
-    request = Adyen::HPP::Request.new(@payment_attributes, skin: :skin1, environment: :test)
+    request = Adyen::HPP::Request.new(@payment_attributes, environment: :test)
 
     Adyen.configuration.payment_flow_domain = "checkout.mydomain.com"
     assert_equal 'https://checkout.mydomain.com/hpp/select.shtml', request.url
@@ -93,7 +98,7 @@ class HppTest < Minitest::Test
       :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
     }
 
-    request = Adyen::HPP::Request.new(attributes, skin: :skin1, environment: :test)
+    request = Adyen::HPP::Request.new(attributes)
 
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
@@ -117,7 +122,7 @@ class HppTest < Minitest::Test
       :merchant_account => 'OtherMerchant'
     }
 
-    request = Adyen::HPP::Request.new(attributes, skin: :skin2, environment: :test)
+    request = Adyen::HPP::Request.new(attributes, skin: :skin2)
 
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
@@ -140,7 +145,7 @@ class HppTest < Minitest::Test
       :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
     }
 
-    request = Adyen::HPP::Request.new(attributes, skin: :skin1, environment: :test)
+    request = Adyen::HPP::Request.new(attributes)
 
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
