@@ -115,6 +115,30 @@ class HppTest < Minitest::Test
     end
   end
 
+  def test_redirect_url_generation_explicit_skin_code_and_shared_secret
+    attributes = {
+      :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
+      :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30'),
+      :skin_code => @skin_code1
+    }
+
+    request = Adyen::HPP::Request.new(attributes, shared_secret: @shared_secret_skin1)
+
+    processed_attributes = {
+      'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
+      'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
+      'merchantAccount' => 'TestMerchant', 'skinCode' => @skin_code1, 'merchantSig' => 'ewDgqa+m3rMO6MOZfQ0ugWdwsu+otvRVBVujqGfgvb8='
+    }
+
+    redirect_uri = URI(request.redirect_url)
+    assert_match %r[^#{request.url}], redirect_uri.to_s
+
+    params = CGI.parse(redirect_uri.query)
+    processed_attributes.each do |key, value|
+      assert_equal value, params[key].first
+    end
+  end
+
   def test_redirect_url_generation_with_direct_skin_details
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
