@@ -5,18 +5,20 @@ class HppTest < Minitest::Test
   include Adyen::Test::EachXMLBackend
 
   def setup
-    @shared_secret_testing = '4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48'
-    @shared_secret_other = '21F58626031F08A30F6BD07BB8AC12C19B56F6C99C6E1DA991A52A1C64A4C010'
+    @skin_code1 = 'abcdefgh'
+    @skin_code2 = 'ijklmnop'
+    @shared_secret_skin1 = '4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48'
+    @shared_secret_skin2 = '21F58626031F08A30F6BD07BB8AC12C19B56F6C99C6E1DA991A52A1C64A4C010'
 
     Adyen.configuration.default_form_params[:merchant_account] = 'TestMerchant'
-    Adyen.configuration.register_form_skin(:testing, '4aD37dJA', @shared_secret_testing)
-    Adyen.configuration.register_form_skin(:other, 'sk1nC0de', @shared_secret_other, merchant_account: 'OtherMerchant')
+    Adyen.configuration.register_form_skin(:skin1, @skin_code1, @shared_secret_skin1)
+    Adyen.configuration.register_form_skin(:skin2, @skin_code2, @shared_secret_skin2, merchant_account: 'OtherMerchant')
 
     # Use autodetection for the environment unless otherwise specified
     Adyen.configuration.environment = nil
     Adyen.configuration.payment_flow = :select
     Adyen.configuration.payment_flow_domain = nil
-    Adyen.configuration.default_skin = :testing
+    Adyen.configuration.default_skin = :skin1
 
     @payment_attributes = {
       :currency_code => 'GBP',
@@ -41,49 +43,48 @@ class HppTest < Minitest::Test
     }
 
     @recurring_payment_attributes = @payment_attributes.merge(
-      :skin               => :other,
       :recurring_contract => 'DEFAULT',
       :shopper_reference  => 'grasshopper52',
       :shopper_email      => 'gras.shopper@somewhere.org'
     )
 
-    @test_client = Adyen::HPP::Client.new
+    @request_skin1_test = Adyen::HPP::Request.new(:skin1, :test)
+    @request_skin1_live = Adyen::HPP::Request.new(:skin1, :live)
+    @request_skin2_test = Adyen::HPP::Request.new(:skin2, :test)
+    @request_skin2_live = Adyen::HPP::Request.new(:skin2, :live)
   end
 
   def test_autodetected_redirect_url
-    assert_equal 'https://test.adyen.com/hpp/select.shtml', @test_client.url
+    assert_equal 'https://test.adyen.com/hpp/select.shtml', Adyen::HPP::Request.new().url
 
     Adyen.configuration.stubs(:autodetect_environment).returns('live')
-    assert_equal 'https://live.adyen.com/hpp/select.shtml', Adyen::HPP::Client.new.url
+    assert_equal 'https://live.adyen.com/hpp/select.shtml', Adyen::HPP::Request.new(:skin1).url
   end
 
   def test_explicit_redirect_url
-    assert_equal 'https://live.adyen.com/hpp/select.shtml', Adyen::HPP::Client.new(:live).url
-    assert_equal 'https://test.adyen.com/hpp/select.shtml', Adyen::HPP::Client.new(:test).url
-
-    Adyen.configuration.environment = :live
-    assert_equal 'https://live.adyen.com/hpp/select.shtml', Adyen::HPP::Client.new.url
+    assert_equal 'https://test.adyen.com/hpp/select.shtml', @request_skin1_test.url
+    assert_equal 'https://live.adyen.com/hpp/select.shtml', @request_skin1_live.url
+    assert_equal 'https://test.adyen.com/hpp/select.shtml', @request_skin2_test.url
+    assert_equal 'https://live.adyen.com/hpp/select.shtml', @request_skin2_live.url
   end
 
   def test_redirect_url_for_different_payment_flows
     Adyen.configuration.payment_flow = :select
-    assert_equal 'https://test.adyen.com/hpp/select.shtml', @test_client.url
+    assert_equal 'https://test.adyen.com/hpp/select.shtml', @request_skin1_test.url
 
     Adyen.configuration.payment_flow = :pay
-    assert_equal 'https://test.adyen.com/hpp/pay.shtml', @test_client.url
+    assert_equal 'https://test.adyen.com/hpp/pay.shtml', @request_skin1_test.url
 
     Adyen.configuration.payment_flow = :details
-    assert_equal 'https://test.adyen.com/hpp/details.shtml', @test_client.url
+    assert_equal 'https://test.adyen.com/hpp/details.shtml', @request_skin1_test.url
   end
 
   def test_redirect_url_for_custom_domain
     Adyen.configuration.payment_flow_domain = "checkout.mydomain.com"
-    assert_equal 'https://checkout.mydomain.com/hpp/select.shtml', @test_client.url
+    assert_equal 'https://checkout.mydomain.com/hpp/select.shtml', @request_skin1_test.url
   end
 
   def test_redirect_url_generation
-    request = @test_client.new_request(:testing)
-
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
       :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
@@ -92,11 +93,11 @@ class HppTest < Minitest::Test
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
       'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
-      'merchantAccount' => 'TestMerchant', 'skinCode' => '4aD37dJA', 'merchantSig' => 'wwTSfepCgntaoyolDuNoKObsN7HhvSiNxcqOZr3tV14='
+      'merchantAccount' => 'TestMerchant', 'skinCode' => @skin_code1, 'merchantSig' => 'ewDgqa+m3rMO6MOZfQ0ugWdwsu+otvRVBVujqGfgvb8='
     }
 
-    redirect_uri = URI(request.redirect_url(attributes))
-    assert_match %r[^#{@test_client.url}], redirect_uri.to_s
+    redirect_uri = URI(@request_skin1_test.redirect_url(attributes))
+    assert_match %r[^#{@request_skin1_test.url}], redirect_uri.to_s
 
     params = CGI.parse(redirect_uri.query)
     processed_attributes.each do |key, value|
@@ -105,8 +106,6 @@ class HppTest < Minitest::Test
   end
 
   def test_redirect_url_generation_with_direct_skin_details
-    request = @test_client.new_request(:other)
-
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
       :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30'),
@@ -116,11 +115,11 @@ class HppTest < Minitest::Test
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
       'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
-      'merchantAccount' => 'OtherMerchant', 'skinCode' => 'sk1nC0de', 'merchantSig' => '3vYCvD4BMBWuFcotHzbkUPIZ0EF332cLKJKLyk2PRT8='
+      'merchantAccount' => 'OtherMerchant', 'skinCode' => @skin_code2, 'merchantSig' => 'uS/tdqapxD8rQKBRzKQ9wOIiOFRmcOR3HsC8CO15Zto='
     }
 
-    redirect_uri = URI(request.redirect_url(attributes))
-    assert_match %r[^#{@test_client.url}], redirect_uri.to_s
+    redirect_uri = URI(@request_skin2_test.redirect_url(attributes))
+    assert_match %r[^#{@request_skin2_test.url}], redirect_uri.to_s
 
     params = CGI.parse(redirect_uri.query)
     processed_attributes.each do |key, value|
@@ -129,8 +128,6 @@ class HppTest < Minitest::Test
   end
 
   def test_payment_methods_url_generation
-    request = @test_client.new_request(:testing)
-
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
       :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
@@ -139,11 +136,11 @@ class HppTest < Minitest::Test
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
       'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
-      'merchantAccount' => 'TestMerchant', 'skinCode' => '4aD37dJA', 'merchantSig' => 'wwTSfepCgntaoyolDuNoKObsN7HhvSiNxcqOZr3tV14='
+      'merchantAccount' => 'TestMerchant', 'skinCode' => @skin_code1, 'merchantSig' => 'ewDgqa+m3rMO6MOZfQ0ugWdwsu+otvRVBVujqGfgvb8='
     }
 
-    payment_methods_uri = URI(request.payment_methods_url(attributes))
-    assert_match %r[^#{@test_client.url(:directory)}], payment_methods_uri.to_s
+    payment_methods_uri = URI(@request_skin1_test.payment_methods_url(attributes))
+    assert_match %r[^#{@request_skin1_test.url(:directory)}], payment_methods_uri.to_s
 
     params = CGI.parse(payment_methods_uri.query)
     processed_attributes.each do |key, value|
@@ -154,17 +151,17 @@ class HppTest < Minitest::Test
   def test_has_valid_signature
     params = {
       'authResult' => 'AUTHORISED', 'pspReference' => '1211992213193029',
-      'merchantReference' => 'Internet Order 12345', 'skinCode' => '4aD37dJA',
-      'merchantSig' => 'KJHViiWW07uQvL62iXbkwks3BMHjoXDLdXw0M4k63WY='
+      'merchantReference' => 'Internet Order 12345', 'skinCode' => @skin_code1,
+      'merchantSig' => 'owrLGxBP/l5xej5VZn8FKS1exn0qOgk0P9kmRdBBw9Q='
     }
 
-    correct_secret = @shared_secret_testing
-    incorrect_secret = @shared_secret_other
+    correct_secret = @shared_secret_skin1
+    incorrect_secret = @shared_secret_skin2
 
     assert Adyen::HPP::Response.new(params).has_valid_signature?
     assert Adyen::HPP::Response.new(params, correct_secret).has_valid_signature?
 
-    refute Adyen::HPP::Response.new(params.merge('skinCode' => 'sk1nC0de')).has_valid_signature?
+    refute Adyen::HPP::Response.new(params.merge('skinCode' => @skin_code2)).has_valid_signature?
     refute Adyen::HPP::Response.new(params, incorrect_secret).has_valid_signature?
 
     refute Adyen::HPP::Response.new(params.merge('pspReference' => 'tampered')).has_valid_signature?
@@ -177,8 +174,8 @@ class HppTest < Minitest::Test
 
   def test_hidden_payment_form_fields
     payment_snippet = <<-HTML
-      <form action="#{CGI.escapeHTML(@test_client.url)}" method="post">
-        #{@test_client.new_request(:testing).hidden_fields(@payment_attributes)}
+      <form action="#{CGI.escapeHTML(@request_skin1_test.url)}" method="post">
+        #{@request_skin1_test.hidden_fields(@payment_attributes)}
       </form>
     HTML
 
@@ -187,14 +184,14 @@ class HppTest < Minitest::Test
         merchantAccount: 'TestMerchant',
         currencyCode: 'GBP',
         paymentAmount: '10000',
-        skinCode: '4aD37dJA'
+        skinCode: @skin_code1
     end
   end
 
   def test_hidden_recurring_payment_form_fields
     recurring_snippet = <<-HTML
-      <form action="#{CGI.escapeHTML(@test_client.url)}" method="post">
-        #{@test_client.new_request(:other).hidden_fields(@recurring_payment_attributes)}
+      <form action="#{CGI.escapeHTML(@request_skin2_test.url)}" method="post">
+        #{@request_skin2_test.hidden_fields(@recurring_payment_attributes)}
       </form>
     HTML
 
@@ -204,7 +201,7 @@ class HppTest < Minitest::Test
         currencyCode: 'GBP',
         paymentAmount: '10000',
         recurringContract: 'DEFAULT',
-        skinCode: 'sk1nC0de'
+        skinCode: @skin_code2
     end
   end
 end

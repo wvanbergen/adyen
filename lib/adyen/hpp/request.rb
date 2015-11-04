@@ -5,17 +5,41 @@ module Adyen
   module HPP
 
     class Request
-      attr_reader :client, :skin
+      attr_reader :environment, :skin
 
       # Initialize the HPP request
       #
-      # @param client [Adyen::HPP::Client] The HPP client that sets the environment
       # @param skin [Hash|String] A skin hash in the same format that is returned by
       #    Adyen::Configuration.register_form_skin, or the name of a registered skin
-      def initialize(client, skin = nil)
-        @client = client
+      # @param [String] environment The Adyen environment to use. This parameter can be
+      #    left out, in which case the 'current' environment will be used.
+      def initialize(skin = nil, environment = nil)
+        @environment = environment || Adyen.configuration.environment
         @skin = skin || Adyen.configuration.default_skin
         @skin = Adyen.configuration.form_skin_by_name(@skin) || {} unless skin.is_a?(Hash)
+      end
+
+      # Returns the DOMAIN of the Adyen payment system, adjusted for an Adyen environment.
+      #
+      # @return [String] The domain of the Adyen payment system that can be used
+      #    for payment forms or redirects.
+      # @see Adyen::HPP::Request.redirect_url
+      def domain
+        (Adyen.configuration.payment_flow_domain || HPP_DOMAIN) % [environment.to_s]
+      end
+
+      # Returns the URL of the Adyen payment system, adjusted for an Adyen environment.
+      #
+      # @param [String] payment_flow The Adyen payment type to use. This parameter can be
+      #    left out, in which case the default payment type will be used.
+      # @return [String] The absolute URL of the Adyen payment system that can be used
+      #    for payment forms or redirects.
+      # @see Adyen::HPP::Request.domain
+      # @see Adyen::HPP::Request.redirect_url
+      # @see Adyen::HPP::Request.payment_methods_url
+      def url(payment_flow = nil)
+        payment_flow ||= Adyen.configuration.payment_flow
+        HPP_URL % [domain, payment_flow.to_s]
       end
 
       # Transforms the payment parameters hash to be in the correct format. It will also
@@ -54,7 +78,7 @@ module Adyen
       end
 
       # Returns an absolute URL to the Adyen payment system, with the payment parameters included
-      # as GET parameters in the URL. The URL also depends on the Adyen enviroment of the HPP client.
+      # as GET parameters in the URL. The URL also depends on the Adyen enviroment
       #
       # The payment parameters that are provided to this method will be merged with the
       # {Adyen::Configuration#default_form_params} hash. The default parameter values will be
@@ -69,8 +93,8 @@ module Adyen
       #
       #    def pay
       #      # Generate a URL to redirect to Adyen's payment system.
-      #      hpp_client = Adyen::HPP::Client.new(:test)
-      #      adyen_url = hpp_client.new_request(:my_skin).redirect_url(:currency_code => 'USD',
+      #      hpp_request = Adyen::HPP::Request.new(:test, :my_skin)
+      #      adyen_url = hpp_request.redirect_url(:currency_code => 'USD',
       #            :payment_amount => 1000, merchant_account => 'MyMerchant', ... )
       #
       #      respond_to do |format|
@@ -81,7 +105,7 @@ module Adyen
       # @param [Hash] parameters The payment parameters to include in the payment request.
       # @return [String] An absolute URL to redirect to the Adyen payment system.
       def redirect_url(parameters = {})
-        client.url + '?' + flat_payment_parameters(parameters).map { |(k, v)|
+        url + '?' + flat_payment_parameters(parameters).map { |(k, v)|
           "#{CGI.escape(k)}=#{CGI.escape(v)}"
         }.join('&')
       end
@@ -95,7 +119,7 @@ module Adyen
       # @param [Hash] parameters The payment parameters to include in the payment request.
       # @return [String] An absolute URL to redirect to the Adyen payment system.
       def payment_methods_url(parameters = {})
-        client.url(:directory) + '?' + flat_payment_parameters(parameters).map { |(k, v)|
+        url(:directory) + '?' + flat_payment_parameters(parameters).map { |(k, v)|
           "#{CGI.escape(k)}=#{CGI.escape(v)}"
         }.join('&')
       end
@@ -110,9 +134,9 @@ module Adyen
       # You do not have to provide the +:merchant_sig+ parameter: it will be calculated automatically.
       #
       # @example
-      #    <% hpp_client = Adyen::HPPL::Client.new(:test) %>
-      #    <% form_tag(hpp_client.url, authenticity_token: false, enforce_utf8: false) do %>
-      #      <%= hpp_client.new_request(:my_skin).hidden_fields(:currency_code => 'USD',
+      #    <% hpp_request = Adyen::HPPL::Request.new(:test, :my_skin) %>
+      #    <% form_tag(hpp_request.url, authenticity_token: false, enforce_utf8: false) do %>
+      #      <%= hpp_request.hidden_fields(:currency_code => 'USD',
       #            :payment_amount => 1000, ...) %>
       #      <%= submit_tag("Pay invoice")
       #    <% end %>
