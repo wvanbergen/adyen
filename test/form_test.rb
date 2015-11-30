@@ -29,6 +29,14 @@ class FormTest < Minitest::Test
         :state_or_province    => 'Berlin',
         :country              => 'Germany',
       },
+      :delivery_address => {
+        :street               => 'Pecunialaan',
+        :house_number_or_name => '316',
+        :city                 => 'Geldrop',
+        :state_or_province    => 'None',
+        :postal_code          => '1234 AB',
+        :country              => 'Netherlands',
+      },
       :shopper => {
         :telephone_number       => '1234512345',
         :first_name             => 'John',
@@ -150,9 +158,19 @@ class FormTest < Minitest::Test
     assert_raises(ArgumentError) { Adyen::Form.calculate_billing_address_signature(@payment_attributes) } 
   end
 
-  def test_billing_address_and_shopper_signature_in_redirect_url
+  def test_delivery_address_signature
+    signature_string = Adyen::Form.calculate_delivery_address_signature_string(@payment_attributes[:delivery_address])
+    assert_equal "Pecunialaan316Geldrop1234 ABNoneNetherlands", signature_string
+    assert_equal 'g8wPEWYrDPatkGXzuQbN1++JVbE=', Adyen::Form.calculate_delivery_address_signature(@payment_attributes)
+
+    @payment_attributes.delete(:shared_secret)
+    assert_raises(ArgumentError) { Adyen::Form.calculate_delivery_address_signature(@payment_attributes) }
+  end
+
+  def test_billing_address_and_delivery_address_and_shopper_signature_in_redirect_url
     get_params = CGI.parse(URI(Adyen::Form.redirect_url(@payment_attributes)).query)
     assert_equal '5KQb7VJq4cz75cqp11JDajntCY4=', get_params['billingAddressSig'].first
+    assert_equal 'g8wPEWYrDPatkGXzuQbN1++JVbE=', get_params['deliveryAddressSig'].first
     assert_equal 'rb2GEs1kGKuLh255a3QRPBYXmsQ=', get_params['shopperSig'].first
   end  
 
