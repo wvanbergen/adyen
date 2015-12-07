@@ -128,6 +128,10 @@ module Adyen
         parameters[:shopper_sig] = calculate_shopper_signature(parameters, shared_secret)
       end
 
+      if parameters[:openinvoicedata]
+        parameters[:openinvoicedata][:signature] = calculate_open_invoice_signature(parameters, shared_secret)
+      end
+
       return parameters
     end
 
@@ -331,6 +335,19 @@ module Adyen
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate shopper request signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Util.hmac_base64(shared_secret, calculate_shopper_signature_string(parameters[:shopper]))
+    end
+
+    def calculate_open_invoice_signature_string(merchant_sig, parameters)
+      flattened = Adyen::Util.flatten(:merchant_sig => merchant_sig, :openinvoicedata => parameters)
+      pairs = flattened.to_a.sort
+      pairs.transpose.map { |it| it.join(':') }.join('|')
+    end
+
+    def calculate_open_invoice_signature(parameters, shared_secret = nil)
+      shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate open invoice request signature with empty shared_secret" if shared_secret.to_s.empty?
+      merchant_sig = calculate_signature(parameters, shared_secret)
+      Adyen::Util.hmac_base64(shared_secret, calculate_open_invoice_signature_string(merchant_sig, parameters[:openinvoicedata]))
     end
 
     ######################################################
