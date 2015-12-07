@@ -128,6 +128,10 @@ module Adyen
         parameters[:shopper_sig] = calculate_shopper_signature(parameters, shared_secret)
       end
 
+      if parameters[:openinvoicedata]
+        parameters[:openinvoicedata][:signature] = calculate_open_invoice_signature(parameters, shared_secret)
+      end
+
       return parameters
     end
 

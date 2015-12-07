@@ -222,6 +222,7 @@ class FormTest < Minitest::Test
     assert_equal '5KQb7VJq4cz75cqp11JDajntCY4=', get_params['billingAddressSig'].first
     assert_equal 'g8wPEWYrDPatkGXzuQbN1++JVbE=', get_params['deliveryAddressSig'].first
     assert_equal 'rb2GEs1kGKuLh255a3QRPBYXmsQ=', get_params['shopperSig'].first
+    assert_equal 'OI71VGB7G3vKBRrtE6Ibv+RWvYY=', get_params['openinvoicedata.signature'].first
   end  
 
   def test_redirect_signature_check
