@@ -42,6 +42,19 @@ class FormTest < Minitest::Test
         :first_name             => 'John',
         :last_name              => 'Doe',
         :social_security_number => '123-45-1234'
+      },
+      :openinvoicedata => {
+        :number_of_lines => 1,
+        :line1 => {
+          :number_of_items => 2,
+          :item_amount => 4000,
+          :currency_code => 'GBP',
+          :item_vat_amount => 1000,
+          :item_vat_percentage => 2500,
+          :item_vat_category => 'High',
+          :description => 'Product Awesome'
+        },
+        :refund_description => 'Refund for 12345'
       }
     }
 
@@ -167,7 +180,44 @@ class FormTest < Minitest::Test
     assert_raises(ArgumentError) { Adyen::Form.calculate_delivery_address_signature(@payment_attributes) }
   end
 
-  def test_billing_address_and_delivery_address_and_shopper_signature_in_redirect_url
+  def test_open_invoice_signature
+    merchant_sig = Adyen::Form.calculate_signature(@payment_attributes, @payment_attributes[:shared_secret])
+    signature_string = Adyen::Form.calculate_open_invoice_signature_string(merchant_sig, @payment_attributes[:openinvoicedata])
+    expected_string =
+      [
+        'merchantSig',
+        'openinvoicedata.line1.currencyCode',
+        'openinvoicedata.line1.description',
+        'openinvoicedata.line1.itemAmount',
+        'openinvoicedata.line1.itemVatAmount',
+        'openinvoicedata.line1.itemVatCategory',
+        'openinvoicedata.line1.itemVatPercentage',
+        'openinvoicedata.line1.numberOfItems',
+        'openinvoicedata.numberOfLines',
+        'openinvoicedata.refundDescription'
+      ].join(':') +
+      '|' +
+      [
+        merchant_sig,
+        'GBP',
+        'Product Awesome',
+        4000,
+        1000,
+        'High',
+        2500,
+        2,
+        1,
+        'Refund for 12345'
+      ].join(':')
+
+    assert_equal expected_string, signature_string
+    assert_equal 'OI71VGB7G3vKBRrtE6Ibv+RWvYY=', Adyen::Form.calculate_open_invoice_signature(@payment_attributes)
+
+    @payment_attributes.delete(:shared_secret)
+    assert_raises(ArgumentError) { Adyen::Form.calculate_open_invoice_signature(@payment_attributes) }
+  end
+
+  def test_billing_signatures_in_redirect_url
     get_params = CGI.parse(URI(Adyen::Form.redirect_url(@payment_attributes)).query)
     assert_equal '5KQb7VJq4cz75cqp11JDajntCY4=', get_params['billingAddressSig'].first
     assert_equal 'g8wPEWYrDPatkGXzuQbN1++JVbE=', get_params['deliveryAddressSig'].first
