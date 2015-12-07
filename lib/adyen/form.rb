@@ -336,7 +336,7 @@ module Adyen
     def calculate_open_invoice_signature_string(merchant_sig, parameters)
       flattened = Adyen::Util.flatten(:merchant_sig => merchant_sig, :openinvoicedata => parameters)
       pairs = flattened.to_a.sort
-      [pairs.map(&:first).join(':'), pairs.map(&:last).join(':')].join('|')
+      pairs.transpose.map { |it| it.join(':') }.join('|')
     end
 
     def calculate_open_invoice_signature(parameters, shared_secret = nil)
