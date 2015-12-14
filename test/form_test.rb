@@ -143,6 +143,9 @@ class FormTest < Minitest::Test
 
     signature_string = Adyen::Form.calculate_signature_string(@recurring_payment_attributes)
     assert_equal "10000GBP2007-10-20Internet Order 12345sk1nC0deOtherMerchant2007-10-11T11:00:00Zgras.shopper@somewhere.orggrasshopper52DEFAULT", signature_string
+
+    signature_string = Adyen::Form.calculate_signature_string(@payment_attributes.merge(:billing_address_type => '1', :delivery_address_type => '2'))
+    assert_equal "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z12", signature_string
   end
 
   def test_redirect_signature

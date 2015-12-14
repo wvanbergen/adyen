@@ -233,14 +233,15 @@ module Adyen
     # @return [String] The string for which the siganture is calculated.
     def calculate_signature_string(parameters)
       merchant_sig_string = ""
-      merchant_sig_string << parameters[:payment_amount].to_s       << parameters[:currency_code].to_s        <<
-                             parameters[:ship_before_date].to_s     << parameters[:merchant_reference].to_s   <<
-                             parameters[:skin_code].to_s            << parameters[:merchant_account].to_s     <<
-                             parameters[:session_validity].to_s     << parameters[:shopper_email].to_s        <<
-                             parameters[:shopper_reference].to_s    << parameters[:recurring_contract].to_s   <<
-                             parameters[:allowed_methods].to_s      << parameters[:blocked_methods].to_s      <<
-                             parameters[:shopper_statement].to_s    << parameters[:merchant_return_data].to_s <<
-                             parameters[:billing_address_type].to_s << parameters[:offset].to_s
+      merchant_sig_string << parameters[:payment_amount].to_s       << parameters[:currency_code].to_s         <<
+                             parameters[:ship_before_date].to_s     << parameters[:merchant_reference].to_s    <<
+                             parameters[:skin_code].to_s            << parameters[:merchant_account].to_s      <<
+                             parameters[:session_validity].to_s     << parameters[:shopper_email].to_s         <<
+                             parameters[:shopper_reference].to_s    << parameters[:recurring_contract].to_s    <<
+                             parameters[:allowed_methods].to_s      << parameters[:blocked_methods].to_s       <<
+                             parameters[:shopper_statement].to_s    << parameters[:merchant_return_data].to_s  <<
+                             parameters[:billing_address_type].to_s << parameters[:delivery_address_type].to_s <<
+                             parameters[:offset].to_s
     end
 
     # Calculates the payment request signature for the given payment parameters.
