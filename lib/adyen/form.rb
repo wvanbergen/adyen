@@ -241,7 +241,7 @@ module Adyen
                              parameters[:allowed_methods].to_s      << parameters[:blocked_methods].to_s       <<
                              parameters[:shopper_statement].to_s    << parameters[:merchant_return_data].to_s  <<
                              parameters[:billing_address_type].to_s << parameters[:delivery_address_type].to_s <<
-                             parameters[:offset].to_s
+                             parameters[:shopper_type].to_s         << parameters[:offset].to_s
     end
 
     # Calculates the payment request signature for the given payment parameters.
