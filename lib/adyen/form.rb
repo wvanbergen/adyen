@@ -129,7 +129,7 @@ module Adyen
       end
 
       if parameters[:openinvoicedata]
-        parameters[:openinvoicedata][:signature] = calculate_open_invoice_signature(parameters, shared_secret)
+        parameters[:openinvoicedata][:sig] = calculate_open_invoice_signature(parameters, shared_secret)
       end
 
       return parameters
