@@ -198,16 +198,19 @@ module Adyen
     #
     # @param [Numeric] fraud_offset                   Modify Adyen's fraud check by supplying
     #                                                 an offset for their calculation.
+    # @param [String] selected_brand                  Some payment methods require defining a value for this
+    #                                                 field to specify how to process the transaction.
     #
     # @return [PaymentService::AuthorisationResponse] The response object which holds the
     #                                                 authorisation status.
-    def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST', fraud_offset = nil, instant_capture = false)
+    def authorise_recurring_payment(reference, amount, shopper, recurring_detail_reference = 'LATEST', fraud_offset = nil, instant_capture = false, selected_brand = nil)
       params = { :reference => reference,
                  :amount    => amount,
                  :shopper   => shopper,
                  :recurring_detail_reference => recurring_detail_reference,
                  :fraud_offset => fraud_offset,
-                 :instant_capture => instant_capture }
+                 :instant_capture => instant_capture,
+                 :selected_brand => selected_brand }
       PaymentService.new(params).authorise_recurring_payment
     end
 

@@ -116,6 +116,7 @@ module Adyen
         content << shopper_partial if @params[:shopper]
         content << fraud_offset_partial if @params[:fraud_offset]
         content << capture_delay_partial if @params[:instant_capture]
+        content << selected_brand_partial if @params[:selected_brand]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
