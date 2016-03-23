@@ -147,6 +147,7 @@ module Adyen
         :email     => '        <payment:shopperEmail>%s</payment:shopperEmail>',
         :ip        => '        <payment:shopperIP>%s</payment:shopperIP>',
         :statement => '        <payment:shopperStatement>%s</payment:shopperStatement>',
+        :social_security_number => '        <payment:shopper.socialSecurityNumber>%s</payment:shopper.socialSecurityNumber>'
       }
 
       # @private
