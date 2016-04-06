@@ -29,5 +29,15 @@ module Adyen
         end
       end
     end
+
+    module String
+      def self.normalize_key(string)
+        if string.to_s.strip.empty?
+          raise ArgumentError, "Cannot normalize (#{string}) to key format."
+        else
+          string.gsub(/(.)([A-Z])/,'\1_\2').downcase.to_sym
+        end
+      end
+    end
   end
 end
