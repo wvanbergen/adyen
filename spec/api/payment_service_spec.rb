@@ -166,7 +166,8 @@ describe Adyen::API::PaymentService do
     it_should_return_params_for_each_xml_backend({
       :psp_reference => "8814038837489129",
       :result_code => "Received",
-      :billet_url => "https://test.adyen.com/hpp/generationBoleto.shtml?data=AgABAQBdYDe9OqdseA79Rfexm2Lz8fRQ1bWqkLhBCf1fHhQEif7bsRKi0otq%2B1ekMAdMIZUiVXeR3QFrAOA8Zy4tpiNLhkMq6f7W2zFqYhVWrByqxQnbQTYuX2FWI7tsu7Vb0MnyOvFfFdFtaxzImZYCli%2BMrqaAJ5HI9ap3egeqBQIsRI%2Fj0zWsu2EGN16lGbwFOLyxl%2By0Pc5jazTo8rnBA7OVPGDIu7Qt%2F2DYIMcB6PXou5W3aJoTC4SldhNdobVqgWUtES8NsWdOYbLGa6I%2BjSwEFXvxyTXwtw4J2E%2BE7ux1UhBiZRj66lMbcvaYlfnR2xWbA%2BKmdLrVvuXTroEHKQ%2B1C%2FuyGuiOk3SmGq6TMgOyCEt%2BmG%2Bq6z5jDi%2BnYLtlLQU4ccMOujgWMfGkViC%2FXDUlqYjKbn8NHwPwoPcelpf1zCDCe%2Fvu6NBTVQbEXbE0oV0j2MT1tLlMdf08iUsDThuQ3MlJbE8VbTMlttOFqoyXhBjepQ42C1eXfswSz1gsZlHanBCTiw1pB69vkvfWPf5IdUSx1cpEr9LJ9PSz%2FeHxEhq%2B8ZdWzrybXqRbEl2mUjLeyhMNuiE%3D"
+      :billet_url => "https://test.adyen.com/hpp/generationBoleto.shtml?data=AgABAQBdYDe9OqdseA79Rfexm2Lz8fRQ1bWqkLhBCf1fHhQEif7bsRKi0otq%2B1ekMAdMIZUiVXeR3QFrAOA8Zy4tpiNLhkMq6f7W2zFqYhVWrByqxQnbQTYuX2FWI7tsu7Vb0MnyOvFfFdFtaxzImZYCli%2BMrqaAJ5HI9ap3egeqBQIsRI%2Fj0zWsu2EGN16lGbwFOLyxl%2By0Pc5jazTo8rnBA7OVPGDIu7Qt%2F2DYIMcB6PXou5W3aJoTC4SldhNdobVqgWUtES8NsWdOYbLGa6I%2BjSwEFXvxyTXwtw4J2E%2BE7ux1UhBiZRj66lMbcvaYlfnR2xWbA%2BKmdLrVvuXTroEHKQ%2B1C%2FuyGuiOk3SmGq6TMgOyCEt%2BmG%2Bq6z5jDi%2BnYLtlLQU4ccMOujgWMfGkViC%2FXDUlqYjKbn8NHwPwoPcelpf1zCDCe%2Fvu6NBTVQbEXbE0oV0j2MT1tLlMdf08iUsDThuQ3MlJbE8VbTMlttOFqoyXhBjepQ42C1eXfswSz1gsZlHanBCTiw1pB69vkvfWPf5IdUSx1cpEr9LJ9PSz%2FeHxEhq%2B8ZdWzrybXqRbEl2mUjLeyhMNuiE%3D",
+      :additional_data => {:url=>"https://test.adyen.com/hpp/generationBoleto.shtml?data=AgABAQBdYDe9OqdseA79Rfexm2Lz8fRQ1bWqkLhBCf1fHhQEif7bsRKi0otq%2B1ekMAdMIZUiVXeR3QFrAOA8Zy4tpiNLhkMq6f7W2zFqYhVWrByqxQnbQTYuX2FWI7tsu7Vb0MnyOvFfFdFtaxzImZYCli%2BMrqaAJ5HI9ap3egeqBQIsRI%2Fj0zWsu2EGN16lGbwFOLyxl%2By0Pc5jazTo8rnBA7OVPGDIu7Qt%2F2DYIMcB6PXou5W3aJoTC4SldhNdobVqgWUtES8NsWdOYbLGa6I%2BjSwEFXvxyTXwtw4J2E%2BE7ux1UhBiZRj66lMbcvaYlfnR2xWbA%2BKmdLrVvuXTroEHKQ%2B1C%2FuyGuiOk3SmGq6TMgOyCEt%2BmG%2Bq6z5jDi%2BnYLtlLQU4ccMOujgWMfGkViC%2FXDUlqYjKbn8NHwPwoPcelpf1zCDCe%2Fvu6NBTVQbEXbE0oV0j2MT1tLlMdf08iUsDThuQ3MlJbE8VbTMlttOFqoyXhBjepQ42C1eXfswSz1gsZlHanBCTiw1pB69vkvfWPf5IdUSx1cpEr9LJ9PSz%2FeHxEhq%2B8ZdWzrybXqRbEl2mUjLeyhMNuiE%3D", :data=>"AgABAQBdYDe9OqdseA79Rfexm2Lz8fRQ1bWqkLhBCf1fHhQEif7bsRKi0otq+1ekMAdMIZUiVXeR3QFrAOA8Zy4tpiNLhkMq6f7W2zFqYhVWrByqxQnbQTYuX2FWI7tsu7Vb0MnyOvFfFdFtaxzImZYCli+MrqaAJ5HI9ap3egeqBQIsRI/j0zWsu2EGN16lGbwFOLyxl+y0Pc5jazTo8rnBA7OVPGDIu7Qt/2DYIMcB6PXou5W3aJoTC4SldhNdobVqgWUtES8NsWdOYbLGa6I+jSwEFXvxyTXwtw4J2E+E7ux1UhBiZRj66lMbcvaYlfnR2xWbA+KmdLrVvuXTroEHKQ+1C/uyGuiOk3SmGq6TMgOyCEt+mG+q6z5jDi+nYLtlLQU4ccMOujgWMfGkViC/XDUlqYjKbn8NHwPwoPcelpf1zCDCe/vu6NBTVQbEXbE0oV0j2MT1tLlMdf08iUsDThuQ3MlJbE8VbTMlttOFqoyXhBjepQ42C1eXfswSz1gsZlHanBCTiw1pB69vkvfWPf5IdUSx1cpEr9LJ9PSz/eHxEhq+8ZdWzrybXqRbEl2mUjLeyhMNuiE=", :expiration_date=>"2014-07-17", :due_date=>"2014-07-02"}
     })
 
     describe "with a received billet" do
@@ -180,7 +181,8 @@ describe Adyen::API::PaymentService do
     it_should_return_params_for_each_xml_backend({
       :psp_reference => "8514038928235061",
       :result_code => "Refused",
-      :billet_url => ""
+      :billet_url => "",
+      :additional_data => {}
     })
 
     describe "with a received billet" do

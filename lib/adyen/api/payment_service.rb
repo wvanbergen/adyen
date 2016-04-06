@@ -222,7 +222,7 @@ module Adyen
       class BilletResponse < Response
         RECEIVED = "Received"
 
-        response_attrs :result_code, :billet_url, :psp_reference
+        response_attrs :result_code, :billet_url, :psp_reference, :additional_data
 
         def success?
           super && params[:result_code] == RECEIVED
@@ -230,16 +230,37 @@ module Adyen
 
         def params
           @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+            additional_data = parse_additional_data(result)
+
             {
               :psp_reference  => result.text('./payment:pspReference'),
               :result_code    => result_code = result.text('./payment:resultCode'),
-              :billet_url     => (result_code == RECEIVED) ? result.children[0].children[0].children[1].text : ""
+              :billet_url     => (result_code == RECEIVED) ? additional_data[:url] : "",
+              :additional_data => additional_data
             }
           end
         end
 
         def invalid_request?
           !fault_message.nil?
+        end
+
+        private
+
+        def parse_additional_data(result)
+          parsed_additional_data = {}
+          additional_data = result.xpath('./payment:additionalData')
+          additional_data.children.each do |child|
+            field_node = child.children[0]
+            value_node = child.children[1]
+
+            key = field_node.text.gsub("boletobancario.", "")
+            key = Formatter::String.normalize_key(key)
+            value = value_node.text
+
+            parsed_additional_data[key] = value
+          end
+          parsed_additional_data
         end
       end
 
