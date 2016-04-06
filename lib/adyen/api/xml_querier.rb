@@ -51,11 +51,15 @@ module Adyen
         end
 
         def perform_xpath(query, root_node)
-          REXML::XPath.match(root_node, query, NS)          
+          REXML::XPath.match(root_node, query, NS)
         end
 
         def stringify_nodeset(nodeset)
-          nodeset.map { |n| n.to_s }.join("")
+          if nodeset.respond_to?(:map)
+            nodeset.map { |n| n.to_s }.join("")
+          else
+            nodeset.to_s
+          end
         end
       end
 
@@ -63,7 +67,7 @@ module Adyen
       def self.default_backend
         @default_backend ||= begin
           NokogiriBackend.new
-        rescue LoadError => e
+        rescue LoadError
           REXMLBackend.new
         end
       end
@@ -85,7 +89,7 @@ module Adyen
           data
         elsif data.responds_to?(:body)
           data.body.to_s
-        else 
+        else
           data.to_s
         end
       end
@@ -131,6 +135,10 @@ module Adyen
       # @return [Array] The list of nodes wrapped in XMLQuerier instances.
       def map(&block)
         @node.map { |n| self.class.new(n, backend) }.map(&block)
+      end
+
+      def shift
+        @node.shift
       end
     end
   end

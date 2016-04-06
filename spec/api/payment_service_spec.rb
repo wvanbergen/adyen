@@ -195,7 +195,7 @@ describe Adyen::API::PaymentService do
       :psp_reference => '9876543210987654',
       :result_code => 'Authorised',
       :auth_code => '1234',
-      :additional_data => { "cardSummary" => "1111" },
+      :additional_data => { card_summary: "1111" },
       :refusal_reason => ''
     })
 
@@ -318,7 +318,7 @@ describe Adyen::API::PaymentService do
       :psp_reference => '9876543210987654',
       :result_code => 'Authorised',
       :auth_code => '1234',
-      :additional_data => { "cardSummary" => "1111" },
+      :additional_data => { card_summary: "1111" },
       :refusal_reason => ''
     })
   end
@@ -359,7 +359,7 @@ describe Adyen::API::PaymentService do
       :psp_reference => '9876543210987654',
       :result_code => 'Authorised',
       :auth_code => '1234',
-      :additional_data => { "cardSummary" => "1111" },
+      :additional_data => { card_summary: "1111" },
       :refusal_reason => ''
     })
   end

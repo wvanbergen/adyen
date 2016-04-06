@@ -316,11 +316,14 @@ module Adyen
               results = {}
 
               xpath.map do |node|
-                key = node.text('./payment:entry/payment:key')
-                value = node.text('./payment:entry/payment:value')
-                results[key] = value unless key.empty?
-              end
+                keys = node.xpath('./payment:entry/payment:key/text()')
+                values = node.xpath('./payment:entry/payment:value/text()')
 
+                keys.map do |key|
+                  normalized_key = Adyen::Formatter::String.normalize_key(key.to_s)
+                  results[normalized_key] = values.shift.to_s
+                end
+              end
               results
             end
           end
