@@ -4,7 +4,6 @@ script: bundle exec rake
 before_install:
   - gem install bundler
   - gem update bundler
-  - rvm jruby-1.7.19 do gem install mime-types -v 2.6.2
 rvm:
 - "2.0"
 - "2.1"
