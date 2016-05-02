@@ -1,6 +1,9 @@
 language: ruby
 cache: bundler
 script: bundle exec rake
+before_install:
+  - gem install bundler
+  - gem update bundler
 rvm:
 - "2.0"
 - "2.1"
