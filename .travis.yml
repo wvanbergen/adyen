@@ -2,7 +2,9 @@ language: ruby
 cache: bundler
 script: bundle exec rake
 deploy:
-  edge: true
+  edge:
+    source: fasterthanlime/dpl
+    branch: patch-1
 rvm:
 - "2.0"
 - "2.1"
@@ -11,8 +13,6 @@ rvm:
 - "rbx-2"
 - "jruby-19mode"
 - "jruby-head"
-before_deploy:
-- gem install mime-types -v 2.6.2
 matrix:
   allow_failures:
   - rvm: jruby-head
