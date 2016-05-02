@@ -11,6 +11,8 @@ rvm:
 - "rbx-2"
 - "jruby-19mode"
 - "jruby-head"
+before_deploy:
+- gem install mime-types -v 2.6.2
 matrix:
   allow_failures:
   - rvm: jruby-head
