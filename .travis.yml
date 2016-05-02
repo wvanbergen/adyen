@@ -1,10 +1,8 @@
 language: ruby
 cache: bundler
 script: bundle exec rake
-deploy:
-  edge:
-    source: travis-ci/dpl
-    branch: master
+before_deploy:
+- gem install mime-types -v 2.6.2
 rvm:
 - "2.0"
 - "2.1"
