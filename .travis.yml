@@ -3,8 +3,8 @@ cache: bundler
 script: bundle exec rake
 deploy:
   edge:
-    source: fasterthanlime/dpl
-    branch: patch-1
+    source: travis-ci/dpl
+    branch: master
 rvm:
 - "2.0"
 - "2.1"
