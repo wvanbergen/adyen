@@ -311,6 +311,11 @@ describe Adyen::API::PaymentService do
     it "does not include any creditcard details" do
       xpath('./payment:card').should be_empty
     end
+
+    it "includes selected_brand when set" do
+      @payment.params[:selected_brand] = 'sepadirectdebit'
+      text('./payment:selectedBrand').should == 'sepadirectdebit'
+    end
   end
 
   describe_response_from :authorise_recurring_payment, AUTHORISE_RESPONSE do
