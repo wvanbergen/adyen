@@ -7,7 +7,6 @@ rvm:
 - "2.2"
 - "ruby-head"
 - "rbx-2"
-- "jruby-19mode"
 - "jruby-head"
 matrix:
   allow_failures:

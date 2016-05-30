@@ -1,7 +1,10 @@
 require 'adyen/hpp/signature'
+require 'adyen/hpp/request'
+require 'adyen/hpp/response'
 
 module Adyen
   module HPP
+
     # The DOMAIN of the Adyen payment system that still requires the current
     # Adyen enviroment.
     HPP_DOMAIN = "%s.adyen.com"
@@ -14,24 +17,6 @@ module Adyen
     end
 
     class ForgedResponse < Adyen::HPP::Error
-    end
-
-    class Client
-      attr_reader :environment, :skin_code
-
-      def initialize(environment, skin_code, shared_secret, default_attribues = {})
-        @environment, @skin_code, @shared_secret = environment, skin_code, shared_secret
-      end
-    end
-
-    class Request
-      def initialize(skin)
-      end
-    end
-
-    class Response
-      def initialize(request)
-      end
     end
 
     class Notification
