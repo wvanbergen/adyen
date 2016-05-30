@@ -23,3 +23,6 @@ env:
   - ADYEN_API_USERNAME: "ws@Company.VanBergen"
   - ADYEN_API_PASSWORD: "7phtHzbfnzsp"
 sudo: false
+branches:
+  only:
+    - master
