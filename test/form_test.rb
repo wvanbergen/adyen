@@ -29,11 +29,32 @@ class FormTest < Minitest::Test
         :state_or_province    => 'Berlin',
         :country              => 'Germany',
       },
+      :delivery_address => {
+        :street               => 'Pecunialaan',
+        :house_number_or_name => '316',
+        :city                 => 'Geldrop',
+        :state_or_province    => 'None',
+        :postal_code          => '1234 AB',
+        :country              => 'Netherlands',
+      },
       :shopper => {
         :telephone_number       => '1234512345',
         :first_name             => 'John',
         :last_name              => 'Doe',
         :social_security_number => '123-45-1234'
+      },
+      :openinvoicedata => {
+        :number_of_lines => 1,
+        :line1 => {
+          :number_of_items => 2,
+          :item_amount => 4000,
+          :currency_code => 'GBP',
+          :item_vat_amount => 1000,
+          :item_vat_percentage => 2500,
+          :item_vat_category => 'High',
+          :description => 'Product Awesome'
+        },
+        :refund_description => 'Refund for 12345'
       }
     }
 
@@ -122,6 +143,12 @@ class FormTest < Minitest::Test
 
     signature_string = Adyen::Form.calculate_signature_string(@recurring_payment_attributes)
     assert_equal "10000GBP2007-10-20Internet Order 12345sk1nC0deOtherMerchant2007-10-11T11:00:00Zgras.shopper@somewhere.orggrasshopper52DEFAULT", signature_string
+
+    signature_string = Adyen::Form.calculate_signature_string(@payment_attributes.merge(:billing_address_type => '1', :delivery_address_type => '2'))
+    assert_equal "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z12", signature_string
+
+    signature_string = Adyen::Form.calculate_signature_string(@payment_attributes.merge(:delivery_address_type => '2', :shopper_type => '1'))
+    assert_equal "10000GBP2007-10-20Internet Order 123454aD37dJATestMerchant2007-10-11T11:00:00Z21", signature_string
   end
 
   def test_redirect_signature
@@ -150,10 +177,58 @@ class FormTest < Minitest::Test
     assert_raises(ArgumentError) { Adyen::Form.calculate_billing_address_signature(@payment_attributes) } 
   end
 
-  def test_billing_address_and_shopper_signature_in_redirect_url
+  def test_delivery_address_signature
+    signature_string = Adyen::Form.calculate_delivery_address_signature_string(@payment_attributes[:delivery_address])
+    assert_equal "Pecunialaan316Geldrop1234 ABNoneNetherlands", signature_string
+    assert_equal 'g8wPEWYrDPatkGXzuQbN1++JVbE=', Adyen::Form.calculate_delivery_address_signature(@payment_attributes)
+
+    @payment_attributes.delete(:shared_secret)
+    assert_raises(ArgumentError) { Adyen::Form.calculate_delivery_address_signature(@payment_attributes) }
+  end
+
+  def test_open_invoice_signature
+    merchant_sig = Adyen::Form.calculate_signature(@payment_attributes, @payment_attributes[:shared_secret])
+    signature_string = Adyen::Form.calculate_open_invoice_signature_string(merchant_sig, @payment_attributes[:openinvoicedata])
+    expected_string =
+      [
+        'merchantSig',
+        'openinvoicedata.line1.currencyCode',
+        'openinvoicedata.line1.description',
+        'openinvoicedata.line1.itemAmount',
+        'openinvoicedata.line1.itemVatAmount',
+        'openinvoicedata.line1.itemVatCategory',
+        'openinvoicedata.line1.itemVatPercentage',
+        'openinvoicedata.line1.numberOfItems',
+        'openinvoicedata.numberOfLines',
+        'openinvoicedata.refundDescription'
+      ].join(':') +
+      '|' +
+      [
+        merchant_sig,
+        'GBP',
+        'Product Awesome',
+        4000,
+        1000,
+        'High',
+        2500,
+        2,
+        1,
+        'Refund for 12345'
+      ].join(':')
+
+    assert_equal expected_string, signature_string
+    assert_equal 'OI71VGB7G3vKBRrtE6Ibv+RWvYY=', Adyen::Form.calculate_open_invoice_signature(@payment_attributes)
+
+    @payment_attributes.delete(:shared_secret)
+    assert_raises(ArgumentError) { Adyen::Form.calculate_open_invoice_signature(@payment_attributes) }
+  end
+
+  def test_billing_signatures_in_redirect_url
     get_params = CGI.parse(URI(Adyen::Form.redirect_url(@payment_attributes)).query)
     assert_equal '5KQb7VJq4cz75cqp11JDajntCY4=', get_params['billingAddressSig'].first
+    assert_equal 'g8wPEWYrDPatkGXzuQbN1++JVbE=', get_params['deliveryAddressSig'].first
     assert_equal 'rb2GEs1kGKuLh255a3QRPBYXmsQ=', get_params['shopperSig'].first
+    assert_equal 'OI71VGB7G3vKBRrtE6Ibv+RWvYY=', get_params['openinvoicedata.sig'].first
   end  
 
   def test_redirect_signature_check

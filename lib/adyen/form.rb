@@ -120,8 +120,16 @@ module Adyen
         parameters[:billing_address_sig] = calculate_billing_address_signature(parameters, shared_secret)
       end
 
+      if parameters[:delivery_address]
+        parameters[:delivery_address_sig] = calculate_delivery_address_signature(parameters, shared_secret)
+      end
+
       if parameters[:shopper]
         parameters[:shopper_sig] = calculate_shopper_signature(parameters, shared_secret)
+      end
+
+      if parameters[:openinvoicedata]
+        parameters[:openinvoicedata][:sig] = calculate_open_invoice_signature(parameters, shared_secret)
       end
 
       return parameters
@@ -225,14 +233,15 @@ module Adyen
     # @return [String] The string for which the siganture is calculated.
     def calculate_signature_string(parameters)
       merchant_sig_string = ""
-      merchant_sig_string << parameters[:payment_amount].to_s       << parameters[:currency_code].to_s        <<
-                             parameters[:ship_before_date].to_s     << parameters[:merchant_reference].to_s   <<
-                             parameters[:skin_code].to_s            << parameters[:merchant_account].to_s     <<
-                             parameters[:session_validity].to_s     << parameters[:shopper_email].to_s        <<
-                             parameters[:shopper_reference].to_s    << parameters[:recurring_contract].to_s   <<
-                             parameters[:allowed_methods].to_s      << parameters[:blocked_methods].to_s      <<
-                             parameters[:shopper_statement].to_s    << parameters[:merchant_return_data].to_s <<
-                             parameters[:billing_address_type].to_s << parameters[:offset].to_s
+      merchant_sig_string << parameters[:payment_amount].to_s       << parameters[:currency_code].to_s         <<
+                             parameters[:ship_before_date].to_s     << parameters[:merchant_reference].to_s    <<
+                             parameters[:skin_code].to_s            << parameters[:merchant_account].to_s      <<
+                             parameters[:session_validity].to_s     << parameters[:shopper_email].to_s         <<
+                             parameters[:shopper_reference].to_s    << parameters[:recurring_contract].to_s    <<
+                             parameters[:allowed_methods].to_s      << parameters[:blocked_methods].to_s       <<
+                             parameters[:shopper_statement].to_s    << parameters[:merchant_return_data].to_s  <<
+                             parameters[:billing_address_type].to_s << parameters[:delivery_address_type].to_s <<
+                             parameters[:shopper_type].to_s         << parameters[:offset].to_s
     end
 
     # Calculates the payment request signature for the given payment parameters.
@@ -265,6 +274,16 @@ module Adyen
       end.join
     end
 
+    # Generates the string that is used to calculate the request signature. This signature
+    # is used by Adyen to check whether the request is genuinely originating from you.
+    # @param [Hash] parameters The parameters that will be included in the delivery address request.
+    # @return [String] The string for which the siganture is calculated.
+    def calculate_delivery_address_signature_string(parameters)
+      %w(street house_number_or_name city postal_code state_or_province country).map do |key|
+        parameters[key.to_sym]
+      end.join
+    end
+
     # Calculates the billing address request signature for the given billing address parameters.
     #
     # This signature is used by Adyen to check whether the request is
@@ -285,6 +304,26 @@ module Adyen
       Adyen::Util.hmac_base64(shared_secret, calculate_billing_address_signature_string(parameters[:billing_address]))
     end
 
+    # Calculates the delivery address request signature for the given delivery address parameters.
+    #
+    # This signature is used by Adyen to check whether the request is
+    # genuinely originating from you. The resulting signature should be
+    # included in the delivery address request parameters as the +deliveryAddressSig+
+    # parameter; the shared secret should of course not be included.
+    #
+    # @param [Hash] parameters The delivery address parameters for which to calculate
+    #    the delivery address request signature.
+    # @param [String] shared_secret The shared secret to use for this signature.
+    #    It should correspond with the skin_code parameter. This parameter can be
+    #    left out if the shared_secret is included as key in the parameters.
+    # @return [String] The signature of the delivery address request
+    # @raise [ArgumentError] Thrown if shared_secret is empty
+    def calculate_delivery_address_signature(parameters, shared_secret = nil)
+      shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate delivery address request signature with empty shared_secret" if shared_secret.to_s.empty?
+      Adyen::Util.hmac_base64(shared_secret, calculate_delivery_address_signature_string(parameters[:delivery_address]))
+    end
+
     # shopperSig: shopper.firstName + shopper.infix + shopper.lastName + shopper.gender + shopper.dateOfBirthDayOfMonth + shopper.dateOfBirthMonth + shopper.dateOfBirthYear + shopper.telephoneNumber
     # (Note that you can send only shopper.firstName and shopper.lastName if you like. Do NOT include shopperSocialSecurityNumber in the shopperSig!)
     def calculate_shopper_signature_string(parameters)
@@ -297,6 +336,19 @@ module Adyen
       shared_secret ||= parameters.delete(:shared_secret)
       raise ArgumentError, "Cannot calculate shopper request signature with empty shared_secret" if shared_secret.to_s.empty?
       Adyen::Util.hmac_base64(shared_secret, calculate_shopper_signature_string(parameters[:shopper]))
+    end
+
+    def calculate_open_invoice_signature_string(merchant_sig, parameters)
+      flattened = Adyen::Util.flatten(:merchant_sig => merchant_sig, :openinvoicedata => parameters)
+      pairs = flattened.to_a.sort
+      pairs.transpose.map { |it| it.join(':') }.join('|')
+    end
+
+    def calculate_open_invoice_signature(parameters, shared_secret = nil)
+      shared_secret ||= parameters.delete(:shared_secret)
+      raise ArgumentError, "Cannot calculate open invoice request signature with empty shared_secret" if shared_secret.to_s.empty?
+      merchant_sig = calculate_signature(parameters, shared_secret)
+      Adyen::Util.hmac_base64(shared_secret, calculate_open_invoice_signature_string(merchant_sig, parameters[:openinvoicedata]))
     end
 
     ######################################################
