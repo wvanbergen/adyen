@@ -27,8 +27,10 @@ require 'adyen/version'
 require 'adyen/configuration'
 require 'adyen/util'
 require 'adyen/hpp/signature'
+require 'adyen/rest/signature'
 require 'adyen/form'
 require 'adyen/api'
 require 'adyen/rest'
+require 'adyen/signature'
 
 require 'adyen/railtie' if defined?(::Rails) && ::Rails::VERSION::MAJOR >= 3
