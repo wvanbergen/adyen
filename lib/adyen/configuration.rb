@@ -158,9 +158,7 @@ class Adyen::Configuration
   #
   # @return [Hash, nil] A hash with the skin information, or nil if not found.
   def form_skin_by_code(skin_code)
-    if skin = @form_skins.detect { |(name, skin)| skin[:skin_code] == skin_code }
-      skin.last
-    end
+    @form_skins.values.find { |skin| skin[:skin_code] == skin_code }
   end
 
   # Returns the shared secret belonging to a skin.
