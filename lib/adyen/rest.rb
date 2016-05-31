@@ -1,4 +1,3 @@
-require 'adyen'
 require 'adyen/rest/client'
 
 module Adyen

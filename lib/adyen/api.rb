@@ -1,4 +1,3 @@
-require 'adyen'
 require 'adyen/api/simple_soap_client'
 require 'adyen/api/payment_service'
 require 'adyen/api/recurring_service'
