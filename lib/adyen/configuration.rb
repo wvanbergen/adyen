@@ -5,6 +5,7 @@ class Adyen::Configuration
     @default_form_params = {}
     @form_skins          = {}
     @payment_flow        = :select
+    @environment         = nil
   end
 
   # The Rails environment for which to use to Adyen "live" environment.
