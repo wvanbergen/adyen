@@ -13,7 +13,7 @@ class UtilTest < Minitest::Test
   end
 
   def test_date_formatting
-    assert_match /^\d{4}-\d{2}-\d{2}$/, Adyen::Util.format_date(Date.today)
+    assert_match(/^\d{4}-\d{2}-\d{2}$/, Adyen::Util.format_date(Date.today))
     assert_equal '2009-01-01', Adyen::Util.format_date('2009-01-01')
 
     assert_raises(ArgumentError) { Adyen::Util.format_date('2009-1-1') }
@@ -21,8 +21,8 @@ class UtilTest < Minitest::Test
   end
 
   def test_timestamp_formatting
-    assert_match /^\d{4}-\d{2}-\d{2}T\d{2}\:\d{2}\:\d{2}Z$/, Adyen::Util.format_timestamp(Time.now)
-    assert_match /^\d{4}-\d{2}-\d{2}T\d{2}\:\d{2}\:\d{2}Z$/, Adyen::Util.format_timestamp(DateTime.now)
+    assert_match(/^\d{4}-\d{2}-\d{2}T\d{2}\:\d{2}\:\d{2}Z$/, Adyen::Util.format_timestamp(Time.now))
+    assert_match(/^\d{4}-\d{2}-\d{2}T\d{2}\:\d{2}\:\d{2}Z$/, Adyen::Util.format_timestamp(DateTime.now))
     assert_equal '2009-01-01T11:11:11Z', Adyen::Util.format_timestamp('2009-01-01T11:11:11Z')
 
     assert_raises(ArgumentError) { Adyen::Util.format_timestamp('2009-01-01 11:11:11') }
