@@ -1,5 +1,5 @@
+require 'adyen/base'
 require 'adyen/rest/client'
-require 'adyen/util'
 
 module Adyen
 

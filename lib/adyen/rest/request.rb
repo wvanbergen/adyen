@@ -1,3 +1,7 @@
+require 'adyen/util'
+require 'adyen/rest/errors'
+require 'adyen/rest/response'
+
 module Adyen
   module REST
 

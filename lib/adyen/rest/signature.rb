@@ -1,3 +1,5 @@
+require 'adyen/signature'
+
 module Adyen
   module REST
     # The Signature module can sign and verify HMAC SHA-256 signatures for API

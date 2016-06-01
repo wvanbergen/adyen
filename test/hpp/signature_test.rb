@@ -1,6 +1,7 @@
 require 'test_helper'
+require 'adyen/hpp/signature'
 
-class SignatureTest < Minitest::Test
+class HPPSignatureTest < Minitest::Test
   def setup
     # values from https://docs.adyen.com/pages/viewpage.action?pageId=5376964
     @shared_secret = "4468D9782DEF54FCD706C9100C71EC43932B1EBC2ACF6BA0560C05AAA7550C48"

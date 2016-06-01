@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'adyen/rest'
+require 'adyen/rest/request'
 
 class RESTRequestTest < Minitest::Test
 
