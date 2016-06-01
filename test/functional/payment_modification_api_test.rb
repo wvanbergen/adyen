@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'adyen/rest'
 
 class PaymentModificationAPITest < Minitest::Test
   def setup

@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'adyen/form'
 
 class FormTest < Minitest::Test
   include Adyen::Matchers

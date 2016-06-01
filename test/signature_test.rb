@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'adyen/signature'
 
 class SignatureTest < Minitest::Test
   # HPP Signature

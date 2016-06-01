@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'test_helper'
+require 'adyen/util'
 
 class UtilTest < Minitest::Test
   def test_hmac_base64_encoding
