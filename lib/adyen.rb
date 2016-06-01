@@ -9,12 +9,12 @@
 #   (recurring) payments and recurring contract maintenance.
 require 'adyen/base'
 require 'adyen/version'
-require 'adyen/util'
-require 'adyen/hpp/signature'
-require 'adyen/rest/signature'
+
 require 'adyen/form'
 require 'adyen/api'
 require 'adyen/rest'
-require 'adyen/signature'
+
+# TODO: Move into main hpp file once it exists
+require 'adyen/hpp/signature'
 
 require 'adyen/railtie' if defined?(::Rails) && ::Rails::VERSION::MAJOR >= 3

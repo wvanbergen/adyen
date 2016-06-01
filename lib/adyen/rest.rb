@@ -1,5 +1,6 @@
 require 'adyen/base'
 require 'adyen/rest/client'
+require 'adyen/rest/signature'
 
 module Adyen
 
