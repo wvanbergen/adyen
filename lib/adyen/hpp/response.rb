@@ -10,7 +10,8 @@ module Adyen
       #      should include the +:merchantSig+ parameter, which contains the signature.
       # @param [String] shared_secret Optional shared secret; if not provided, the shared secret
       #     of the skin determined by params['skinCode'] will be used
-      def initialize(params, shared_secret: nil)
+      def initialize(params, options = {})
+        shared_secret = options.fetch(:shared_secret, nil)
         raise ArgumentError, "params should be a Hash" unless params.is_a?(Hash)
         raise ArgumentError, "params should contain :merchantSig" unless params.key?('merchantSig')
 

@@ -2,19 +2,7 @@ language: ruby
 cache: bundler
 script: bundle exec rake
 rvm:
-- "2.0"
-- "2.1"
-- "2.2"
-- "2.3.1"
-- "jruby-9.0"
-- "ruby-head"
-- "rbx-2"
-- "jruby-head"
-matrix:
-  allow_failures:
-  - rvm: jruby-head
-  - rvm: ruby-head
-  - rvm: rbx-2
+- "jruby"
 before_install:
   - bundle --version || gem install bundler
 before_script:

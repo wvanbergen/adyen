@@ -19,9 +19,12 @@ module Adyen
       #    When not set, the environment specified in the configuration will be used.
       # @param [String] shared_secret The shared secret to use for signing the request.
       #    When not set, the shared secret of the skin will be used.
-      def initialize(parameters, skin: nil, environment: nil, shared_secret: nil)
-        @parameters, @skin, @environment, @shared_secret = parameters, skin, environment, shared_secret
-        @skin = Adyen.configuration.form_skin_by_name(@skin) unless skin.nil? || skin.is_a?(Hash)
+      def initialize(parameters, options = {})
+        @parameters = parameters
+        @skin = options.fetch(:skin, nil)
+        @environment = options.fetch(:environment, nil)
+        @shared_secret = options.fetch(:shared_secret, nil)
+        @skin = Adyen.configuration.form_skin_by_name(@skin) unless @skin.nil? || @skin.is_a?(Hash)
       end
 
       # Returns the Adyen skin to use for the request, in the same format that is
