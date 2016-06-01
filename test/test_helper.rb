@@ -3,7 +3,7 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require 'mocha/setup'
 
-require 'adyen'
+require 'adyen/base'
 require 'adyen/matchers'
 
 require 'helpers/configure_adyen'
