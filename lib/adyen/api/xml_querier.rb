@@ -63,7 +63,7 @@ module Adyen
       def self.default_backend
         @default_backend ||= begin
           NokogiriBackend.new
-        rescue LoadError => e
+        rescue LoadError
           REXMLBackend.new
         end
       end

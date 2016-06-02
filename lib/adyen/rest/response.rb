@@ -1,3 +1,5 @@
+require 'adyen/util'
+
 module Adyen
   module REST
 

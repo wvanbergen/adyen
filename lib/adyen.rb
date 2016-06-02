@@ -7,30 +7,14 @@
 #   to the Adyen payment system, and generating and checking of signatures.
 # * {Adyen::API} for communicating with the Adyen SOAP services for issuing
 #   (recurring) payments and recurring contract maintenance.
-module Adyen
-
-  # Basic exception class for Adyen
-  class Error < ::StandardError
-  end
-
-  # @return [Configuration] The configuration singleton.
-  def self.configuration
-    @configuration ||= Adyen::Configuration.new
-  end
-
-  def self.configuration=(configuration)
-    @configuration = configuration
-  end
-end
-
+require 'adyen/base'
 require 'adyen/version'
-require 'adyen/configuration'
-require 'adyen/util'
-require 'adyen/hpp/signature'
-require 'adyen/rest/signature'
+
 require 'adyen/form'
 require 'adyen/api'
 require 'adyen/rest'
-require 'adyen/signature'
+
+# TODO: Move into main hpp file once it exists
+require 'adyen/hpp/signature'
 
 require 'adyen/railtie' if defined?(::Rails) && ::Rails::VERSION::MAJOR >= 3
