@@ -7,6 +7,7 @@ require 'adyen/rest/response'
 require 'adyen/rest/authorise_payment'
 require 'adyen/rest/authorise_recurring_payment'
 require 'adyen/rest/modify_payment'
+require 'adyen/rest/payout'
 
 module Adyen
   module REST
@@ -19,6 +20,7 @@ module Adyen
     class Client
       include AuthorisePayment
       include ModifyPayment
+      include Payout
 
       attr_reader :environment
 
