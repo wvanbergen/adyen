@@ -12,7 +12,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
 
   def test_payment_api_request
     response = @client.authorise_payment(
-      merchant_account: 'VanBergenORG',
       amount: { currency: 'EUR', value: 1234 },
       reference: 'Test order #1',
       card: Adyen::TestCards::VISA
@@ -24,7 +23,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
 
   def test_refused_payment_api_request
     response = @client.authorise_payment(
-      merchant_account: 'VanBergenORG',
       amount: { currency: 'EUR', value: 1234 },
       reference: 'Test order #1',
       card: Adyen::TestCards::VISA.merge(cvc: '123')
@@ -37,7 +35,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
 
   def test_payment_with_3d_secure_api_request
     response = @client.authorise_payment(
-      merchant_account: 'VanBergenORG',
       amount: { currency: 'EUR', value: 1234 },
       reference: 'Test order #1',
       card: Adyen::TestCards::MASTERCARD_3DSECURE,
@@ -55,7 +52,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
 
   def test_initial_recurring_payment_api_request
     response = @client.authorise_recurring_payment(
-      merchant_account: 'VanBergenORG',
       shopper_email: 'willem@van-bergen.org',
       shopper_reference: 'willem42',
       amount: { currency: 'EUR', value: 1234 },
@@ -69,7 +65,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
 
   def test_recurring_payment_api_request
     response = @client.reauthorise_recurring_payment(
-      merchant_account: 'VanBergenORG',
       shopper_email: 'willem@van-bergen.org',
       shopper_reference: 'willem42',
       amount: { currency: 'EUR', value: 1234 },
@@ -83,7 +78,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
   def test_list_recurring_details_api_request
     response = @client.list_recurring_details(
       recurring: { contract: "RECURRING" },
-      merchant_account: 'VanBergenORG',
       shopper_reference: 'willem42',
     )
 
@@ -98,7 +92,6 @@ class PaymentAuthorisationAPITest < Minitest::Test
   def test_list_recurring_references_api_request
     response = @client.list_recurring_details(
       recurring: { contract: "RECURRING" },
-      merchant_account: 'VanBergenORG',
       shopper_reference: 'willem42',
     )
 

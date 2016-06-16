@@ -33,10 +33,8 @@ module Adyen
 
       def capture_payment_request(attributes = {})
         Adyen::REST::ModifyPayment::Request.new('Payment.capture', attributes,
-          prefix: 'modification_request',
           response_class: Adyen::REST::ModifyPayment::Response,
           response_options: {
-            prefix: 'modification_result',
             expects: '[capture-received]'
           }
         )
@@ -50,10 +48,8 @@ module Adyen
 
       def cancel_payment_request(attributes = {})
         Adyen::REST::ModifyPayment::Request.new('Payment.cancel', attributes,
-          prefix: 'modification_request',
           response_class: Adyen::REST::ModifyPayment::Response,
           response_options: {
-            prefix: 'modification_result',
             expects: '[cancel-received]'
           }
         )
@@ -67,10 +63,8 @@ module Adyen
 
       def refund_payment_request(attributes = {})
         Adyen::REST::ModifyPayment::Request.new('Payment.refund', attributes,
-          prefix: 'modification_request',
           response_class: Adyen::REST::ModifyPayment::Response,
           response_options: {
-            prefix: 'modification_result',
             expects: '[refund-received]'
           }
         )
@@ -84,10 +78,8 @@ module Adyen
 
       def cancel_or_refund_payment_request(attributes = {})
         Adyen::REST::ModifyPayment::Request.new('Payment.cancelOrRefund', attributes,
-          prefix: 'modification_request',
           response_class: Adyen::REST::ModifyPayment::Response,
           response_options: {
-            prefix: 'modification_result',
             expects: '[cancelOrRefund-received]'
           }
         )

@@ -8,9 +8,9 @@ module Adyen
         def initialize(action, attributes, options)
           attributes[:recurring] ||= { contract: 'RECURRING' }
           super(action, attributes, options)
-          @required_attributes += ['paymentRequest.shopperEmail',
-            'paymentRequest.recurring.contract',
-            'paymentRequest.shopperReference',
+          @required_attributes += ['shopperEmail',
+            'recurring.contract',
+            'shopperReference',
           ]
         end
       end
@@ -23,10 +23,10 @@ module Adyen
           attributes[:shopper_interaction] ||= 'ContAuth'
           attributes[:selected_recurring_detail_reference] ||= 'LATEST'
           super(action, attributes, options)
-          @required_attributes += ['paymentRequest.shopperEmail',
-            'paymentRequest.shopperReference',
-            'paymentRequest.recurring.contract',
-            'paymentRequest.shopperInteraction'
+          @required_attributes += ['shopperEmail',
+            'shopperReference',
+            'recurring.contract',
+            'shopperInteraction'
           ]
         end
       end
@@ -37,9 +37,8 @@ module Adyen
         def initialize(action, attributes, options)
           attributes[:recurring] ||= { contract: 'RECURRING' }
           super(action, attributes, options)
-          @required_attributes += ['recurringDetailsRequest.merchantAccount',
-            'recurringDetailsRequest.recurring.contract',
-            'recurringDetailsRequest.shopperReference']
+          @required_attributes += ['recurring.contract',
+            'shopperReference']
         end
       end
     end

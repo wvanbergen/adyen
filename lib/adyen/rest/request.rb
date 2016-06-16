@@ -57,7 +57,7 @@ module Adyen
 
       # Sets an attribute on the request
       def []=(attribute, value)
-        form_data.merge!(flatten_attributes(attribute => value))
+        form_data.merge!(Adyen::Util.flatten(attribute => value))
         value
       end
 
@@ -86,28 +86,14 @@ module Adyen
       protected
 
       def canonical_name(name)
-        Adyen::Util.camelize(apply_prefix(name))
+        Adyen::Util.camelize(name)
       end
 
-      def apply_prefix(name)
-        prefix ? name.to_s.sub(/\A(?!#{Regexp.quote(prefix)}\.)/, "#{prefix}.") : name.to_s
-      end
-
-      # Flattens the {#attributes} hash and converts all the keys to camelcase.
-      # @return [Hash] A potentially nested hash of attributes.
       # @return [Hash<String, String>] A dictionary of API request attributes that
-      #   can be included in an HTTP request as form data.
-      def flatten_attributes(attributes)
-        if prefix
-          Adyen::Util.flatten(prefix => attributes)
-        else
-          Adyen::Util.flatten(attributes)
-        end
+      def generate_form_data(attributes)
+        Adyen::Util.flatten(attributes)
       end
 
-      def generate_form_data(action, attributes)
-        flatten_attributes(attributes).merge('action' => action.to_s)
-      end
       def generate_resource(action)
         '%s/v12/%s' % action.split('.')
       end

@@ -87,9 +87,7 @@ module Adyen
       # @see #authorise_payment
       def authorise_payment_request(attributes = {})
         Adyen::REST::AuthorisePayment::Request.new('Payment.authorise', attributes,
-            prefix: 'payment_request',
-            response_class: Adyen::REST::AuthorisePayment::Response,
-            response_options: { prefix: 'payment_result' })
+            response_class: Adyen::REST::AuthorisePayment::Response)
       end
 
       # Sends an authorise payment request to Adyen's webservice.
@@ -117,9 +115,7 @@ module Adyen
       # @see Adyen::REST::AuthorisePayment::Response#authorised?
       def authorise_payment_3dsecure_request(attributes = {})
         Adyen::REST::AuthorisePayment::Request.new('Payment.authorise3d', attributes,
-            prefix: 'payment_request_3d',
-            response_class: Adyen::REST::AuthorisePayment::Response,
-            response_options: { prefix: 'payment_result' })
+            response_class: Adyen::REST::AuthorisePayment::Response)
       end
 
       # Sends a 3Dsecure-enabled authorise payment request to Adyen's webservice.
@@ -145,9 +141,7 @@ module Adyen
       # @see #authorise_recurring_payment
       def authorise_recurring_payment_request(attributes={})
         Adyen::REST::AuthoriseRecurringPayment::Request.new('Payment.authorise', attributes,
-            prefix: 'payment_request',
-            response_class: Adyen::REST::AuthorisePayment::Response,
-            response_options: { prefix: 'payment_result' })
+            response_class: Adyen::REST::AuthorisePayment::Response)
       end
 
       # Sends an authorise recurring payment request to Adyen's webservice.
@@ -168,9 +162,7 @@ module Adyen
       # @see #authorise_recurring_payment
       def reauthorise_recurring_payment_request(attributes={})
         Adyen::REST::ReauthoriseRecurringPayment::Request.new('Payment.authorise', attributes,
-            prefix: 'payment_request',
-            response_class: Adyen::REST::AuthorisePayment::Response,
-            response_options: { prefix: 'payment_result' })
+            response_class: Adyen::REST::AuthorisePayment::Response)
       end
 
       # Sends an authorise recurring payment request to Adyen's webservice.
@@ -201,7 +193,7 @@ module Adyen
             :card_number => "card.number"
           }
 
-          map_response_list("recurringDetailsResult.details", mapped_attributes)
+          map_response_list("details", mapped_attributes)
         end
 
         # Returns a list of recurring details references
@@ -217,9 +209,7 @@ module Adyen
       # @see #list_recurring_details
       def list_recurring_details_request(attributes = {})
         Adyen::REST::ListRecurringDetailsPayment::Request.new('Recurring.listRecurringDetails', attributes,
-            prefix: 'recurring_details_request',
-            response_class: Adyen::REST::AuthorisePayment::ListRecurringDetailsResponse,
-            response_options: { prefix: 'recurring_details_result' })
+            response_class: Adyen::REST::AuthorisePayment::ListRecurringDetailsResponse)
       end
 
       # Sends an list recurring details request to Adyen's webservice.
