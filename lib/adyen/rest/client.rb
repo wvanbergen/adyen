@@ -64,8 +64,8 @@ module Adyen
       #
       # @return [Net::HTTP] The underlying Net::HTTP instance the client uses to perform HTTP request.
       def http
-        @http ||= Net::HTTP.new(endpoint.host, endpoint.port).tap do |http|
-          http.use_ssl = endpoint.scheme == 'https'
+        @http ||= Net::HTTP.new(@endpoint.host, @endpoint.port).tap do |http|
+          http.use_ssl = @endpoint.scheme == 'https'
         end
       end
 
@@ -81,6 +81,7 @@ module Adyen
       #   of  executing the underlying HTTP request.
       def execute_request(request)
         request.validate!
+        set_endpoint(request.resource)
         http_response = execute_http_request(request)
         request.build_response(http_response)
       end
@@ -94,7 +95,7 @@ module Adyen
       # @see #http Use the <tt>http</tt> method to set options on the underlying
       #   <tt>Net::HTTP</tt> object, like timeouts.
       def execute_http_request(request)
-        http_request = Net::HTTP::Post.new(endpoint.path)
+        http_request = Net::HTTP::Post.new(@endpoint.path)
         http_request.basic_auth(@username, @password)
         http_request.set_form_data(request.form_data)
 
@@ -106,18 +107,19 @@ module Adyen
         when Net::HTTPUnauthorized
           raise Adyen::REST::Error.new("Webservice credentials are incorrect")
         else
-          raise Adyen::REST::Error.new("Unexpected HTTP response: #{response.code}")
+          raise Adyen::REST::Error.new("Unexpected HTTP response code: #{response.code} | response body: #{response.body}")
         end
       end
 
-      # The endpoint URI for this client.
+      # Set the endpoint URI for this client.
       # @return [URI] The endpoint to use for the environment.
-      def endpoint
-        @endpoint ||= URI(ENDPOINT % [environment])
+      def set_endpoint(resource)
+        @endpoint = URI(ENDPOINT % [environment, resource])
+        @endpoint
       end
 
       # @see Adyen::REST::Client#endpoint
-      ENDPOINT = 'https://pal-%s.adyen.com/pal/adapter/httppost'
+      ENDPOINT = 'https://pal-%s.adyen.com/pal/servlet/%s'
       private_constant :ENDPOINT
     end
   end
