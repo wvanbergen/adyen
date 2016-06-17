@@ -4,12 +4,20 @@ The following changes have been made to the library over the years. Pleae add an
 
 #### Unrelease changes
 
-- Add `Adyen::REST` to intereact with Adyen's webservices.
-- Add `Adyen::HPP` to integrate with Adyen's Hosted Payment Pages.
+- Add `Adyen::HPP` to integrate with Adyen's Hosted Payment Pages. `Adyen::Form` should be considered deprecated and will be removed from a future release.
+
+#### Version 2.1.0
+
+- Create syntax sugar for signature responses
+- Various code cleanups.
+
+#### Version 2.0.0
+
+- Add `Adyen::REST` to intereact with Adyen's webservices. `Adyen::API` should be considered deprecated and will be removed from a future release.
 - Make client-side encryption a first class citizen.
 - Add integration test suite that uses a functional example app.
-- Deprecate `Adyen::API` and `Adyen::Form`.
-- DOcumentation updates and improvements.
+- Documentation updates and improvements.
+- Drop support for Ruby 1.9
 
 #### Version 1.6.0
 
