@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'adyen/hpp'
 
 class HppTest < Minitest::Test
   include Adyen::Matchers
