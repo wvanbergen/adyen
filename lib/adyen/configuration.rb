@@ -86,13 +86,18 @@ class Adyen::Configuration
   # @return [String]
   attr_accessor :cse_public_key
 
-  # Default arguments that will be used for in every HTML form.
+  # Default arguments that will be used in every HTML form.
   #
   # @example
-  #   Adyen.configuration.default_form_params[:shared_secret] = 'secret'
+  #   Adyen.configuration.default_form_params[:merchant_account] = 'SuperShop'
   #
   # @return [Hash]
   attr_accessor :default_form_params
+
+  # Name of the default skin for HPP requests.
+  #
+  # @return [String]
+  attr_accessor :default_skin
 
   # Username that's set in Notification settings screen in Adyen PSP system and used by notification service to
   # authenticate instant payment notification requests.
@@ -152,7 +157,7 @@ class Adyen::Configuration
     @form_skins[skin_name.to_sym]
   end
 
-  # Returns skin information by code code.
+  # Returns skin information by skin code.
   #
   # @param [String] skin_code The code of the skin.
   #

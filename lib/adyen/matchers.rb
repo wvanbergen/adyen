@@ -7,7 +7,7 @@ module Adyen
 
       def self.build_xpath_query(checks)
         # Start by finding the check for the Adyen form tag
-        xpath_query =  "//form[@action='#{Adyen::Form.url}']"
+        xpath_query =  "//form[@id='adyen']"
 
         # Add recurring/single check if specified
         recurring =  checks.delete(:recurring)

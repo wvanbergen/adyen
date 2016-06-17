@@ -3,18 +3,14 @@
 # configuration methods.
 #
 # The most important submodules are:
-# * {Adyen::Form} for generating payment form fields, generating redirect URLs
-#   to the Adyen payment system, and generating and checking of signatures.
-# * {Adyen::API} for communicating with the Adyen SOAP services for issuing
-#   (recurring) payments and recurring contract maintenance.
+# * {Adyen::HPP} for interacting with Adyen's Hosted Payment Pages.
+# * {Adyen::REST} for communicating with the Adyen REST webservices.
 require 'adyen/base'
 require 'adyen/version'
 
 require 'adyen/form'
 require 'adyen/api'
 require 'adyen/rest'
-
-# TODO: Move into main hpp file once it exists
-require 'adyen/hpp/signature'
+require 'adyen/hpp'
 
 require 'adyen/railtie' if defined?(::Rails) && ::Rails::VERSION::MAJOR >= 3

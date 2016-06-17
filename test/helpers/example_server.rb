@@ -12,6 +12,31 @@ class Adyen::ExampleServer < Sinatra::Base
   end
 
   get '/hpp' do
+    @payment = {
+      :currency_code => 'EUR',
+      :payment_amount => 4321,
+      :merchant_reference => params[:merchant_reference] || 'HPP test order',
+      :ship_before_date => (Date.today + 1).strftime('%F'),
+      :session_validity => (Time.now.utc + 30*60).strftime('%FT%TZ'),
+      :billing_address => {
+        :street               => 'Alexanderplatz',
+        :house_number_or_name => '0815',
+        :city                 => 'Berlin',
+        :postal_code          => '10119',
+        :state_or_province    => 'Berlin',
+        :country              => 'Germany',
+      },
+      :shopper => {
+        :telephone_number       => '123-4512-345',
+        :first_name             => 'John',
+        :last_name              => 'Doe',
+      }
+    }
+
+    erb :hpp
+  end
+
+  get '/form' do
    @payment = {
       :skin => :testing,
       :currency_code => 'EUR',
@@ -38,7 +63,7 @@ class Adyen::ExampleServer < Sinatra::Base
   end
 
   get '/hpp/result' do
-    raise "Forgery!" unless Adyen::Form.redirect_signature_check(params)
+    raise "Forgery!" unless Adyen::HPP::Response(params).has_valid_signature?
 
     case params['authResult']
     when 'AUTHORISED'

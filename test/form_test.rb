@@ -270,7 +270,7 @@ class FormTest < Minitest::Test
 
   def test_hidden_payment_form_fields
     payment_snippet = <<-HTML
-      <form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">
+      <form id="adyen" action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">
         #{Adyen::Form.hidden_fields(@payment_attributes)}
       </form>
     HTML
@@ -286,7 +286,7 @@ class FormTest < Minitest::Test
 
   def test_hidden_recurring_payment_form_fields
     recurring_snippet = <<-HTML
-      <form action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">
+      <form id="adyen" action="#{CGI.escapeHTML(Adyen::Form.url)}" method="post">
         #{Adyen::Form.hidden_fields(@recurring_payment_attributes)}
       </form>
     HTML

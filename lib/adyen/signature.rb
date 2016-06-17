@@ -13,7 +13,7 @@ module Adyen
     # @return [String] The signature
     def sign(params, type = :hpp)
       shared_secret = params.delete('sharedSecret')
-      raise ArgumentError, 'Cannot sign without a shared secret' if shared_secret.nil?
+      raise ArgumentError, "Cannot sign parameters without a shared secret" unless shared_secret
       sig = OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha256'), Array(shared_secret).pack("H*"), string_to_sign(params, type))
       Base64.encode64(sig).strip
     end
