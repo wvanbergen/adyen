@@ -1,6 +1,7 @@
 require 'test_helper'
+require 'adyen/rest/signature'
 
-class SignatureTest < Minitest::Test
+class RESTSignatureTest < Minitest::Test
   def setup
     # values from https://docs.adyen.com/pages/viewpage.action?pageId=5376964
 

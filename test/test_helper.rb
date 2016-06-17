@@ -2,13 +2,11 @@
 require 'minitest/autorun'
 require 'minitest/pride'
 require 'mocha/setup'
-require 'capybara/poltergeist'
 
-require 'adyen'
+require 'adyen/base'
 require 'adyen/matchers'
 
 require 'helpers/configure_adyen'
-require 'helpers/example_server'
 require 'helpers/test_cards'
 
 require 'pp'
@@ -44,13 +42,3 @@ module Adyen::Test
     end
   end
 end
-
-
-
-Capybara.register_driver :poltergeist do |app|
-  Capybara::Poltergeist::Driver.new(app, phantomjs_options: ['--ssl-protocol=any'])
-end
-
-Capybara.default_driver = :poltergeist
-Capybara.javascript_driver = :poltergeist
-Capybara.app = Adyen::ExampleServer

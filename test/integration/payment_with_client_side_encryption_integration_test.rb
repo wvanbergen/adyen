@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'capybara/poltergeist'
+require 'helpers/capybara'
 
 class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
   extend Adyen::Test::Flaky

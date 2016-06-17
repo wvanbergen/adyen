@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'adyen/form'
 
 class FormTest < Minitest::Test
   include Adyen::Matchers
@@ -238,23 +239,23 @@ class FormTest < Minitest::Test
       'merchantSig' => 'ytt3QxWoEhAskUzUne0P5VA9lPw='
     }
 
-    assert_equal params[:merchantSig], Adyen::Form.redirect_signature(params)
+    assert_equal params['merchantSig'], Adyen::Form.redirect_signature(params)
     
     assert Adyen::Form.redirect_signature_check(params) # shared secret from registered skin
     assert Adyen::Form.redirect_signature_check(params, 'Kah942*$7sdp0)') # explicitly provided shared secret
     
-    refute Adyen::Form.redirect_signature_check(params.merge(skinCode: 'sk1nC0de'))
+    refute Adyen::Form.redirect_signature_check(params.merge('skinCode' => 'sk1nC0de'))
     refute Adyen::Form.redirect_signature_check(params, 'wrong_shared_secret')
 
-    refute Adyen::Form.redirect_signature_check(params.merge(pspReference: 'tampered'))
-    refute Adyen::Form.redirect_signature_check(params.merge(merchantSig: 'tampered'))
+    refute Adyen::Form.redirect_signature_check(params.merge('pspReference' => 'tampered'))
+    refute Adyen::Form.redirect_signature_check(params.merge('merchantSig' => 'tampered'))
 
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check(nil) }
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check({}) }
     assert_raises(ArgumentError) { Adyen::Form.redirect_signature_check(params.delete(:skinCode)) }
   end
 
-  def test_redirect_signature_check
+  def test_redirect_signature_check_with_escaped_params
     Adyen.configuration.register_form_skin(:testing, 'tifSfXeX', 'testing123', :merchant_account => 'VanBergenORG')
 
 # http://example.com/result?merchantReference=HPP+test+order+%25231&skinCode=tifSfXeX&shopperLocale=en_GB&paymentMethod=visa&authResult=AUTHORISED&pspReference=8814131153369759&merchantSig=il8cjgOiG4N9l2PlSf6h4EVQ6hk%253D

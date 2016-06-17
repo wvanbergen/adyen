@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'helpers/capybara'
 
 class PaymentUsing3DSecureIntegrationTest < Minitest::Test
   extend Adyen::Test::Flaky

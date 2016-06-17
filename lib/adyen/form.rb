@@ -1,4 +1,6 @@
 require 'cgi'
+require 'adyen/base'
+require 'adyen/util'
 
 module Adyen
 

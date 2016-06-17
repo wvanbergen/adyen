@@ -1,3 +1,5 @@
+require 'adyen/signature'
+
 module Adyen
   module HPP
     # The Signature module can sign and verify HMAC SHA-256 signatures for Hosted Payment Pages

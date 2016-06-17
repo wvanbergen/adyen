@@ -169,12 +169,8 @@ module Adyen
       class StoreTokenResponse < Response
         response_attrs :response, :recurring_detail_reference
 
-        def recurring_detail_reference
-          params[:recurring_detail_reference]
-        end
-
         def success?
-          super && params[:response] == 'Success'
+          super && response == 'Success'
         end
 
         alias_method :stored?, :success?
