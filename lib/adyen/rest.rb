@@ -9,7 +9,11 @@ module Adyen
   # The primary method here is {Adyen::REST.session}, which will yield a
   # {Adyen::REST::Client} which you can use to send API requests.
   #
-  # @example
+  # If you need more than one client instance, for instance because you
+  # have multiple acounts set up with different permissions, you can instantiate
+  # clients yourself using {Adyen::REST::Client.new}
+  #
+  # @example Using the singleton Client instance
   #
   #     Adyen::REST.session do |client|
   #       client.http.read_timeout = 5
@@ -17,14 +21,26 @@ module Adyen
   #       # ...
   #     end
   #
+  # @example Using a your own Client instance
+  #
+  #     Adyen::REST::Client.new('test', 'username', 'password').session do |client|
+  #       client.http.read_timeout = 5
+  #       response = client.api_request(...)
+  #       # ...
+  #     end
+  #
+  #
   # @see Adyen::REST.session Use Adyen::REST.session to run code against the API.
   # @see Adyen::REST::Client Adyen::REST::Client implements the actual API calls.
   module REST
 
-    # Provides a REST API client this is configured using the values in <tt>Adyen.configuration</tt>.
+    # Provides a singelton REST API client this is configured using the values in
+    # <tt>Adyen.configuration</tt>.
+    #
     # @param options [Hash] (see Adyen::REST::Client#initialize)
     # @return [Adyen::REST::Client] A configured client instance
     # @see .session
+    # @see Adyen::REST::Client.new To instantiate Clients yourself, in case you need more than one.
     def self.client
       Adyen::REST::Client.new(
         Adyen.configuration.environment,
@@ -43,12 +59,9 @@ module Adyen
     #   the provided client. The client will be closed after the block returns.
     # @yieldparam client [Adyen::REST::Client] The REST client to use for the session.
     # @return [void]
-    # @see Adyen::REST::Client
-    def self.session(client = nil)
-      client ||= self.client
-      yield(client)
-    ensure
-      client.close
+    # @see Adyen::REST::Client#session
+    def self.session(client = self.client, &block)
+      client.session(&block)
     end
   end
 end
