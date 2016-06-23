@@ -42,6 +42,19 @@ module Adyen
         @http = nil
       end
 
+      # Runs a client session against the Adyen REST service for the duration of the block,
+      # and closes the connection afterwards.
+      #
+      # @yield The provided block will be called in which you can interact with the API using
+      #   the provided client. The client will be closed after the block returns.
+      # @return [void]
+      def session
+        yield(self)
+      ensure
+        close
+      end
+
+
       # The underlying <tt>Net::HTTP</tt> instance that is used to execute HTTP
       # request against the API.
       #
