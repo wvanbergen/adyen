@@ -4,7 +4,11 @@ The following changes have been made to the library over the years. Pleae add an
 
 #### Unrelease changes
 
-- Add `Adyen::HPP` to integrate with Adyen's Hosted Payment Pages. `Adyen::Form` should be considered deprecated and will be removed from a future release.
+Nothing yet!
+
+#### Version 2.2.0
+
+- Add `Adyen::HPP` to integrate with Adyen's Hosted Payment Pages. `Adyen::HPP` supports the new HMAC-256 signing mechanism. `Adyen::Form` should be considered deprecated and will be removed from a future release.
 
 #### Version 2.1.0
 
