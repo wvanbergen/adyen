@@ -33,8 +33,6 @@ module Adyen
       attr_accessor :response_class, :response_options
 
       def initialize(action, attributes, options = {})
-        raise Adyen::REST::RequiredParameterMissing, "actions is required!" if action.nil?
-
         @form_data = generate_form_data(attributes)
         @path = generate_path(action)
 

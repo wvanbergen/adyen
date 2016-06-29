@@ -9,9 +9,6 @@ module Adyen
     class RequestValidationFailed < Adyen::REST::Error
     end
 
-    class RequiredParameterMissing < Adyen::REST::Error
-    end
-
     # Exception class for error responses from the Adyen API.
     #
     # @!attribute category

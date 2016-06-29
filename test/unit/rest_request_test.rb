@@ -21,10 +21,6 @@ class RESTRequestTest < Minitest::Test
     assert_equal '456',  form_data['nested.camelCase']
   end
 
-  def test_action_is_required
-    assert_raises(Adyen::REST::RequiredParameterMissing) { Adyen::REST::Request.new(nil, @attributes) }
-  end
-
   def test_setting_attributes
     request = Adyen::REST::Request.new('Action.Test', @attributes)
     request[:nested] = { a: 1, b: 2 }
