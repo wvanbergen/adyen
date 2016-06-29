@@ -60,7 +60,7 @@ module Adyen
       end
 
       def merchant_account=(value)
-        self[:merchant_account] = value
+        self[:merchantAccount] = value
       end
 
       # Runs validations on the request before it is sent.
