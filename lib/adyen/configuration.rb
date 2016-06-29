@@ -110,28 +110,6 @@ class Adyen::Configuration
   # @return [String]
   attr_accessor :ipn_password
 
-  # The username that’s used to submit payouts. It should look
-  # something like ‘storePayout@AndyInc.SuperShop+’
-  #
-  # @return [String]
-  attr_accessor :payout_store_username
-
-  # Password used to store payout together with '+payout_review_username+' configuration attribute.
-  #
-  # @return [String]
-  attr_accessor :payout_store_password
-
-  # The username that’s used to review payouts. It should look
-  # something like reviewPayout@AndyInc.SuperShop+’
-  #
-  # @return [String]
-  attr_accessor :payout_review_username
-
-  # Password used to review payout together with '+payout_review_username+' configuration attribute.
-  #
-  # @return [String]
-  attr_accessor :payout_review_password
-
   ######################################################
   # SKINS
   ######################################################
