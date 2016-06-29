@@ -29,14 +29,14 @@ module Adyen
     # @see Adyen::REST::Client
     # @see Adyen::REST::Response
     class Request
-      attr_reader :prefix, :form_data, :required_attributes, :resource
+      attr_reader :prefix, :form_data, :required_attributes, :path
       attr_accessor :response_class, :response_options
 
       def initialize(action, attributes, options = {})
         raise Adyen::REST::RequiredParameterMissing, "actions is required!" if action.nil?
 
         @form_data = generate_form_data(attributes)
-        @resource = generate_resource(action)
+        @path = generate_path(action)
 
         @response_class   = options[:response_class]   || Adyen::REST::Response
         @response_options = options[:response_options] || {}
@@ -94,9 +94,13 @@ module Adyen
         Adyen::Util.flatten(attributes)
       end
 
-      def generate_resource(action)
-        '%s/v12/%s' % action.split('.')
+      def generate_path(action)
+        PATH % action.split('.')
       end
+
+      # @see Adyen::REST::Request#set_path
+      PATH = '/pal/servlet/%s/v12/%s'
+      private_constant :PATH
     end
   end
 end
