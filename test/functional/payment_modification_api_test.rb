@@ -12,7 +12,7 @@ class PaymentModificationAPITest < Minitest::Test
 
   def test_capture_payment_api_request
     response = @client.capture_payment(
-      merchant_account: 'VanBergenORG',
+      merchantAccount: 'VanBergenORG',
       modification_amount: { currency: 'EUR', value: 1234 },
       reference: "functional test for cancellation",
       original_reference: 7913939284323855
@@ -24,7 +24,7 @@ class PaymentModificationAPITest < Minitest::Test
 
   def test_cancel_payment_api_request
     response = @client.cancel_payment(
-      merchant_account: 'VanBergenORG',
+      merchantAccount: 'VanBergenORG',
       reference: "functional test for cancellation",
       original_reference: 7913939284323855
     )
@@ -35,7 +35,7 @@ class PaymentModificationAPITest < Minitest::Test
 
   def test_refund_payment_api_request
     response = @client.refund_payment(
-      merchant_account: 'VanBergenORG',
+      merchantAccount: 'VanBergenORG',
       modification_amount: { currency: 'EUR', value: 1234 },
       reference: "functional test for cancellation",
       original_reference: 7913939284323855
@@ -47,7 +47,7 @@ class PaymentModificationAPITest < Minitest::Test
 
   def test_cancel_or_refund_payment_api_request
     response = @client.cancel_or_refund_payment(
-      merchant_account: 'VanBergenORG',
+      merchantAccount: 'VanBergenORG',
       reference: "functional test for cancellation",
       original_reference: 7913939284323855
     )

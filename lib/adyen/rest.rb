@@ -45,8 +45,7 @@ module Adyen
       Adyen::REST::Client.new(
         Adyen.configuration.environment,
         Adyen.configuration.api_username,
-        Adyen.configuration.api_password,
-        Adyen.configuration.default_api_params
+        Adyen.configuration.api_password
       )
     end
 

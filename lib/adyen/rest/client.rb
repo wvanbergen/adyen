@@ -29,8 +29,8 @@ module Adyen
       # @param username [String] The webservice username, e.g. <tt>ws@Company.Account</tt>
       # @param password [String] The password associated with the username
       # @param default_api_params [Hash] Default arguments that will be used for every API call
-      def initialize(environment, username, password, default_api_params = {})
-        @environment, @username, @password, @default_api_params = environment, username, password, default_api_params
+      def initialize(environment, username, password)
+        @environment, @username, @password = environment, username, password
       end
 
       # Closes the client.
@@ -100,7 +100,7 @@ module Adyen
       def execute_http_request(request)
         http_request = Net::HTTP::Post.new(@endpoint.path)
         http_request.basic_auth(@username, @password)
-        http_request.set_form_data(form_data(request))
+        http_request.set_form_data(request.form_data)
 
         case response = http.request(http_request)
         when Net::HTTPOK
@@ -121,12 +121,6 @@ module Adyen
         @endpoint
       end
 
-      # @return [Hash] form_data
-      def form_data(request)
-        # Make sure default_api_params are camelCase
-        Adyen::Util.flatten(@default_api_params)
-          .merge(request.form_data)
-      end
 
       # @see Adyen::REST::Client#endpoint
       ENDPOINT = 'https://pal-%s.adyen.com/pal/servlet/%s'
