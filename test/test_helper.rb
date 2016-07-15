@@ -10,6 +10,7 @@ require 'helpers/configure_adyen'
 require 'helpers/test_cards'
 
 require 'pp'
+require 'time'
 
 module Adyen::Test
   module Flaky
