@@ -2,8 +2,6 @@
 
 Package to simplify including Adyen payments services into a Ruby on Rails application.
 
-> Note: this library is corrently undergoing a major rewrite. Information in this README is about the still unreleased version of this library. If you want information about the last released version, check out version [1.6.0](https://github.com/wvanbergen/adyen/tree/v1.6.0).
-
 Adyen integration relies on three modes of communication between Adyen, your server and your client/customer:
 
 - Client-to-Adyen communication using Hosted Payment Pages (HPP).
