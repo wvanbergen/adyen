@@ -6,7 +6,7 @@ This projects welcomes outside contributions from anyone.
 
 Please report bugs as a [Github issue](https://github.com/wvanbergen/adyen/issues/new).
 
-- We are not associated with Adyen. Please contact Adyen youself if you are having
+- We are not associated with Adyen. Please contact Adyen yourself if you are having
   trouble with your integration.
 - This library supports several features that are not supported by default on a new
   Adyen account. You may have to contact Adyen if you are receiving a
