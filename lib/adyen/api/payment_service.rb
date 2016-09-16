@@ -222,7 +222,8 @@ module Adyen
       class BilletResponse < Response
         RECEIVED = "Received"
 
-        response_attrs :result_code, :billet_url, :psp_reference
+        response_attrs :result_code, :billet_url, :psp_reference,
+                       :barcode, :due_date, :expiration_date
 
         def success?
           super && params[:result_code] == RECEIVED
@@ -230,16 +231,37 @@ module Adyen
 
         def params
           @params ||= xml_querier.xpath('//payment:authoriseResponse/payment:paymentResult') do |result|
+            result_code = result.text('./payment:resultCode')
+            attributes = Hash.new('')
+
+            if result_code == RECEIVED
+              attributes = result.children[0].children.map do |child|
+                { child.children[0].text => child.children[1].text }
+              end
+              attributes = attributes.reduce({}, :merge)
+            end
+
             {
-              :psp_reference  => result.text('./payment:pspReference'),
-              :result_code    => result_code = result.text('./payment:resultCode'),
-              :billet_url     => (result_code == RECEIVED) ? result.children[0].children[0].children[1].text : ""
+              :psp_reference   => result.text('./payment:pspReference'),
+              :result_code     => result_code,
+              :billet_url      => attributes['boletobancario.url'],
+              :barcode         => attributes['boletobancario.barCodeReference'],
+              :due_date        => convert_to_date(attributes['boletobancario.dueDate']),
+              :expiration_date => convert_to_date(attributes['boletobancario.expirationDate'])
             }
           end
         end
 
         def invalid_request?
           !fault_message.nil?
+        end
+
+        private
+
+        def convert_to_date(value)
+          Date.parse(value)
+        rescue ArgumentError
+          nil
         end
       end
 

@@ -188,9 +188,12 @@ describe Adyen::API::PaymentService do
 
   describe_response_from :generate_billet, BILLET_RECEIVED_RESPONSE do
     it_should_return_params_for_each_xml_backend({
-      :psp_reference => "8814038837489129",
+      :psp_reference => "8814737173377729",
       :result_code => "Received",
-      :billet_url => "https://test.adyen.com/hpp/generationBoleto.shtml?data=AgABAQBdYDe9OqdseA79Rfexm2Lz8fRQ1bWqkLhBCf1fHhQEif7bsRKi0otq%2B1ekMAdMIZUiVXeR3QFrAOA8Zy4tpiNLhkMq6f7W2zFqYhVWrByqxQnbQTYuX2FWI7tsu7Vb0MnyOvFfFdFtaxzImZYCli%2BMrqaAJ5HI9ap3egeqBQIsRI%2Fj0zWsu2EGN16lGbwFOLyxl%2By0Pc5jazTo8rnBA7OVPGDIu7Qt%2F2DYIMcB6PXou5W3aJoTC4SldhNdobVqgWUtES8NsWdOYbLGa6I%2BjSwEFXvxyTXwtw4J2E%2BE7ux1UhBiZRj66lMbcvaYlfnR2xWbA%2BKmdLrVvuXTroEHKQ%2B1C%2FuyGuiOk3SmGq6TMgOyCEt%2BmG%2Bq6z5jDi%2BnYLtlLQU4ccMOujgWMfGkViC%2FXDUlqYjKbn8NHwPwoPcelpf1zCDCe%2Fvu6NBTVQbEXbE0oV0j2MT1tLlMdf08iUsDThuQ3MlJbE8VbTMlttOFqoyXhBjepQ42C1eXfswSz1gsZlHanBCTiw1pB69vkvfWPf5IdUSx1cpEr9LJ9PSz%2FeHxEhq%2B8ZdWzrybXqRbEl2mUjLeyhMNuiE%3D"
+      :billet_url => "https://test.adyen.com/hpp/generationBoleto.shtml?data=BQABAQA8M3ewKqDwrdIK%2Bq9mDvlF%2BX0IszPCAG9Tg2jmOJn0%2Fm6T%2BPABVpyI8%2FhFeY3xTN3B7yEffj6ehx0ADQh5sLT9ndkqu1UuHTZjlxBiJ9UcMOAl8rkPSLEJU1Dw1tLWGQ7PKRqB8bv3k%2FVbPGliXZVxEvzxAOZdZ1dpHeVZfA1XT8a9%2BZQtJFPAHOhgYpPBmYkiVnavJfwbNMKddQY0CZxC1V2Hndx9yDl%2FS0IJ1hLgiwxr8eE6QkeDBYZ5uKKyiIVpPxKwDe1o3sq2v76s7cQvdfGn%2FmAr6jWiNl%2BrQU92%2FYlFuR4rHhZdOyUkNofTeTRcpuSaTsK1L9MS1UNqTAWbEMmlqUgNZ6B7HtiYP61sbMIAAECcYbKVpl%2BRN3hpP3HqHc0%2FxkOShfnE4bYOtDGVDMf4dt9kAM6%2BXDOyk8iu%2F%2FdbHvrZnenLFsKhcdDEjiXRrLHMVxQI9BN%2F5Yy4hnGN7k%2FXI1mANMhNpKWLdPBCt94GzaiI830xKsh5KlgFrenU%2B4x2p0pbeAQUokTLKHEUUzmNmlplxhADBHmTAEwC0vbbGjWFh3PS0zGRwas2TpLNRtQznTmdfoI7j0dlSVHCQQ%3D%3D",
+      :barcode => "03399.33335 33887.371731 37772.301026 8 69200000009314",
+      :due_date => Date.parse("2016-09-17"),
+      :expiration_date => Date.parse("2016-10-02")
     })
 
     describe "with a received billet" do
@@ -204,7 +207,10 @@ describe Adyen::API::PaymentService do
     it_should_return_params_for_each_xml_backend({
       :psp_reference => "8514038928235061",
       :result_code => "Refused",
-      :billet_url => ""
+      :billet_url => "",
+      :barcode => "",
+      :due_date => nil,
+      :expiration_date => nil
     })
 
     describe "with a received billet" do
