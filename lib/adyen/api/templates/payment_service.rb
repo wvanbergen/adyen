@@ -107,6 +107,11 @@ module Adyen
       EOXML
 
       # @private
+      SHOPPER_STATEMENT = <<-EOXML
+        <payment:shopperStatement>%s</payment:shopperStatement>
+      EOXML
+
+      # @private
       ENCRYPTED_CARD_PARTIAL = <<-EOXML
         <additionalAmount xmlns="http://payment.services.adyen.com" xsi:nil="true" />
         <additionalData xmlns="http://payment.services.adyen.com">

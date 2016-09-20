@@ -49,7 +49,7 @@ module Adyen
   module API
     extend self
 
-    # Generate a Billet - *Brazian users only*
+    # Generate a Billet - *Brazillian users only*
     #
     # Billet (Boleto Bancário), often simply referred to as Boleto, is an
     # offline payment method used in Brazil . The consumer will take the Boleto form to
@@ -66,17 +66,20 @@ module Adyen
     #     { currency: "BRL", value: (invoice.amount).to_i },
     #     { first_name: "Simon", last_name: "Hopper" },
     #     document_number,
-    #     selected_brand
+    #     selected_brand,
+    #     "2016-10-29T23:00:00.000Z",
+    #     "Please send payment email to payment@example.com after payment."
     #   )
     #   response.success? # => true
     #
     #
-    # @param          [Numeric,String] reference        Your reference (ID) for this payment.
-    # @param          [Hash]           amount           A hash describing the money to charge.
-    # @param          [Hash]           shopper          A hash describing the shopper.
-    # @param          [String]         document_number  Social Security
-    # number(CPF in Brazil)
-    # @param          [String]         selected_brand   Billet brand
+    # @param          [Numeric,String] reference          Your reference (ID) for this payment.
+    # @param          [Hash]           amount             A hash describing the money to charge.
+    # @param          [Hash]           shopper_name       A hash describing the shopper.
+    # @param          [String]         document_number    Social Security number (CPF in Brazil)
+    # @param          [String]         selected_brand     Billet brand
+    # @param          [String]         delivery_date      Payment date limit in ISO8601 format
+    # @param optional [String]         shopper_statement  Payment instructions to Shopper
     #
     # @option amount  [String]         :currency      The ISO currency code (EUR, GBP, USD, etc).
     # @option amount  [Integer]        :value         The value of the payment in discrete cents,
@@ -88,13 +91,14 @@ module Adyen
     #
     # @return [PaymentService::BilletResponse] The response object which holds the billet url.
     #
-    def generate_billet(reference, amount, shopper_name, social_security_number, selected_brand, delivery_date)
+    def generate_billet(reference, amount, shopper_name, social_security_number, selected_brand, delivery_date, shopper_statement = nil)
       params = { :reference              => reference,
                  :amount                 => amount,
                  :shopper_name           => shopper_name,
                  :social_security_number => social_security_number,
                  :selected_brand         => selected_brand,
-                 :delivery_date          => delivery_date }
+                 :delivery_date          => delivery_date,
+                 :shopper_statement      => shopper_statement }
       PaymentService.new(params).generate_billet
     end
 
