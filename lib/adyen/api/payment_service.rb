@@ -230,7 +230,8 @@ module Adyen
         RECEIVED = "Received"
 
         response_attrs :result_code, :billet_url, :psp_reference,
-                       :barcode, :due_date, :expiration_date
+                       :barcode, :due_date, :expiration_date,
+                       :refusal_reason
 
         def success?
           super && params[:result_code] == RECEIVED
@@ -254,7 +255,8 @@ module Adyen
               :billet_url      => attributes['boletobancario.url'],
               :barcode         => attributes['boletobancario.barCodeReference'],
               :due_date        => convert_to_date(attributes['boletobancario.dueDate']),
-              :expiration_date => convert_to_date(attributes['boletobancario.expirationDate'])
+              :expiration_date => convert_to_date(attributes['boletobancario.expirationDate']),
+              :refusal_reason => (invalid_request? ? fault_message : result.text('./payment:refusalReason'))
             }
           end
         end

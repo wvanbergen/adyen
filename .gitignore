@@ -12,3 +12,4 @@ adyen-*.gem
 t.rb
 test/functional/initializer.rb
 Gemfile.lock
+.ruby-*
