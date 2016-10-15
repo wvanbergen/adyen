@@ -53,7 +53,7 @@ module Adyen
       #    for payment forms or redirects.
       # @see Adyen::HPP::Request.redirect_url
       def domain
-        (Adyen.configuration.payment_flow_domain || HPP_DOMAIN) % [environment.to_s]
+        Adyen.configuration.payment_flow_domain || HPP_DOMAIN % [environment.to_s]
       end
 
       # Returns the URL of the Adyen payment system, adjusted for an Adyen environment.
