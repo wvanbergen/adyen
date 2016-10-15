@@ -93,7 +93,7 @@ module APISpecHelper
   def stub_net_http(response_body)
     Net::HTTP.stubbing_enabled = true
     response = Net::HTTPOK.new('1.1', '200', 'OK')
-    allow(response).to receive(:body).and_return response_body
+    response.stubs(:body).returns response_body
     Net::HTTP.stubbed_response = response
   end
 
@@ -107,7 +107,7 @@ module APISpecHelper
       backends.each do |xml_backend|
         describe "with a #{xml_backend} backend" do
           before do
-            allow(Adyen::API::XMLQuerier).to receive(:default_backend).and_return xml_backend.new
+            Adyen::API::XMLQuerier.stubs(:default_backend).returns xml_backend.new
           end
           instance_eval(&block)
         end

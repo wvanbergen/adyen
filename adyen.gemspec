@@ -24,8 +24,7 @@ Gem::Specification.new do |s|
   s.license  = 'MIT'
 
   s.add_development_dependency('rake')
-  s.add_development_dependency('minitest', '~> 5')
-  s.add_development_dependency('rspec-mocks', '~> 3.5')
+  s.add_development_dependency('minitest', '~> 5.0')
   s.add_development_dependency('mocha')
   s.add_development_dependency('sinatra')
   s.add_development_dependency('poltergeist')
