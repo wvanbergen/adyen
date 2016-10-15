@@ -31,7 +31,8 @@ module Net
     end
 
     class << self
-      attr_accessor :stubbing_enabled, :posted, :stubbed_response
+      attr_accessor :posted, :stubbed_response
+      attr_reader :stubbing_enabled
 
       def stubbing_enabled=(enabled)
         reset! if @stubbing_enabled = enabled
@@ -148,7 +149,7 @@ module APISpecHelper
 
     def it_should_validate_request_param(name, &block)
       it "validates the `#{name}' request parameter" do
-        instance_eval &block
+        instance_eval(&block)
         lambda { current_object_method_result }.must_raise(ArgumentError)
       end
     end
