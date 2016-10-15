@@ -1,4 +1,5 @@
 require 'adyen/hpp/signature'
+require 'adyen/util'
 require 'cgi'
 
 module Adyen
