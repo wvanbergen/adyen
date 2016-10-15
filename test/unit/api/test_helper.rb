@@ -185,25 +185,20 @@ module APISpecHelper
     def describe_request_body_of(method, xpath = nil, &block)
       method = "#{method}_request_body"
       describe(method) do
-        let(:current_object_method_result) { @object.send(method) }
-
-        let(:node_for_current_object_and_method) do
-          Adyen::API::XMLQuerier.xml(current_object_method_result)
-        end
-
+        prepare_request_body_specs(method, xpath)
         before { @method = method }
-        if xpath
-          let(:node_for_current_method) do
-            node_for_current_object_and_method.xpath(xpath)
-          end
-        end
         instance_eval(&block)
       end
     end
 
     def describe_modification_request_body_of(method, camelized_method = nil, &block)
-      describe_request_body_of method, "//payment:#{camelized_method || method}/payment:modificationRequest" do
+      xpath = "//payment:#{camelized_method || method}/payment:modificationRequest"
+      method = "#{method}_request_body"
+      describe method do
+        prepare_request_body_specs(method, xpath)
+
         before do
+          @method = method
           @payment.params[:psp_reference] = 'original-psp-reference'
         end
 
@@ -218,6 +213,21 @@ module APISpecHelper
         instance_eval(&block) if block_given?
       end
     end
+
+    def prepare_request_body_specs(method, xpath)
+      let(:current_object_method_result) { @object.send(method) }
+
+      let(:node_for_current_object_and_method) do
+        Adyen::API::XMLQuerier.xml(current_object_method_result)
+      end
+
+      if xpath
+        let(:node_for_current_method) do
+          node_for_current_object_and_method.xpath(xpath)
+        end
+      end
+    end
+
   end
 end
 
