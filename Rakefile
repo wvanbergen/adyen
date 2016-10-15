@@ -12,7 +12,7 @@ namespace(:test) do
   Rake::TestTask.new(:unit) do |t|
     t.description = "Run unit tests"
     t.libs << "test"
-    t.test_files = FileList['test/*_test.rb']
+    t.test_files = FileList['test/unit/**/*_test.rb']
   end
 
   Rake::TestTask.new(:functional) do |t|
