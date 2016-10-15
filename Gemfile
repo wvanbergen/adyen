@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 gemspec
 
+gem 'pry'
+
 platform :rbx do
   gem 'rubysl'
   gem 'racc'
