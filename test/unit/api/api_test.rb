@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'api/spec_helper'
+require 'unit/api/test_helper'
 
 describe Adyen::API do
   include APISpecHelper

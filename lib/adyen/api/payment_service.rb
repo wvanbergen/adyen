@@ -258,6 +258,7 @@ module Adyen
         response_attrs :result_code, :auth_code, :refusal_reason, :psp_reference,
           :additional_data
 
+        # TODO: Avoid overriding this method
         def success?
           super && params[:result_code] == AUTHORISED
         end

@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-require 'api/spec_helper'
+require 'unit/api/test_helper'
 require 'adyen/api/test_helpers'
 
 describe "Test helpers" do
@@ -42,29 +42,29 @@ describe "Test helpers" do
     it "returns an `authorized' response" do
       stub_net_http(AUTHORISATION_DECLINED_RESPONSE)
       Adyen::API::PaymentService.stub_success!
-      @payment.authorise_payment.should be_authorized
+      @payment.authorise_payment.must_be :authorized?
 
-      @payment.authorise_payment.should_not be_authorized
+      @payment.authorise_payment.wont_be :authorized?
     end
 
     it "returns a `refused' response" do
       stub_net_http(AUTHORISE_RESPONSE)
       Adyen::API::PaymentService.stub_refused!
       response = @payment.authorise_payment
-      response.should_not be_authorized
-      response.should_not be_invalid_request
+      response.wont_be :authorized?
+      response.wont_be :invalid_request?
 
-      @payment.authorise_payment.should be_authorized
+      @payment.authorise_payment.must_be :authorized?
     end
 
     it "returns a `invalid request' response" do
       stub_net_http(AUTHORISE_RESPONSE)
       Adyen::API::PaymentService.stub_invalid!
       response = @payment.authorise_payment
-      response.should_not be_authorized
-      response.should be_invalid_request
+      response.wont_be :authorized?
+      response.must_be :invalid_request?
 
-      @payment.authorise_payment.should be_authorized
+      @payment.authorise_payment.must_be :authorized?
     end
   end
 
@@ -77,8 +77,8 @@ describe "Test helpers" do
     it "returns a `disabled' response" do
       stub_net_http(DISABLE_RESPONSE % 'nope')
       Adyen::API::RecurringService.stub_disabled!
-      @recurring.disable.should be_disabled
-      @recurring.disable.should_not be_disabled
+      @recurring.disable.must_be :disabled?
+      @recurring.disable.wont_be :disabled?
     end
   end
 end

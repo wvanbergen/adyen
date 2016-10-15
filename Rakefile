@@ -1,5 +1,4 @@
 require "bundler/gem_tasks"
-require "rspec/core/rake_task"
 require "rake/testtask"
 
 namespace(:test) do
@@ -31,11 +30,6 @@ end
 desc "Run unit and functional tests"
 task :test => %w{test:unit test:functional}
 
-RSpec::Core::RakeTask.new(:spec) do |task|
-  task.pattern = "./spec/**/*_spec.rb"
-  task.rspec_opts = ['--color']
-end
-
 CACERT_PATH = 'lib/adyen/api/cacert.pem'
 
 desc 'Update CA root certificates for the simple SOAP client'
@@ -51,4 +45,4 @@ end
 #   sh "git diff-index --quiet HEAD #{CACERT_PATH} || (git add #{CACERT_PATH} && git commit -m '[API] Update CA root certificates file.')"
 # end
 
-task :default => %w{test spec}
+task :default => %w{test}

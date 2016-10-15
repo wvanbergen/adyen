@@ -1,6 +1,7 @@
 # encoding: UTF-8
 require 'minitest/autorun'
 require 'minitest/pride'
+require 'rspec/mocks/minitest_integration'
 require 'mocha/setup'
 
 require 'adyen/base'
