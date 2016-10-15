@@ -38,5 +38,5 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md', 'CHANGELOG.md', 'CONTRIBUTING.md']
 
   s.files = `git ls-files`.split($/)
-  s.test_files = s.files.grep(%r{^(test|features)/})
+  s.test_files = s.files.grep(%r{^test/})
 end
