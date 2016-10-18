@@ -24,8 +24,7 @@ Gem::Specification.new do |s|
   s.license  = 'MIT'
 
   s.add_development_dependency('rake')
-  s.add_development_dependency('rspec', '~> 2.14')
-  s.add_development_dependency('minitest', '~> 5')
+  s.add_development_dependency('minitest', '~> 5.0')
   s.add_development_dependency('mocha')
   s.add_development_dependency('sinatra')
   s.add_development_dependency('poltergeist')
@@ -39,5 +38,5 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md', 'CHANGELOG.md', 'CONTRIBUTING.md']
 
   s.files = `git ls-files`.split($/)
-  s.test_files = s.files.grep(%r{^(test|spec|features)/})
+  s.test_files = s.files.grep(%r{^test/})
 end

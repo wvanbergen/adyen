@@ -18,7 +18,7 @@ matrix:
 before_install:
   - bundle --version || gem install bundler
 before_script:
-- cp spec/functional/initializer.rb.ci spec/functional/initializer.rb
+- cp test/functional/initializer.rb.ci test/functional/initializer.rb
 env:
   global:
   - ADYEN_MERCHANT_ACCOUNT: "VanBergenORG"

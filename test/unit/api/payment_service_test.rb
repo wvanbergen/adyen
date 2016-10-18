@@ -1,86 +1,107 @@
 # encoding: UTF-8
-require 'api/spec_helper'
+require 'unit/api/test_helper'
 
-shared_examples_for "payment requests" do
-  it "includes the merchant account handle" do
-    text('./payment:merchantAccount').should == 'SuperShopper'
-  end
+module SharedExamples
+  def it_behaves_like_a_payment_request
+    it "includes the merchant account handle" do
+      text('./payment:merchantAccount').must_equal 'SuperShopper'
+    end
 
-  it "includes the payment reference of the merchant" do
-    text('./payment:reference').should == 'order-id'
-  end
+    it "includes the payment reference of the merchant" do
+      text('./payment:reference').must_equal 'order-id'
+    end
 
-  it "includes the given amount of `currency'" do
-    xpath('./payment:amount') do |amount|
-      amount.text('./common:currency').should == 'EUR'
-      amount.text('./common:value').should == '1234'
+    it "includes the given amount of `currency'" do
+      xpath('./payment:amount') do |amount|
+        amount.text('./common:currency').must_equal 'EUR'
+        amount.text('./common:value').must_equal '1234'
+      end
+    end
+
+    it "includes the shopper’s details" do
+      text('./payment:shopperReference').must_equal 'user-id'
+      text('./payment:shopperEmail').must_equal 's.hopper@example.com'
+      text('./payment:shopperIP').must_equal '61.294.12.12'
+      text('./payment:shopperStatement').must_equal 'invoice number 123456'
+    end
+
+    it "includes the fraud offset" do
+      text('./payment:fraudOffset').must_equal '30'
+    end
+
+    it "does not include the fraud offset if none is given" do
+      @payment.params.delete(:fraud_offset)
+      xpath('./payment:fraudOffset').must_be :empty?
+    end
+
+    it "includes the given amount of `installments'" do
+      xpath('./payment:installments') do |amount|
+        amount.text('./common:value').must_equal '6'
+      end
+    end
+
+    it "does not include the installments amount if none is given" do
+      @payment.params.delete(:installments)
+      xpath('./payment:installments').must_be :empty?
+    end
+
+    it "does not includes shopper reference if none set" do
+      # TODO pretty lame, but for now it will do
+      unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
+        @payment.params[:shopper].delete(:reference)
+        xpath('./payment:shopperReference').must_be :empty?
+      end
+    end
+
+    it "does not include shopper email if none given" do
+      # TODO pretty lame, but for now it will do
+      unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
+        @payment.params[:shopper].delete(:email)
+        xpath('./payment:shopperEmail').must_be :empty?
+      end
+    end
+
+    it "does not include shopper IP if none given" do
+      # TODO pretty lame, but for now it will do
+      unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
+        @payment.params[:shopper].delete(:ip)
+        xpath('./payment:shopperIP').must_be :empty?
+      end
+    end
+
+    it "does not include shopper statement if none given" do
+      # TODO pretty lame, but for now it will do
+      unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
+        @payment.params[:shopper].delete(:statement)
+        xpath('./payment:shopperStatement').must_be :empty?
+      end
+    end
+
+    it "does not include any shopper details if none are given" do
+      # TODO pretty lame, but for now it will do
+      unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
+        @payment.params.delete(:shopper)
+        xpath('./payment:shopperReference').must_be :empty?
+        xpath('./payment:shopperEmail').must_be :empty?
+        xpath('./payment:shopperIP').must_be :empty?
+        xpath('./payment:statement').must_be :empty?
+      end
     end
   end
 
-  it "includes the shopper’s details" do
-    text('./payment:shopperReference').should == 'user-id'
-    text('./payment:shopperEmail').should == 's.hopper@example.com'
-    text('./payment:shopperIP').should == '61.294.12.12'
-    text('./payment:shopperStatement').should == 'invoice number 123456'
-  end
+  def it_behaves_like_a_recurring_payment_request
+    it_behaves_like_a_payment_request
 
-  it "includes the fraud offset" do
-    text('./payment:fraudOffset').should == '30'
-  end
-
-  it "does not include the fraud offset if none is given" do
-    @payment.params.delete(:fraud_offset)
-    xpath('./payment:fraudOffset').should be_empty
-  end
-
-  it "includes the given amount of `installments'" do
-    xpath('./payment:installments') do |amount|
-      amount.text('./common:value').should == '6'
+    it "uses the given recurring detail reference" do
+      @payment.params[:recurring_detail_reference] = 'RecurringDetailReference1'
+      text('./payment:selectedRecurringDetailReference').must_equal 'RecurringDetailReference1'
     end
-  end
-
-  it "does not include the installments amount if none is given" do
-    @payment.params.delete(:installments)
-    xpath('./payment:installments').should be_empty
-  end
-
-  it "only includes shopper details for given parameters" do
-    # TODO pretty lame, but for now it will do
-    unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
-      @payment.params[:shopper].delete(:reference)
-      xpath('./payment:shopperReference').should be_empty
-      @payment.params[:shopper].delete(:email)
-      xpath('./payment:shopperEmail').should be_empty
-      @payment.params[:shopper].delete(:ip)
-      xpath('./payment:shopperIP').should be_empty
-      @payment.params[:shopper].delete(:statement)
-      xpath('./payment:shopperStatement').should be_empty
-    end
-  end
-
-  it "does not include any shopper details if none are given" do
-    # TODO pretty lame, but for now it will do
-    unless @method == "authorise_one_click_payment_request_body" || @method == "authorise_recurring_payment_request_body"
-      @payment.params.delete(:shopper)
-      xpath('./payment:shopperReference').should be_empty
-      xpath('./payment:shopperEmail').should be_empty
-      xpath('./payment:shopperIP').should be_empty
-      xpath('./payment:statement').should be_empty
-    end
-  end
-end
-
-shared_examples_for "recurring payment requests" do
-  it_should_behave_like "payment requests"
-
-  it "uses the given recurring detail reference" do
-    @payment.params[:recurring_detail_reference] = 'RecurringDetailReference1'
-    text('./payment:selectedRecurringDetailReference').should == 'RecurringDetailReference1'
   end
 end
 
 describe Adyen::API::PaymentService do
   include APISpecHelper
+  extend SharedExamples
 
   before do
     @params = {
@@ -116,7 +137,7 @@ describe Adyen::API::PaymentService do
   end
 
   describe_request_body_of :authorise_payment do
-    it_should_behave_like "payment requests"
+    it_behaves_like_a_payment_request
 
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
@@ -142,23 +163,26 @@ describe Adyen::API::PaymentService do
     it "includes the creditcard details" do
       xpath('./payment:card') do |card|
         # there's no reason why Nokogiri should escape these characters, but as long as they're correct
-        card.text('./payment:holderName').should == 'Simon わくわく Hopper'
-        card.text('./payment:number').should == '4444333322221111'
-        card.text('./payment:cvc').should == '737'
-        card.text('./payment:expiryMonth').should == '12'
-        card.text('./payment:expiryYear').should == '2012'
+        card.text('./payment:holderName').must_equal 'Simon わくわく Hopper'
+        card.text('./payment:number').must_equal '4444333322221111'
+        card.text('./payment:cvc').must_equal '737'
+        card.text('./payment:expiryMonth').must_equal '12'
+        card.text('./payment:expiryYear').must_equal '2012'
       end
     end
 
     it "formats the creditcard’s expiry month as a two digit number" do
       @payment.params[:card][:expiry_month] = 6
-      text('./payment:card/payment:expiryMonth').should == '06'
+      text('./payment:card/payment:expiryMonth').must_equal '06'
+    end
+
+    it "does not include recurring and one-click contract info if the `:recurring' param is false" do
+      xpath('./payment:recurring/payment:contract').must_be :empty?
     end
 
     it "includes the necessary recurring and one-click contract info if the `:recurring' param is truthful" do
-      xpath('./payment:recurring/payment:contract').should be_empty
       @payment.params[:recurring] = true
-      text('./payment:recurring/payment:contract').should == 'RECURRING,ONECLICK'
+      text('./payment:recurring/payment:contract').must_equal 'RECURRING,ONECLICK'
     end
   end
 
@@ -171,7 +195,7 @@ describe Adyen::API::PaymentService do
 
     describe "with a received billet" do
       it "returns that the request was successful" do
-        @response.should be_success
+        @response.must_be :success?
       end
     end
   end
@@ -185,7 +209,7 @@ describe Adyen::API::PaymentService do
 
     describe "with a received billet" do
       it "returns that the request was successful" do
-        @response.should_not be_success
+        @response.wont_be :success?
       end
     end
   end
@@ -201,8 +225,8 @@ describe Adyen::API::PaymentService do
 
     describe "with a authorized response" do
       it "returns that the request was authorised" do
-        @response.should be_success
-        @response.should be_authorized
+        @response.must_be :success?
+        @response.must_be :authorized?
       end
     end
 
@@ -213,8 +237,8 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the request was not authorised" do
-        @response.should_not be_success
-        @response.should_not be_authorized
+        @response.wont_be :success?
+        @response.wont_be :authorized?
       end
     end
 
@@ -225,8 +249,8 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the payment was refused" do
-        @response.should be_refused
-        @response.error.should == [:base, 'Transaction was refused.']
+        @response.must_be :refused?
+        @response.error.must_equal [:base, 'Transaction was refused.']
       end
     end
 
@@ -237,17 +261,17 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the request was not authorised" do
-        @response.should_not be_success
-        @response.should_not be_authorized
+        @response.wont_be :success?
+        @response.wont_be :authorized?
       end
 
       it "it returns that the request was invalid" do
-        @response.should be_invalid_request
+        @response.must_be :invalid_request?
       end
 
       it "returns the fault message from #refusal_reason" do
-        @response.refusal_reason.should == 'validation 101 Invalid card number'
-        @response.params[:refusal_reason].should == 'validation 101 Invalid card number'
+        @response.refusal_reason.must_equal 'validation 101 Invalid card number'
+        @response.params[:refusal_reason].must_equal 'validation 101 Invalid card number'
       end
 
       it "returns creditcard validation errors" do
@@ -258,13 +282,13 @@ describe Adyen::API::PaymentService do
           ["validation Couldn't parse expiry year",                        [:expiry_year,  'could not be recognized']],
           ["validation Expiry month should be between 1 and 12 inclusive", [:expiry_month, 'could not be recognized']],
         ].each do |message, error|
-          response_with_fault_message(message).error.should == error
+          response_with_fault_message(message).error.must_equal error
         end
       end
 
       it "returns any other fault messages on `base'" do
         message = "validation 130 Reference Missing"
-        response_with_fault_message(message).error.should == [:base, message]
+        response_with_fault_message(message).error.must_equal [:base, message]
       end
 
       it "prepends the error attribute with the given prefix, except for :base" do
@@ -273,7 +297,7 @@ describe Adyen::API::PaymentService do
           ["validation 130 Reference Missing",              [:base,        "validation 130 Reference Missing"]],
           ["validation 152 Invalid number of installments", [:base,        "validation 152 Invalid number of installments"]],
         ].each do |message, error|
-          response_with_fault_message(message).error(:card).should == error
+          response_with_fault_message(message).error(:card).must_equal error
         end
       end
 
@@ -287,7 +311,7 @@ describe Adyen::API::PaymentService do
   end
 
   describe_request_body_of :authorise_recurring_payment do
-    it_should_behave_like "recurring payment requests"
+    it_behaves_like_a_recurring_payment_request
 
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
@@ -296,20 +320,20 @@ describe Adyen::API::PaymentService do
                                           :shopper => [:reference, :email]
 
     it "includes the contract type, which is `RECURRING'" do
-      text('./payment:recurring/payment:contract').should == 'RECURRING'
+      text('./payment:recurring/payment:contract').must_equal 'RECURRING'
     end
 
     it "uses the latest recurring detail reference, by default" do
       @payment.params[:recurring_detail_reference] = nil
-      text('./payment:selectedRecurringDetailReference').should == 'LATEST'
+      text('./payment:selectedRecurringDetailReference').must_equal 'LATEST'
     end
 
     it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
-      text('./payment:shopperInteraction').should == 'ContAuth'
+      text('./payment:shopperInteraction').must_equal 'ContAuth'
     end
 
     it "does not include any creditcard details" do
-      xpath('./payment:card').should be_empty
+      xpath('./payment:card').must_be :empty?
     end
   end
 
@@ -324,7 +348,7 @@ describe Adyen::API::PaymentService do
   end
 
   describe_request_body_of :authorise_one_click_payment do
-    it_should_behave_like "recurring payment requests"
+    it_behaves_like_a_recurring_payment_request
 
     it_should_validate_request_parameters :merchant_account,
                                           :reference,
@@ -335,21 +359,21 @@ describe Adyen::API::PaymentService do
                                           :card    => [:cvc]
 
     it "includes the contract type, which is `ONECLICK'" do
-      text('./payment:recurring/payment:contract').should == 'ONECLICK'
+      text('./payment:recurring/payment:contract').must_equal 'ONECLICK'
     end
 
     it "does not include the self-‘describing’ nonsense parameters" do
-      xpath('./payment:shopperInteraction').should be_empty
+      xpath('./payment:shopperInteraction').must_be :empty?
     end
 
     it "includes only the creditcard's CVC code" do
       xpath('./payment:card') do |card|
-        card.text('./payment:cvc').should == '737'
+        card.text('./payment:cvc').must_equal '737'
 
-        card.xpath('./payment:holderName').should be_empty
-        card.xpath('./payment:number').should be_empty
-        card.xpath('./payment:expiryMonth').should be_empty
-        card.xpath('./payment:expiryYear').should be_empty
+        card.xpath('./payment:holderName').must_be :empty?
+        card.xpath('./payment:number').must_be :empty?
+        card.xpath('./payment:expiryMonth').must_be :empty?
+        card.xpath('./payment:expiryYear').must_be :empty?
       end
     end
   end
@@ -371,8 +395,8 @@ describe Adyen::API::PaymentService do
 
     it "includes the amount to capture" do
       xpath('./payment:modificationAmount') do |amount|
-        amount.text('./common:currency').should == 'EUR'
-        amount.text('./common:value').should == '1234'
+        amount.text('./common:currency').must_equal 'EUR'
+        amount.text('./common:value').must_equal '1234'
       end
     end
   end
@@ -385,7 +409,7 @@ describe Adyen::API::PaymentService do
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do
-        @response.should be_success
+        @response.must_be :success?
       end
     end
 
@@ -396,7 +420,7 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the request was not received successfully" do
-        @response.should_not be_success
+        @response.wont_be :success?
       end
     end
   end
@@ -408,8 +432,8 @@ describe Adyen::API::PaymentService do
 
     it "includes the amount to refund" do
       xpath('./payment:modificationAmount') do |amount|
-        amount.text('./common:currency').should == 'EUR'
-        amount.text('./common:value').should == '1234'
+        amount.text('./common:currency').must_equal 'EUR'
+        amount.text('./common:value').must_equal '1234'
       end
     end
   end
@@ -422,7 +446,7 @@ describe Adyen::API::PaymentService do
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do
-        @response.should be_success
+        @response.must_be :success?
       end
     end
 
@@ -433,7 +457,7 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the request was not received successfully" do
-        @response.should_not be_success
+        @response.wont_be :success?
       end
     end
   end
@@ -451,7 +475,7 @@ describe Adyen::API::PaymentService do
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do
-        @response.should be_success
+        @response.must_be :success?
       end
     end
 
@@ -462,7 +486,7 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the request was not received successfully" do
-        @response.should_not be_success
+        @response.wont_be :success?
       end
     end
   end
@@ -480,7 +504,7 @@ describe Adyen::API::PaymentService do
 
     describe "with a successful response" do
       it "returns that the request was received successfully" do
-        @response.should be_success
+        @response.must_be :success?
       end
     end
 
@@ -491,7 +515,7 @@ describe Adyen::API::PaymentService do
       end
 
       it "returns that the request was not received successfully" do
-        @response.should_not be_success
+        @response.wont_be :success?
       end
     end
   end

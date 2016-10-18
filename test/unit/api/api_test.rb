@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'api/spec_helper'
+require 'unit/api/test_helper'
 
 describe Adyen::API do
   include APISpecHelper
@@ -7,12 +7,12 @@ describe Adyen::API do
   describe "shortcut methods" do
     describe "for the PaymentService" do
       before do
-        @payment = double('PaymentService')
+        @payment = mock('PaymentService')
       end
 
       def should_map_shortcut_to(method, params)
-        Adyen::API::PaymentService.should_receive(:new).with(params).and_return(@payment)
-        @payment.should_receive(method)
+        Adyen::API::PaymentService.expects(:new).with(params).returns(@payment)
+        @payment.expects(method)
       end
 
       it "performs a `authorise payment' request without enabling :recurring" do
@@ -182,12 +182,12 @@ describe Adyen::API do
 
     describe "for the RecurringService" do
       before do
-        @recurring = double('RecurringService')
+        @recurring = mock('RecurringService')
       end
 
       def should_map_shortcut_to(method, params)
-        Adyen::API::RecurringService.should_receive(:new).with(params).and_return(@recurring)
-        @recurring.should_receive(method)
+        Adyen::API::RecurringService.expects(:new).with(params).returns(@recurring)
+        @recurring.expects(method)
       end
 
       it "performs a `tokenize creditcard details' request" do

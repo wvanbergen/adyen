@@ -1,5 +1,5 @@
 # encoding: UTF-8
-require 'spec_helper'
+require 'test_helper'
 
 require 'adyen/api'
 
@@ -31,7 +31,8 @@ module Net
     end
 
     class << self
-      attr_accessor :stubbing_enabled, :posted, :stubbed_response
+      attr_accessor :posted, :stubbed_response
+      attr_reader :stubbing_enabled
 
       def stubbing_enabled=(enabled)
         reset! if @stubbing_enabled = enabled
@@ -53,12 +54,12 @@ module Net
     end
 
     alias old_request request
-    def request(request)
+    def request(request, body = nil, &block)
       if Net::HTTP.stubbing_enabled
         self.class.posted = [self, request]
         self.class.stubbed_response
       else
-        old_request(request)
+        old_request(request, body, &block)
       end
     end
   end
@@ -82,10 +83,6 @@ module Adyen
 end
 
 module APISpecHelper
-  def node_for_current_object_and_method
-    Adyen::API::XMLQuerier.xml(@object.send(@method))
-  end
-
   def xpath(query, &block)
     node_for_current_method.xpath(query, &block)
   end
@@ -97,7 +94,7 @@ module APISpecHelper
   def stub_net_http(response_body)
     Net::HTTP.stubbing_enabled = true
     response = Net::HTTPOK.new('1.1', '200', 'OK')
-    response.stub(:body).and_return(response_body)
+    response.stubs(:body).returns response_body
     Net::HTTP.stubbed_response = response
   end
 
@@ -110,7 +107,9 @@ module APISpecHelper
       backends = [Adyen::API::XMLQuerier::NokogiriBackend, Adyen::API::XMLQuerier::REXMLBackend]
       backends.each do |xml_backend|
         describe "with a #{xml_backend} backend" do
-          before { Adyen::API::XMLQuerier.stub(:default_backend => xml_backend.new) }
+          before do
+            Adyen::API::XMLQuerier.stubs(:default_backend).returns xml_backend.new
+          end
           instance_eval(&block)
         end
       end
@@ -119,7 +118,7 @@ module APISpecHelper
     def it_should_have_shortcut_methods_for_params_on_the_response
       it "provides shortcut methods, on the response object, for all entries in the #params hash" do
         @response.params.each do |key, value|
-          @response.send(key).should == value
+          @response.send(key).must_equal value
         end
       end
     end
@@ -127,7 +126,7 @@ module APISpecHelper
     def it_should_return_params_for_each_xml_backend(params)
       for_each_xml_backend do
         it "returns a hash with parsed response details" do
-          @object.send(@method).params.should == params
+          @object.send(@method).params.must_equal params
         end
       end
     end
@@ -150,8 +149,8 @@ module APISpecHelper
 
     def it_should_validate_request_param(name, &block)
       it "validates the `#{name}' request parameter" do
-        instance_eval &block
-        lambda { @object.send(@method) }.should raise_error(ArgumentError)
+        instance_eval(&block)
+        lambda { current_object_method_result }.must_raise(ArgumentError)
       end
     end
 
@@ -170,11 +169,11 @@ module APISpecHelper
         end
 
         it "posts the body generated for the given parameters" do
-          @post.body.should == Adyen::API::SimpleSOAPClient::ENVELOPE % @object.send("#{@method}_request_body")
+          @post.body.must_equal Adyen::API::SimpleSOAPClient::ENVELOPE % @object.send("#{@method}_request_body")
         end
 
         it "posts to the correct SOAP action" do
-          @post.soap_action.should == soap_action
+          @post.soap_action.must_equal soap_action
         end
 
         it_should_have_shortcut_methods_for_params_on_the_response
@@ -186,33 +185,49 @@ module APISpecHelper
     def describe_request_body_of(method, xpath = nil, &block)
       method = "#{method}_request_body"
       describe(method) do
+        prepare_request_body_specs(method, xpath)
         before { @method = method }
-        if xpath
-          define_method(:node_for_current_method) do
-            node_for_current_object_and_method.xpath(xpath)
-          end
-        end
         instance_eval(&block)
       end
     end
 
     def describe_modification_request_body_of(method, camelized_method = nil, &block)
-      describe_request_body_of method, "//payment:#{camelized_method || method}/payment:modificationRequest" do
+      xpath = "//payment:#{camelized_method || method}/payment:modificationRequest"
+      method = "#{method}_request_body"
+      describe method do
+        prepare_request_body_specs(method, xpath)
+
         before do
+          @method = method
           @payment.params[:psp_reference] = 'original-psp-reference'
         end
 
         it "includes the merchant account" do
-          text('./payment:merchantAccount').should == 'SuperShopper'
+          text('./payment:merchantAccount').must_equal 'SuperShopper'
         end
 
         it "includes the payment (PSP) reference of the payment to refund" do
-          text('./payment:originalReference').should == 'original-psp-reference'
+          text('./payment:originalReference').must_equal 'original-psp-reference'
         end
 
         instance_eval(&block) if block_given?
       end
     end
+
+    def prepare_request_body_specs(method, xpath)
+      let(:current_object_method_result) { @object.send(method) }
+
+      let(:node_for_current_object_and_method) do
+        Adyen::API::XMLQuerier.xml(current_object_method_result)
+      end
+
+      if xpath
+        let(:node_for_current_method) do
+          node_for_current_object_and_method.xpath(xpath)
+        end
+      end
+    end
+
   end
 end
 

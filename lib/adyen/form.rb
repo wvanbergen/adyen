@@ -47,7 +47,7 @@ module Adyen
     # @see Adyen::Form.redirect_url
     def domain(environment = nil)
       environment  ||= Adyen.configuration.environment
-      (Adyen.configuration.payment_flow_domain || ACTION_DOMAIN) % [environment.to_s]
+      Adyen.configuration.payment_flow_domain || ACTION_DOMAIN % [environment.to_s]
     end
 
     # Returns the URL of the Adyen payment system, adjusted for an Adyen environment.

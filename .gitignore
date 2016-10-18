@@ -10,5 +10,5 @@ adyen-*.gem
 *.swo
 .DS_Store
 t.rb
-spec/functional/initializer.rb
+test/functional/initializer.rb
 Gemfile.lock
