@@ -49,7 +49,7 @@ describe Adyen::API::RecurringService do
       text('./recurring:merchantAccount').must_equal 'SuperShopper'
     end
 
-    it "includes the shopper’s reference" do
+    it "includes the shopper's reference" do
       text('./recurring:shopperReference').must_equal 'user-id'
     end
 
@@ -126,7 +126,7 @@ describe Adyen::API::RecurringService do
       text('./recurring:merchantAccount').must_equal 'SuperShopper'
     end
 
-    it "includes the shopper’s reference" do
+    it "includes the shopper's reference" do
       text('./recurring:shopperReference').must_equal 'user-id'
     end
 
@@ -134,7 +134,7 @@ describe Adyen::API::RecurringService do
       xpath('./recurring:recurringDetailReference').must_be :empty?
     end
 
-    it "includes the shopper’s recurring detail reference if it is given" do
+    it "includes the shopper's recurring detail reference if it is given" do
       @recurring.params[:recurring_detail_reference] = 'RecurringDetailReference1'
       text('./recurring:recurringDetailReference').must_equal 'RecurringDetailReference1'
     end
@@ -162,11 +162,11 @@ describe Adyen::API::RecurringService do
       text('./recurring:merchantAccount').must_equal 'SuperShopper'
     end
 
-    it "includes the shopper’s reference" do
+    it "includes the shopper's reference" do
       text('./recurring:shopperReference').must_equal 'user-id'
     end
 
-    it "includes the shopper’s email" do
+    it "includes the shopper's email" do
       text('./recurring:shopperEmail').must_equal 's.hopper@example.com'
     end
 
@@ -181,7 +181,7 @@ describe Adyen::API::RecurringService do
       end
     end
 
-    it "formats the creditcard’s expiry month as a two digit number" do
+    it "formats the creditcard's expiry month as a two digit number" do
       @recurring.params[:card][:expiry_month] = 6
       text('./recurring:card/payment:expiryMonth').must_equal '06'
     end
@@ -199,11 +199,11 @@ describe Adyen::API::RecurringService do
       text('./recurring:merchantAccount').must_equal 'SuperShopper'
     end
 
-    it "includes the shopper’s reference" do
+    it "includes the shopper's reference" do
       text('./recurring:shopperReference').must_equal 'user-id'
     end
 
-    it "includes the shopper’s email" do
+    it "includes the shopper's email" do
       text('./recurring:shopperEmail').must_equal 's.hopper@example.com'
     end
 
