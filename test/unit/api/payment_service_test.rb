@@ -18,7 +18,7 @@ module SharedExamples
       end
     end
 
-    it "includes the shopper’s details" do
+    it "includes the shopper's details" do
       text('./payment:shopperReference').must_equal 'user-id'
       text('./payment:shopperEmail').must_equal 's.hopper@example.com'
       text('./payment:shopperIP').must_equal '61.294.12.12'
@@ -171,7 +171,7 @@ describe Adyen::API::PaymentService do
       end
     end
 
-    it "formats the creditcard’s expiry month as a two digit number" do
+    it "formats the creditcard's expiry month as a two digit number" do
       @payment.params[:card][:expiry_month] = 6
       text('./payment:card/payment:expiryMonth').must_equal '06'
     end
@@ -328,7 +328,7 @@ describe Adyen::API::PaymentService do
       text('./payment:selectedRecurringDetailReference').must_equal 'LATEST'
     end
 
-    it "obviously includes the obligatory self-‘describing’ nonsense parameters" do
+    it "obviously includes the obligatory self-'describing' nonsense parameters" do
       text('./payment:shopperInteraction').must_equal 'ContAuth'
     end
 
@@ -362,7 +362,7 @@ describe Adyen::API::PaymentService do
       text('./payment:recurring/payment:contract').must_equal 'ONECLICK'
     end
 
-    it "does not include the self-‘describing’ nonsense parameters" do
+    it "does not include the self-'describing' nonsense parameters" do
       xpath('./payment:shopperInteraction').must_be :empty?
     end
 
