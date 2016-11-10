@@ -126,6 +126,7 @@ module Adyen
         content << shopper_name_partial if @params[:shopper_name]
         content << delivery_date_partial if @params[:delivery_date]
         content << selected_brand_partial if @params[:selected_brand]
+        content << shopper_statement_partial if @params[:shopper_statement]
         LAYOUT % [@params[:merchant_account], @params[:reference], content]
       end
 
@@ -208,6 +209,12 @@ module Adyen
 
       def shopper_partial
         @params[:shopper].map { |k, v| SHOPPER_PARTIALS[k] % v }.join("\n")
+      end
+
+      def shopper_statement_partial
+        if @params[:shopper_statement]
+          SHOPPER_STATEMENT % @params[:shopper_statement]
+        end
       end
 
       def fraud_offset_partial

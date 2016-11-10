@@ -4,7 +4,7 @@ The following changes have been made to the library over the years. Pleae add an
 
 #### Unrelease changes
 
-Nothing yet!
+- Add `shopper_statement` option to `Adyen::APP`, allowing to generate Billets with custom payment instructions.
 
 #### Version 2.2.0
 
