@@ -193,7 +193,8 @@ describe Adyen::API::PaymentService do
       :billet_url => "https://test.adyen.com/hpp/generationBoleto.shtml?data=BQABAQA8M3ewKqDwrdIK%2Bq9mDvlF%2BX0IszPCAG9Tg2jmOJn0%2Fm6T%2BPABVpyI8%2FhFeY3xTN3B7yEffj6ehx0ADQh5sLT9ndkqu1UuHTZjlxBiJ9UcMOAl8rkPSLEJU1Dw1tLWGQ7PKRqB8bv3k%2FVbPGliXZVxEvzxAOZdZ1dpHeVZfA1XT8a9%2BZQtJFPAHOhgYpPBmYkiVnavJfwbNMKddQY0CZxC1V2Hndx9yDl%2FS0IJ1hLgiwxr8eE6QkeDBYZ5uKKyiIVpPxKwDe1o3sq2v76s7cQvdfGn%2FmAr6jWiNl%2BrQU92%2FYlFuR4rHhZdOyUkNofTeTRcpuSaTsK1L9MS1UNqTAWbEMmlqUgNZ6B7HtiYP61sbMIAAECcYbKVpl%2BRN3hpP3HqHc0%2FxkOShfnE4bYOtDGVDMf4dt9kAM6%2BXDOyk8iu%2F%2FdbHvrZnenLFsKhcdDEjiXRrLHMVxQI9BN%2F5Yy4hnGN7k%2FXI1mANMhNpKWLdPBCt94GzaiI830xKsh5KlgFrenU%2B4x2p0pbeAQUokTLKHEUUzmNmlplxhADBHmTAEwC0vbbGjWFh3PS0zGRwas2TpLNRtQznTmdfoI7j0dlSVHCQQ%3D%3D",
       :barcode => "03399.33335 33887.371731 37772.301026 8 69200000009314",
       :due_date => Date.parse("2016-09-17"),
-      :expiration_date => Date.parse("2016-10-02")
+      :expiration_date => Date.parse("2016-10-02"),
+      :refusal_reason => ""
     })
 
     describe "with a received billet" do
@@ -210,7 +211,8 @@ describe Adyen::API::PaymentService do
       :billet_url => "",
       :barcode => "",
       :due_date => nil,
-      :expiration_date => nil
+      :expiration_date => nil,
+      :refusal_reason => "102 Unable to determine variant"
     })
 
     describe "with a received billet" do
@@ -226,7 +228,7 @@ describe Adyen::API::PaymentService do
       :result_code => 'Authorised',
       :auth_code => '1234',
       :additional_data => { "cardSummary" => "1111" },
-      :refusal_reason => ''
+      :refusal_reason => ""
     })
 
     describe "with a authorized response" do
