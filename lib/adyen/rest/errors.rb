@@ -1,3 +1,5 @@
+require 'adyen/rest/parse_adyen_response'
+
 module Adyen
   module REST
 
@@ -14,19 +16,36 @@ module Adyen
     # @!attribute category
     #    @return [String, nil]
     # @!attribute code
-    #    @return [Integer, nil]
+    #    @return [String, nil]
     # @!attribute description
     #    @return [String, nil]
+    # @!attribute psp_reference
+    #    @return [Integer, nil]
     class ResponseError < Adyen::REST::Error
-      attr_accessor :category, :code, :description
+      include Adyen::REST::ParseReponse
 
-      def initialize(response_body)
-        if match = /\A(\w+)\s(\d+)\s(.*)\z/.match(response_body)
-          @category, @code, @description = match[1], match[2].to_i, match[3]
-          super("API request error: #{description} (code: #{code}/#{category})")
+      def initialize(response)
+        @http_response = response
+        @attributes = parse_response_attributes
+
+        if @attributes[:message]
+          super("API request error: #{attributes['message']} (code: #{attributes['errorCode']}/#{ attributes['errorType']})")
         else
-          super("API request error: #{response_body}")
+          super("Unexpected HTTP response code: #{response.code} | response body: #{response.body}")
         end
+      end
+
+      # Aliases
+      def category
+        @attributes['errorType']
+      end
+
+      def code
+        @attributes['errorCode']
+      end
+
+      def description
+        @attributes['message']
       end
     end
   end
