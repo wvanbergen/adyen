@@ -22,15 +22,16 @@ module Adyen
       include ModifyPayment
       include Payout
 
-      attr_reader :environment
+      attr_reader :environment, :merchant
 
       # @param environment [String] The Adyen environment to interface with. Either
       #   <tt>'live'</tt> or <tt>'test'</tt>.
       # @param username [String] The webservice username, e.g. <tt>ws@Company.Account</tt>
       # @param password [String] The password associated with the username
+      # @param merchant [String]
       # @param default_api_params [Hash] Default arguments that will be used for every API call
-      def initialize(environment, username, password)
-        @environment, @username, @password = environment, username, password
+      def initialize(environment, username, password, merchant = nil)
+        @environment, @username, @password, @merchant = environment, username, password, merchant
       end
 
       # Closes the client.
@@ -114,12 +115,18 @@ module Adyen
       # The endpoint URI for this client.
       # @return [URI] The endpoint to use for the environment.
       def endpoint
-        @endpoint ||= URI(ENDPOINT % [environment])
+        @endpoint ||= if merchant && environment.to_sym == :live
+          URI(ENDPOINT_MERCHANT_SPECIFIC % [merchant])
+        else
+          URI(ENDPOINT % [environment])
+        end
       end
 
       # @see Adyen::REST::Client#endpoint
       ENDPOINT = 'https://pal-%s.adyen.com/'
-      private_constant :ENDPOINT
+      ENDPOINT_MERCHANT_SPECIFIC = 'https://%s.pal-live.adyenpayments.com'
+
+      private_constant :ENDPOINT, :ENDPOINT_MERCHANT_SPECIFIC
     end
   end
 end

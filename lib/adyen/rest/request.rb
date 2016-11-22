@@ -97,7 +97,7 @@ module Adyen
       end
 
       # @see Adyen::REST::Request#set_path
-      PATH = '/pal/servlet/%s/v12/%s'
+      PATH = '/pal/servlet/%s/v18/%s'
       private_constant :PATH
     end
   end
