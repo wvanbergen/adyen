@@ -41,6 +41,10 @@ class Adyen::Configuration
     LIVE_RAILS_ENVIRONMENTS.include?(rails_env) ? 'live' : 'test'
   end
 
+
+  # TODO
+  attr_accessor :merchant_specific_endpoint
+
   # The payment flow page type that’s used to choose the payment process
   #
   # @example
