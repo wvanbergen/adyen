@@ -1,20 +1,20 @@
 <html>
-<head>
-	<title> HPP Payment</title>
-</head>
-<body>
-  <% hpp_client = Adyen::HPP::Client.new(:test, :testing) %>
-	<form action="<%= hpp_client.url %>" method="post">
-		<p> Price: <strong>EUR 43.21</strong>. </p>
-		<p>
-			<%= hpp_client.new_request.hidden_fields(@payment) %>
-			<input type="submit" value="Pay" />
-		</p>
-	</form>
+  <head>
+    <title> HPP Payment</title>
+  </head>
+  <body>
+    <% hpp_request = Adyen::HPP::Request.new(@payment, environment: :test, skin: :testing) %>
+    <form action="<%= hpp_request.url %>" method="post">
+      <p> Price: <strong>EUR 43.21</strong>. </p>
+      <p>
+      <%= hpp_request.hidden_fields %>
+      <input type="submit" value="Pay" />
+      </p>
+    </form>
 
-  <p>If you are using the test account of this library, you will be redirected back
+    <p>If you are using the test account of this library, you will be redirected back
     to <strong>example.com</strong> after you complete the payment on Adyen's hosted
     payment pages. This is due to how the test account is configured.
-  </p>
-</body>
+    </p>
+  </body>
 </html>
