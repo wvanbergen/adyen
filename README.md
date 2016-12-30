@@ -29,3 +29,4 @@ comes without warranty of any kind, so use at your own risk.
 
 - `CHANGELOG.md` documents the changes between releases.
 - Check out `CONTRIBUTING.md` if you want to help out with this project.
+
