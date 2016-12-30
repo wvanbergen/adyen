@@ -6,6 +6,8 @@ module Adyen
   module Util
     extend self
 
+    DIGESTER = OpenSSL::Digest.new('sha256')
+
     # Returns a valid Adyen string representation for a date
     def format_date(date)
       case date
@@ -37,7 +39,8 @@ module Adyen
     # @param [String] message The message to sign.
     # @return [String] The signature, base64-encoded.
     def hmac_base64(hmac_key, message)
-      digest = OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha1'), hmac_key, message)
+      hexed_hmac_key = [hmac_key].pack("H*")
+      digest = OpenSSL::HMAC.digest(DIGESTER, hexed_hmac_key, message)
       Base64.strict_encode64(digest).strip
     end
 
