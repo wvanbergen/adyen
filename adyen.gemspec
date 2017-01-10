@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('mocha')
   s.add_development_dependency('sinatra')
   s.add_development_dependency('poltergeist')
+  s.add_development_dependency('mime-types', '~> 2')
 
   s.add_development_dependency('railties', '>= 3.2', '< 5')
   s.add_development_dependency('nokogiri', '>= 1.6.8')
