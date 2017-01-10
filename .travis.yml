@@ -6,6 +6,7 @@ rvm:
 - "2.1"
 - "2.2"
 - "2.3.1"
+- "jruby"
 - "jruby-9.0"
 - "ruby-head"
 - "rbx-2"
@@ -15,6 +16,7 @@ matrix:
   - rvm: jruby-head
   - rvm: ruby-head
   - rvm: rbx-2
+
 before_install:
   - bundle --version || gem install bundler
 before_script:

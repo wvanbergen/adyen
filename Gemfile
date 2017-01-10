@@ -8,6 +8,10 @@ platform :rbx do
   gem 'racc'
 end
 
+if RUBY_VERSION =~ /^1\./
+  gem 'mime-types', '< 3.0'
+end
+
 platform :jruby do
   gem 'jruby-openssl'
 end
