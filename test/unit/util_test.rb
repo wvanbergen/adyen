@@ -5,7 +5,7 @@ require 'adyen/util'
 class UtilTest < Minitest::Test
   def test_hmac_base64_encoding
     encoded_str = Adyen::Util.hmac_base64('bla', 'bla')
-    assert_equal '6nItEkVpIYF+i1RwrEyQ7RHmrfU=', encoded_str
+    assert_equal 'KXKraGrg10DLZpodM0GLwHNGa2hdDygzktFMc+TwiqQ=', encoded_str
   end
 
   def test_gzip_base64_encoding

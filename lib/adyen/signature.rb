@@ -30,7 +30,7 @@ module Adyen
     end
 
     def escape_value(value)
-      value.gsub(':', '\\:').gsub('\\', '\\\\')
+      value.gsub('\\', '\\\\\\\\').gsub(':', '\\:')
     end
 
     private

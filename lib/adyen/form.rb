@@ -37,15 +37,20 @@ module Adyen
     # domain and payment flow to be filled.
     ACTION_URL = "https://%s/hpp/%s.shtml"
 
-    REQUIRED_PAYMENT_REQUEST_PARAMS = [
-        {key: :currency_code, name: 'currencyCode'},
-        {key: :merchant_account, name: 'merchantAccount'},
-        {key: :merchant_reference, name: 'merchantReference'},
-        {key: :payment_amount, name: 'paymentAmount'},
-        {key: :session_validity, name: 'sessionValidity'},
-        {key: :ship_before_date, name: 'shipBeforeDate'},
-        {key: :skin_code, name: 'skinCode'}
-    ].sort_by{ |obj| obj[:name] }
+    PAYMENT_REQUEST_SIGNATURE_PARAMS = [
+      :currency_code,
+      :merchant_account,
+      :merchant_reference,
+      :payment_amount,
+      :session_validity,
+      :ship_before_date,
+      :skin_code,
+      :shopper_locale,
+      :recurring_contract,
+      :shopper_email,
+      :shopper_reference,
+      :allowed_methods
+    ].sort_by(&:to_s)
 
     # Returns the DOMAIN of the Adyen payment system, adjusted for an Adyen environment.
     #
@@ -244,11 +249,13 @@ module Adyen
     # @param [Hash] parameters The parameters that will be included in the payment request.
     # @return [String] The string for which the siganture is calculated.
     def calculate_signature_string(parameters)
-      merchant_sig_parts = REQUIRED_PAYMENT_REQUEST_PARAMS.map{ |obj| obj[:name] }
-      merchant_sig_parts += REQUIRED_PAYMENT_REQUEST_PARAMS.map{ |obj|
-        Adyen::Signature::escape_value(parameters[obj[:key]].to_s)
-      }
-      merchant_sig_parts.join(':')
+      signature_params = PAYMENT_REQUEST_SIGNATURE_PARAMS.reduce({}) do |hash, param|
+        value = parameters[param]
+        hash[Adyen::Util.camelize(param.to_s)] = Adyen::Signature::escape_value(value.to_s) if parameters.key?(param)
+        hash
+      end
+
+      (signature_params.keys + signature_params.values).join(':')
     end
 
     # Calculates the payment request signature for the given payment parameters.
