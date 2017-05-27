@@ -17,6 +17,7 @@ matrix:
   - rvm: rbx-2
 before_install:
   - bundle --version || gem install bundler
+  - gem update bundler
 before_script:
 - cp test/functional/initializer.rb.ci test/functional/initializer.rb
 env:
