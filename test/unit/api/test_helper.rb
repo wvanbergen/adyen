@@ -115,14 +115,6 @@ module APISpecHelper
       end
     end
 
-    def it_should_have_shortcut_methods_for_params_on_the_response
-      it "provides shortcut methods, on the response object, for all entries in the #params hash" do
-        @response.params.each do |key, value|
-          @response.send(key).must_equal value
-        end
-      end
-    end
-
     def it_should_return_params_for_each_xml_backend(params)
       for_each_xml_backend do
         it "returns a hash with parsed response details" do
@@ -176,7 +168,11 @@ module APISpecHelper
           @post.soap_action.must_equal soap_action
         end
 
-        it_should_have_shortcut_methods_for_params_on_the_response
+        it "provides shortcut methods, on the response object, for all entries in the #params hash" do
+          params = @response.params
+          result = params.keys.map { |key| @response.send(key) }
+          result.must_equal params.values
+        end
 
         instance_eval(&block)
       end
