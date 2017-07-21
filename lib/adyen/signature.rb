@@ -29,6 +29,10 @@ module Adyen
       secure_compare(hmacSignature, our_sig)
     end
 
+    def escape_value(value)
+      value.gsub('\\', '\\\\\\\\').gsub(':', '\\:')
+    end
+
     private
 
     def string_to_sign(params, type)
@@ -55,10 +59,6 @@ module Adyen
       else
         hash.sort.map{ |el| el[1] }
       end
-    end
-
-    def escape_value(value)
-      value.gsub(':', '\\:').gsub('\\', '\\\\')
     end
 
     # Constant-time compare for two fixed-length strings
