@@ -9,6 +9,8 @@ module Adyen
       attr_accessor :parameters
       attr_writer :skin, :environment, :shared_secret
 
+      MANDATORY_ATTRIBUTES = %i(currency_code payment_amount merchant_account skin_code ship_before_date session_validity).freeze
+
       # Initialize the HPP request
       #
       # @param [Hash] parameters The payment parameters
@@ -88,10 +90,9 @@ module Adyen
         end
         formatted_parameters = default_form_parameters.merge(formatted_parameters)
 
-        raise ArgumentError, "Cannot generate request: :currency code attribute not found!"         unless formatted_parameters[:currency_code]
-        raise ArgumentError, "Cannot generate request: :payment_amount code attribute not found!"   unless formatted_parameters[:payment_amount]
-        raise ArgumentError, "Cannot generate request: :merchant_account attribute not found!"      unless formatted_parameters[:merchant_account]
-        raise ArgumentError, "Cannot generate request: :skin_code attribute not found!"             unless formatted_parameters[:skin_code]
+        MANDATORY_ATTRIBUTES.each do |attribute|
+          raise ArgumentError, "Cannot generate request: :#{attribute} attribute not found!" unless formatted_parameters[attribute]
+        end
 
         formatted_parameters[:recurring_contract] = 'RECURRING' if formatted_parameters.delete(:recurring) == true
         formatted_parameters[:order_data]         = Adyen::Util.gzip_base64(formatted_parameters.delete(:order_data_raw)) if formatted_parameters[:order_data_raw]
