@@ -71,6 +71,7 @@ describe Adyen::API::RecurringService do
             :number => '1111'
           },
           :recurring_detail_reference => 'RecurringDetailReference1',
+          :additional_data => { "newAlias" => "123456" },
           :variant => 'mc',
           :creation_date => DateTime.parse('2009-10-27T11:50:12.178+01:00')
         },
@@ -85,6 +86,7 @@ describe Adyen::API::RecurringService do
             :holder_name => 'S. Hopper'
           },
           :recurring_detail_reference => 'RecurringDetailReference2',
+          :additional_data => { "newAlias" => "123456" },
           :variant => 'IDEAL',
           :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
         },
@@ -97,6 +99,7 @@ describe Adyen::API::RecurringService do
             :bank_name        => 'TestBank',
           },
           :recurring_detail_reference => 'RecurringDetailReference3',
+          :additional_data => { "newAlias" => "123456" },
           :variant => 'elv',
           :creation_date => DateTime.parse('2009-10-27T11:26:22.216+01:00')
         }

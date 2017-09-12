@@ -328,6 +328,12 @@ LIST_RESPONSE = <<EOS
             <elv xsi:nil="true"/>
             <name/>
             <recurringDetailReference>RecurringDetailReference1</recurringDetailReference>
+            <additionalData>
+              <entry>
+                <key xsi:type="xsd:string">newAlias</key>
+                <value xsi:type="xsd:string">123456</value>
+              </entry>
+            </additionalData>
             <variant>mc</variant>
           </RecurringDetail>
           <RecurringDetail>
@@ -345,6 +351,12 @@ LIST_RESPONSE = <<EOS
             <elv xsi:nil="true"/>
             <name/>
             <recurringDetailReference>RecurringDetailReference2</recurringDetailReference>
+            <additionalData>
+              <entry>
+                <key xsi:type="xsd:string">newAlias</key>
+                <value xsi:type="xsd:string">123456</value>
+              </entry>
+            </additionalData>
             <variant>IDEAL</variant>
           </RecurringDetail>
           <RecurringDetail>
@@ -360,6 +372,12 @@ LIST_RESPONSE = <<EOS
             <creationDate>2009-10-27T11:26:22.216+01:00</creationDate>
             <name/>
             <recurringDetailReference>RecurringDetailReference3</recurringDetailReference>
+            <additionalData>
+              <entry>
+                <key xsi:type="xsd:string">newAlias</key>
+                <value xsi:type="xsd:string">123456</value>
+              </entry>
+            </additionalData>
             <variant>elv</variant>
           </RecurringDetail>
         </details>

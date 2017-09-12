@@ -93,7 +93,7 @@ module Adyen
       end
 
       class ListResponse < Response
-        response_attrs :details, :last_known_shopper_email, :shopper_reference, :creation_date
+        response_attrs :details, :last_known_shopper_email, :shopper_reference, :creation_date, :additional_data
 
         def references
           details ? details.map { |d| d[:recurring_detail_reference] } : []
@@ -117,7 +117,8 @@ module Adyen
           result = {
             :recurring_detail_reference => node.text('./recurring:recurringDetailReference'),
             :variant                    => node.text('./recurring:variant'),
-            :creation_date              => DateTime.parse(node.text('./recurring:creationDate'))
+            :creation_date              => DateTime.parse(node.text('./recurring:creationDate')),
+            :additional_data            => parse_additional_data(node.xpath('./recurring:additionalData'))
           }
 
           card = node.xpath('./recurring:card')
@@ -163,6 +164,21 @@ module Adyen
             :iban             => bank.text('./payment:iban'),
             :holder_name      => bank.text('./payment:ownerName')
           }
+        end
+
+        def parse_additional_data(xpath)
+          if xpath.empty?
+            {}
+          else
+            results = {}
+            xpath.map do |node|
+              key = node.text('./recurring:entry/recurring:key')
+              value = node.text('./recurring:entry/recurring:value')
+              results[key] = value unless key.empty?
+            end
+
+            results
+          end
         end
       end
 
