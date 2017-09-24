@@ -2,6 +2,9 @@
 
 The following changes have been made to the library over the years. Pleae add an entry to this file as part of your pull requests.
 
+#### Unreleased changes
+- Add `additionalData` to response from `listRecurringDetails` recurring payment SOAP endpoint.
+
 #### Version 2.3.0
 
 - Add `shopper_statement` option to `Adyen::APP`, allowing to generate Billets with custom payment instructions.
