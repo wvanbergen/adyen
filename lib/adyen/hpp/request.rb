@@ -98,6 +98,7 @@ module Adyen
         formatted_parameters[:order_data]         = Adyen::Util.gzip_base64(formatted_parameters.delete(:order_data_raw)) if formatted_parameters[:order_data_raw]
         formatted_parameters[:ship_before_date]   = Adyen::Util.format_date(formatted_parameters[:ship_before_date])
         formatted_parameters[:session_validity]   = Adyen::Util.format_timestamp(formatted_parameters[:session_validity])
+        formatted_parameters[:res_URL]            = formatted_parameters.delete(:res_url) if formatted_parameters[:res_url]
         formatted_parameters
       end
 

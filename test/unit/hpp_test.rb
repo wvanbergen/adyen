@@ -96,7 +96,8 @@ class HppTest < Minitest::Test
   def test_redirect_url_generation
     attributes = {
       :currency_code => 'GBP', :payment_amount => 10000, :ship_before_date => Date.parse('2015-10-26'),
-      :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30')
+      :merchant_reference => 'Internet Order 12345', :session_validity => Time.parse('2015-10-26 10:30'),
+      :res_url => 'http://example.com/shop'
     }
 
     request = Adyen::HPP::Request.new(attributes)
@@ -104,7 +105,8 @@ class HppTest < Minitest::Test
     processed_attributes = {
       'currencyCode' => 'GBP', 'paymentAmount' => '10000', 'shipBeforeDate' => '2015-10-26',
       'merchantReference' => 'Internet Order 12345', 'sessionValidity' => '2015-10-26T10:30:00Z',
-      'merchantAccount' => 'TestMerchant', 'skinCode' => @skin_code1, 'merchantSig' => 'ewDgqa+m3rMO6MOZfQ0ugWdwsu+otvRVBVujqGfgvb8='
+      'resURL' => 'http://example.com/shop',
+      'merchantAccount' => 'TestMerchant', 'skinCode' => @skin_code1, 'merchantSig' => 'BiRXWK/1sGwjCgQdFi1ShPyqFVGjKU3UqQfMhoyAGnQ='
     }
 
     redirect_uri = URI(request.redirect_url)
