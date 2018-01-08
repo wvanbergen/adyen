@@ -7,6 +7,7 @@ The following changes have been made to the library over the years. Pleae add an
 
 #### Version 2.3.0
 
+- Add support for merchant-specific endpoints.
 - Add `shopper_statement` option to `Adyen::APP`, allowing to generate Billets with custom payment instructions.
 - Make sure the unique index created by the notification model generator includes `merchant_account_code`
 - Make refusal_reson availble as a response field for failed requests.
