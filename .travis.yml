@@ -1,29 +1,30 @@
-sudo: false
+sudo: true
 dist: trusty
 language: ruby
 cache: bundler
 rvm:
-- "2.0"
-- "2.1"
-- "2.2"
-- "2.3.1"
-- "2.4.1"
-- "jruby-9.0"
-- "jruby-9.1"
-- "ruby-head"
-- "rubinius-3"
-- "jruby-head"
+  - "2.0"
+  - "2.1"
+  - "2.2"
+  - "2.3.6"
+  - "2.4.3"
+  - "2.5.0"
+  - "jruby-9.0"
+  - "jruby-9.1.15.0"
+  - "ruby-head"
+  - "rubinius-3"
+  - "jruby-head"
 matrix:
   allow_failures:
-  - rvm: jruby-head
-  - rvm: ruby-head
-  - rvm: rubinius-3
+    - rvm: jruby-head
+    - rvm: ruby-head
+    - rvm: rubinius-3
 
 before_install:
   - bundle --version || gem install bundler
   - gem update bundler
 before_script:
-- cp test/functional/initializer.rb.ci test/functional/initializer.rb
+  - cp test/functional/initializer.rb.ci test/functional/initializer.rb
 script: bundle exec rake
 
 env:
