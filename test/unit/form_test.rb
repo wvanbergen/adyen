@@ -83,6 +83,8 @@ class FormTest < Minitest::Test
 
     Adyen.configuration.environment = :live
     assert_equal 'https://live.adyen.com/hpp/select.shtml', Adyen::Form.url
+  ensure
+    Adyen.configuration.environment = nil
   end
 
   def test_redirect_url_for_different_payment_flows
