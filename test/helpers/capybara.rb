@@ -1,12 +1,7 @@
 require 'helpers/example_server'
 require 'capybara/dsl'
-require 'capybara/poltergeist'
+require 'capybara/webkit'
 
-Capybara.register_driver :poltergeist do |app|
-  Capybara::Poltergeist::Driver.new(app, phantomjs_options: ['--ssl-protocol=any'])
-end
-
-Capybara.default_driver = :poltergeist
-Capybara.javascript_driver = :poltergeist
+Capybara.default_driver = :webkit
+Capybara.javascript_driver = :webkit
 Capybara.app = Adyen::ExampleServer
-
