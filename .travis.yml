@@ -9,7 +9,6 @@ rvm:
   - "2.3.6"
   - "2.4.3"
   - "2.5.0"
-  - "jruby-9.0"
   - "jruby-9.1.15.0"
   - "ruby-head"
   - "rubinius-3"
