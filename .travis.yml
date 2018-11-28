@@ -1,14 +1,11 @@
-sudo: true
-dist: trusty
+sudo: false
 language: ruby
 cache: bundler
 rvm:
-  - "2.0"
-  - "2.1"
   - "2.2"
-  - "2.3.6"
-  - "2.4.3"
-  - "2.5.0"
+  - "2.3"
+  - "2.4"
+  - "2.5"
   - "jruby-9.1.15.0"
   - "ruby-head"
   - "rubinius-3"
