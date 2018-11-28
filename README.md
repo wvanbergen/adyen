@@ -16,7 +16,7 @@ This library aims to ease the implementation of all these modes into your Rack a
 - Check out [the example server](https://github.com/wvanbergen/adyen/blob/master/test/helpers/example_server.rb) for an example implementation of the HPP payment flow, and an implementation of self-hosted a payment flow that uses the REST webservice. To start the example server, run `bundle exec rackup` in the root of this project.
 - Complete RDoc documentation can be found on [rubydoc.info](http://www.rubydoc.info/gems/adyen).
 - For more information about Adyen, see http://www.adyen.com
-- For more information about integrating Adyen, see [their manuals](https://www.adyen.com/home/support/manuals.html). Of primary interest are the HPP integration manual for `Adyen::Form`, and the API integration manual for `Adyen::REST`.
+- For more information about integrating Adyen, see [their manuals](https://www.adyen.com/home/support/manuals.html). Of primary interest are the HPP integration manual for `Adyen::HPP`, and the API integration manual for `Adyen::REST`.
 
 The library doesn't have any dependencies, but making Nokogiri available in your environment will greatly improve the speed of any XML and HTML processing.
 
