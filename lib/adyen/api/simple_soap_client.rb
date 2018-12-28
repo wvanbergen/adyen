@@ -74,7 +74,7 @@ module Adyen
       end
 
       def validate_parameter_value!(param, value)
-        if value.nil? || value =~ /^\s*$/
+        if value.nil? || value.is_a?(String) && value =~ /^\s*$/
           raise ArgumentError, "The required parameter `:#{param}' is missing."
         end
       end
