@@ -38,7 +38,7 @@ module Adyen
       end
 
       def psp_reference
-        Integer(self[:psp_reference])
+        self[:psp_reference]
       end
 
       protected

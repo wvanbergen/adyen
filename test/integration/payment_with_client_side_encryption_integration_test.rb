@@ -21,6 +21,6 @@ class PaymentWithClientSideEncryptionIntegrationTest < Minitest::Test
     click_button('Pay')
 
     assert page.has_content?('Payment authorized')
-    assert_match /\A\d+\z/, find("#psp_reference").text
+    assert_match /\A\w+\z/, find("#psp_reference").text
   end
 end

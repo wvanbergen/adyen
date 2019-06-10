@@ -39,7 +39,7 @@ class HPPIntegrationTest < Minitest::Test
     follow_redirect_back
 
     assert page.has_content?('Payment authorized')
-    assert_match /\A\d+\z/, find("#psp_reference").text
+    assert_match /\A\w+\z/, find("#psp_reference").text
     assert_equal order_uuid, find("#merchant_reference").text
   end
 
