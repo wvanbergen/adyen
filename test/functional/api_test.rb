@@ -111,7 +111,7 @@ if File.exist?(API_SPEC_INITIALIZER)
                                             { first_name: "Jow", last_name: "Silver" },
                                             "19762003691",
                                             "boletobancario_santander",
-                                            "2014-07-16T18:16:11Z",
+                                            "2020-07-16T18:16:11Z",
                                             "free-text billet payment instructions")
       response.must_be :success?
     end
