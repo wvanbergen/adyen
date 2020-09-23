@@ -1,6 +1,6 @@
 # Adyen [![Build Status](https://travis-ci.org/wvanbergen/adyen.svg?branch=master)](https://travis-ci.org/wvanbergen/adyen)
 
-*DEPRECATED*: This library has been reprecated, in favour of [the official client library released by Adyen](https://github.com/Adyen/adyen-ruby-api-library).
+*DEPRECATED*: This library has been deprecated, in favour of [the official client library released by Adyen](https://github.com/Adyen/adyen-ruby-api-library).
 
 _________________
 
