@@ -1,5 +1,9 @@
 # Adyen [![Build Status](https://travis-ci.org/wvanbergen/adyen.svg?branch=master)](https://travis-ci.org/wvanbergen/adyen)
 
+*DEPRECATED*: This library has been reprecated, in favour of [the official client library released by Adyen](https://github.com/Adyen/adyen-ruby-api-library).
+
+_________________
+
 Package to simplify including Adyen payments services into a Ruby on Rails application.
 
 Adyen integration relies on three modes of communication between Adyen, your server and your client/customer:
